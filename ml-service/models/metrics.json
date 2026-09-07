@@ -1,0 +1,106 @@
+{
+    "comparison": {
+        "Logistic Regression": {
+            "accuracy": 0.9682539682539683,
+            "precision": 0.7373737373737373,
+            "recall": 0.9319148936170213,
+            "f1_score": 0.8233082706766918,
+            "roc_auc": 0.9802656842696805,
+            "confusion_matrix": [
+                [
+                    2648,
+                    78
+                ],
+                [
+                    16,
+                    219
+                ]
+            ]
+        },
+        "Decision Tree": {
+            "accuracy": 0.9743329956095913,
+            "precision": 0.7890909090909091,
+            "recall": 0.9234042553191489,
+            "f1_score": 0.8509803921568627,
+            "roc_auc": 0.9595081250682943,
+            "confusion_matrix": [
+                [
+                    2668,
+                    58
+                ],
+                [
+                    18,
+                    217
+                ]
+            ]
+        },
+        "Random Forest": {
+            "accuracy": 0.9854778790949004,
+            "precision": 0.9285714285714286,
+            "recall": 0.8851063829787233,
+            "f1_score": 0.906318082788671,
+            "roc_auc": 0.9810547759167043,
+            "confusion_matrix": [
+                [
+                    2710,
+                    16
+                ],
+                [
+                    27,
+                    208
+                ]
+            ]
+        },
+        "Gradient Boosting": {
+            "accuracy": 0.9790611279972982,
+            "precision": 0.8680851063829788,
+            "recall": 0.8680851063829788,
+            "f1_score": 0.8680851063829788,
+            "roc_auc": 0.9803921262546635,
+            "confusion_matrix": [
+                [
+                    2695,
+                    31
+                ],
+                [
+                    31,
+                    204
+                ]
+            ]
+        },
+        "XGBoost": {
+            "accuracy": 0.9787234042553191,
+            "precision": 0.8307692307692308,
+            "recall": 0.9191489361702128,
+            "f1_score": 0.8727272727272727,
+            "roc_auc": 0.9802570987027988,
+            "confusion_matrix": [
+                [
+                    2682,
+                    44
+                ],
+                [
+                    19,
+                    216
+                ]
+            ]
+        }
+    },
+    "best_model": "Random Forest",
+    "features": [
+        "log_amount",
+        "amount",
+        "is_high_risk_country",
+        "is_wire_or_crypto",
+        "is_night",
+        "is_transfer",
+        "amount_near_threshold",
+        "is_large_amount",
+        "sender_time_diff",
+        "receiver_time_diff",
+        "sender_velocity_2h",
+        "receiver_velocity_2h"
+    ],
+    "fraud_rate": 0.07925140193230187,
+    "trained_at": "2026-09-06T23:59:31.522029"
+}

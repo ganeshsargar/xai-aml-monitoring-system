@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sidebar-width: 260px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800 dark:bg-darkBg dark:text-slate-100 transition-colors duration-200 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer components {
+  /* =====================================================
+     PREMIUM GLASSMORPHISM PANELS — Dark Mode First
+  ===================================================== */
+  .glass-panel {
+    @apply relative overflow-hidden rounded-2xl border;
+    background: rgba(13, 21, 37, 0.8);
+    border-color: rgba(26, 39, 64, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 
+                0 2px 4px -2px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .glass-panel-light {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(16px);
+    @apply rounded-2xl border shadow-lg;
+  }
+
+  /* Light mode panel override */
+  .light .glass-panel,
+  html:not(.dark) .glass-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(226, 232, 240, 0.9);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  .glass-panel-hover {
+    @apply transition-all duration-300;
+    cursor: pointer;
+  }
+
+  .glass-panel-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(249, 115, 22, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  /* =====================================================
+     STAT CARDS — Premium Gradient Variant
+  ===================================================== */
+  .stat-card {
+    @apply glass-panel p-6 relative overflow-hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--card-accent, linear-gradient(90deg, #f97316, #fb923c));
+    border-radius: 12px 12px 0 0;
+  }
+
+  /* =====================================================
+     SIDEBAR — Premium Dark Navigation
+  ===================================================== */
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 relative;
+    color: rgba(148, 163, 184, 0.8);
+  }
+
+  .sidebar-nav-item:hover {
+    color: rgba(226, 232, 240, 1);
+    background: rgba(26, 39, 64, 0.6);
+  }
+
+  .sidebar-nav-item.active {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.1);
+    border: 1px solid rgba(249, 115, 22, 0.2);
+  }
+
+  .sidebar-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: linear-gradient(to bottom, #f97316, #fb923c);
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* =====================================================
+     BADGE / PILL COMPONENTS
+  ===================================================== */
+  .badge-critical {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold;
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .badge-high {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold;
+    background: rgba(249, 115, 22, 0.15);
+    color: #fdba74;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+  }
+
+  .badge-medium {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .badge-low {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold;
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  /* =====================================================
+     BUTTON COMPONENTS
+  ===================================================== */
+  .btn-primary {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-200;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200;
+    color: rgba(148, 163, 184, 0.9);
+    background: rgba(26, 39, 64, 0.6);
+    border: 1px solid rgba(26, 39, 64, 0.9);
+  }
+
+  .btn-secondary:hover {
+    color: white;
+    background: rgba(30, 48, 80, 0.8);
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+
+  .btn-danger {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-200;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* =====================================================
+     FORM INPUTS — Dark Premium
+  ===================================================== */
+  .input-dark {
+    @apply w-full px-4 py-3 text-sm rounded-xl outline-none transition-all duration-200;
+    background: rgba(6, 13, 26, 0.6);
+    border: 1px solid rgba(26, 39, 64, 0.9);
+    color: rgba(226, 232, 240, 0.9);
+  }
+
+  .input-dark::placeholder {
+    color: rgba(100, 116, 139, 0.6);
+  }
+
+  .input-dark:focus {
+    border-color: rgba(249, 115, 22, 0.5);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  }
+
+  /* =====================================================
+     TABLE COMPONENTS
+  ===================================================== */
+  .table-header {
+    @apply text-[10px] font-bold uppercase tracking-widest;
+    color: rgba(100, 116, 139, 0.8);
+    background: rgba(6, 13, 26, 0.4);
+    border-bottom: 1px solid rgba(26, 39, 64, 0.8);
+  }
+
+  .table-row {
+    @apply transition-all duration-150 cursor-pointer;
+    border-bottom: 1px solid rgba(26, 39, 64, 0.5);
+  }
+
+  .table-row:hover {
+    background: rgba(249, 115, 22, 0.04);
+  }
+
+  .table-row.active {
+    background: rgba(249, 115, 22, 0.08);
+    border-color: rgba(249, 115, 22, 0.15);
+  }
+
+  /* =====================================================
+     CUSTOM SCROLLBARS
+  ===================================================== */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(6, 13, 26, 0.4);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(26, 39, 64, 0.9);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(249, 115, 22, 0.5);
+  }
+
+  /* =====================================================
+     CYTOSCAPE GRAPH CANVAS
+  ===================================================== */
+  .cytoscape-container {
+    background: rgba(6, 13, 26, 0.6);
+    background-image: 
+      radial-gradient(rgba(26, 39, 64, 0.6) 1px, transparent 0);
+    background-size: 28px 28px;
+    border-radius: 12px;
+  }
+
+  /* =====================================================
+     SKELETON LOADING
+  ===================================================== */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(26, 39, 64, 0.4);
+    border-radius: 8px;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(249, 115, 22, 0.06) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  /* =====================================================
+     PULSING GLOW ALERTS
+  ===================================================== */
+  @keyframes pulse-glow-red {
+    0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.6); }
+  }
+
+  .critical-pulse {
+    animation: pulse-glow-red 2s infinite ease-in-out;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+
+  /* =====================================================
+     RISK SCORE METER
+  ===================================================== */
+  .risk-meter {
+    @apply relative h-2 rounded-full overflow-hidden;
+    background: rgba(26, 39, 64, 0.8);
+  }
+
+  .risk-meter-fill {
+    @apply h-full rounded-full transition-all duration-700;
+  }
+
+  /* =====================================================
+     SECTION HEADERS
+  ===================================================== */
+  .section-title {
+    @apply text-[10px] font-bold uppercase tracking-widest;
+    color: rgba(100, 116, 139, 0.8);
+    letter-spacing: 0.12em;
+  }
+
+  /* =====================================================
+     DIVIDERS
+  ===================================================== */
+  .divider {
+    border: none;
+    height: 1px;
+    background: rgba(26, 39, 64, 0.8);
+  }
+
+  /* =====================================================
+     TRICOLOR INDIA ACCENT BAR
+  ===================================================== */
+  .india-tricolor {
+    @apply flex w-full h-0.5;
+  }
+
+  .india-tricolor::before {
+    content: '';
+    flex: 1;
+    background: #FF9933;
+  }
+
+  .india-tricolor::after {
+    content: '';
+    flex: 1;
+    background: #138808;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+/* =====================================================
+   PREMIUM GLOWING BUTTON EFFECT
+   ===================================================== */
+.btn-premium-glow {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-premium-glow:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4), 
+              0 0 15px rgba(99, 102, 241, 0.25) !important;
+}
+
+.btn-premium-glow:active {
+  transform: translateY(0px) !important;
+}
+
+/* Emerald variant for compliance and verification buttons */
+.btn-premium-glow-emerald:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4), 
+              0 0 15px rgba(16, 185, 129, 0.25) !important;
+}
+
+.btn-premium-glow-emerald:active {
+  transform: translateY(0px) !important;
+}
+
