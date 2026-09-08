@@ -11,6 +11,10 @@ const apiRouter = require('./src/routes/api');
 const app = express();
 const PORT = process.env.PORT || 5050;
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Security Middlewares
 app.use(helmet({
   crossOriginResourcePolicy: false // Allows loading uploaded evidence assets locally

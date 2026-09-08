@@ -4,16 +4,16 @@ import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import StatCard from '../components/StatCard';
-import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts';
-import { 
-  Coins, 
-  AlertTriangle, 
-  TrendingUp, 
-  Layers, 
-  ChevronRight, 
-  Clock 
+import {
+  Coins,
+  AlertTriangle,
+  TrendingUp,
+  Layers,
+  ChevronRight,
+  Clock
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -28,12 +28,11 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // 1. Get system stats count
-        const statsRes = await axios.get(`${API_URL}/api/admin/system-stats`);
-        // 2. Get alerts
-        const alertsRes = await axios.get(`${API_URL}/api/alerts?limit=5`);
-        // 3. Get raw transactions to compute charts dynamically (resilient & real-time)
-        const txsRes = await axios.get(`${API_URL}/api/transactions?limit=100`);
+        const [statsRes, alertsRes, txsRes] = await Promise.all([
+          axios.get(`${API_URL}/api/admin/system-stats`),
+          axios.get(`${API_URL}/api/alerts?limit=5`),
+          axios.get(`${API_URL}/api/transactions?limit=100`)
+        ]);
 
         if (statsRes.data.success && alertsRes.data.success && txsRes.data.success) {
           setStats(statsRes.data.data);
@@ -41,7 +40,7 @@ const Dashboard = () => {
 
           // Compute Analytical Graphs
           const txs = txsRes.data.data;
-          
+
           // Risk Distribution
           let low = 0, med = 0, high = 0, crit = 0;
           txs.forEach(t => {
@@ -145,7 +144,7 @@ const Dashboard = () => {
       <Navbar title="AML Compliance Dashboard" />
 
       <main className="p-8 space-y-8">
-        
+
         {/* Top Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
           <StatCard
@@ -285,14 +284,14 @@ const Dashboard = () => {
               <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
                 Critical Priority Alerts
               </h4>
-              <button 
+              <button
                 onClick={() => navigate('/alerts')}
                 className="text-xs text-blue-500 hover:text-blue-600 font-semibold flex items-center gap-0.5"
               >
                 View Full Queue <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            
+
             <div className="divide-y divide-gray-100 dark:divide-darkBorder">
               {recentAlerts.length > 0 ? (
                 recentAlerts.map((alert) => (
@@ -302,11 +301,10 @@ const Dashboard = () => {
                         <span className="font-semibold text-sm text-gray-800 dark:text-gray-200">
                           {alert.transaction_id}
                         </span>
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          alert.level === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' :
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${alert.level === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300' :
                           alert.level === 'High' ? 'bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300' :
-                          'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                        }`}>
+                            'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                          }`}>
                           {alert.level}
                         </span>
                       </div>
@@ -314,7 +312,7 @@ const Dashboard = () => {
                         Sender: {alert.transaction?.sender_account} | Amount: ₹{alert.transaction?.amount?.toLocaleString()}
                       </p>
                     </div>
-                    
+
                     <button
                       onClick={() => navigate('/alerts')}
                       className="px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-darkBorder/60 dark:hover:bg-darkBorder rounded-lg transition-all"
