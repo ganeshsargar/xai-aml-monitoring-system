@@ -333,17 +333,19 @@ const getCaseGraph = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Case not found.' });
     }
 
-    // Gather transaction details for all alerts in the case
-    const transactions = [];
+    // 1. Gather base transaction details for all alerts in the case
+    const baseTxMap = new Map();
     for (const alertId of caseObj.alerts) {
       const alert = await models.Alert.findOne({ alert_id: alertId });
       if (alert) {
         const tx = await models.Transaction.findOne({ transaction_id: alert.transaction_id });
-        if (tx) transactions.push(tx);
+        if (tx && !baseTxMap.has(tx.transaction_id)) {
+          baseTxMap.set(tx.transaction_id, tx);
+        }
       }
     }
 
-    if (transactions.length === 0) {
+    if (baseTxMap.size === 0) {
       return res.json({
         success: true,
         data: {
@@ -353,6 +355,58 @@ const getCaseGraph = async (req, res) => {
         }
       });
     }
+
+    // 2. Multi-Hop Graph Expansion: Trace connected counterparties to uncover rings & chains
+    const graphTxMap = new Map(baseTxMap);
+    const seedAccounts = new Set();
+    for (const tx of baseTxMap.values()) {
+      if (tx.sender_account) seedAccounts.add(tx.sender_account);
+      if (tx.receiver_account) seedAccounts.add(tx.receiver_account);
+    }
+
+    const seedArr = Array.from(seedAccounts);
+
+    // Hop 1: Find transfers directly involving the seed accounts (where B forwarded or who sent to A)
+    const hop1Txs = await models.Transaction.find({
+      $or: [
+        { sender_account: { $in: seedArr } },
+        { receiver_account: { $in: seedArr } }
+      ]
+    });
+
+    const hop1Accounts = new Set();
+    for (const tx of hop1Txs) {
+      if (graphTxMap.size >= 45) break;
+      if (!graphTxMap.has(tx.transaction_id)) {
+        graphTxMap.set(tx.transaction_id, tx);
+      }
+      if (tx.sender_account && !seedAccounts.has(tx.sender_account)) {
+        hop1Accounts.add(tx.sender_account);
+      }
+      if (tx.receiver_account && !seedAccounts.has(tx.receiver_account)) {
+        hop1Accounts.add(tx.receiver_account);
+      }
+    }
+
+    // Hop 2: For discovered counterparties, find transfers that interconnect or loop back to seed accounts
+    if (hop1Accounts.size > 0 && graphTxMap.size < 50) {
+      const hop1Arr = Array.from(hop1Accounts).slice(0, 20);
+      const hop2Txs = await models.Transaction.find({
+        $or: [
+          { sender_account: { $in: hop1Arr } },
+          { receiver_account: { $in: hop1Arr } }
+        ]
+      });
+
+      for (const tx of hop2Txs) {
+        if (graphTxMap.size >= 55) break;
+        if (!graphTxMap.has(tx.transaction_id)) {
+          graphTxMap.set(tx.transaction_id, tx);
+        }
+      }
+    }
+
+    const transactions = Array.from(graphTxMap.values());
 
     // Try calling Python ML service for NetworkX graph analytics
     let graphData = null;

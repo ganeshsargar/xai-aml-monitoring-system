@@ -98,7 +98,7 @@ def analyze_transaction_graph(transactions_list):
     cycle_nodes = set()
     try:
         raw_cycles = list(nx.simple_cycles(G, length_bound=6))
-        short_cycles = [c for c in raw_cycles if 2 <= len(c) <= 4]
+        short_cycles = [c for c in raw_cycles if 2 <= len(c) <= 6]
         for c in short_cycles[:15]:
             cycle_edges = []
             for i in range(len(c)):

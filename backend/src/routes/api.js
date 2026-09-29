@@ -9,6 +9,7 @@ const transactions = require('../controllers/transactionController');
 const alerts = require('../controllers/alertController');
 const cases = require('../controllers/caseController');
 const admin = require('../controllers/adminController');
+const uploads = require('../controllers/uploadController');
 
 const router = express.Router();
 
@@ -47,6 +48,15 @@ router.post('/transactions', authenticateToken, authorizeRoles('Admin', 'Investi
 router.put('/transactions/:id', authenticateToken, authorizeRoles('Admin', 'Investigator'), transactions.updateTransaction);
 router.delete('/transactions/:id', authenticateToken, authorizeRoles('Admin'), transactions.deleteTransaction);
 router.post('/transactions/import', authenticateToken, authorizeRoles('Admin', 'Investigator'), upload.single('file'), transactions.importCSV);
+
+// ==========================================
+// 2B. Column Mapping & Upload Gateway Routes
+// ==========================================
+router.post('/uploads/detect-headers', authenticateToken, authorizeRoles('Admin', 'Investigator'), upload.single('file'), uploads.detectHeaders);
+router.get('/uploads/:upload_id/suggested-mapping', authenticateToken, authorizeRoles('Admin', 'Investigator'), uploads.getSuggestedMapping);
+router.post('/uploads/:upload_id/mapping', authenticateToken, authorizeRoles('Admin', 'Investigator'), uploads.confirmMapping);
+router.get('/uploads/mapping-templates', authenticateToken, uploads.getMappingTemplates);
+router.delete('/uploads/mapping-templates/:id', authenticateToken, authorizeRoles('Admin', 'Investigator'), uploads.deleteMappingTemplate);
 
 // ==========================================
 // 3. Alert Module Routes

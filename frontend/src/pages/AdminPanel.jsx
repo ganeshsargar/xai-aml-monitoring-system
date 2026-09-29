@@ -12,8 +12,13 @@ import {
   TrendingUp, 
   Database,
   ShieldAlert,
-  Download
+  Download,
+  X,
+  Layers,
+  Sparkles
 } from 'lucide-react';
+import ColumnMappingImporter from '../components/ColumnMappingImporter';
+import TemplateManager from '../components/TemplateManager';
 
 const AdminPanel = () => {
   const { API_URL, ML_SERVICE_URL, user } = useContext(AuthContext);
@@ -24,6 +29,7 @@ const AdminPanel = () => {
   const [trainingLoading, setTrainingLoading] = useState(false);
   const [csvFile, setCsvFile] = useState(null);
   const [csvLoading, setCsvLoading] = useState(false);
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
 
   // User management states
   const [usersList, setUsersList] = useState([]);
@@ -247,6 +253,17 @@ const AdminPanel = () => {
           >
             System Audit Trail
           </button>
+
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${
+              activeTab === 'templates' 
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Mapping Templates
+          </button>
         </div>
 
         {/* Tab contents */}
@@ -312,39 +329,41 @@ const AdminPanel = () => {
               )}
             </div>
 
-            {/* Right: Dataset Upload */}
+            {/* Right: Dataset Upload with Column Mapping */}
             <div className="glass-panel p-6 space-y-6">
-              <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-100 dark:border-darkBorder flex items-center gap-1.5">
-                <Database className="w-4 h-4" /> Bulk Transaction Importer
-              </h4>
-
-              <div className="text-xs text-gray-400 leading-relaxed">
-                Upload a structured transaction CSV file. Imported records will undergo automatic feature engineering, ML risk predictions, and alerts routing.
+              <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-darkBorder">
+                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Database className="w-4 h-4" /> Bulk Transaction Importer
+                </h4>
+                <button
+                  onClick={() => setActiveTab('templates')}
+                  className="text-[10px] text-blue-500 hover:text-blue-600 font-semibold"
+                >
+                  Templates →
+                </button>
               </div>
 
-              <form onSubmit={handleCsvImport} className="space-y-4">
-                <div className="border border-dashed border-gray-200 dark:border-darkBorder rounded-2xl p-6 flex flex-col items-center justify-center space-y-2 cursor-pointer bg-gray-50 hover:bg-gray-100/50 dark:bg-darkBg/20 dark:hover:bg-darkBg/60 transition-all relative">
-                  <Upload className="w-8 h-8 text-gray-400" />
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                    {csvFile ? csvFile.name : 'Select structured AML CSV file'}
-                  </span>
-                  <input
-                    type="file"
-                    id="csv-upload"
-                    accept=".csv"
-                    onChange={(e) => setCsvFile(e.target.files[0])}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    required
-                  />
+              <div className="text-xs text-gray-400 leading-relaxed">
+                Upload transaction CSV files with automatic column mapping detection, synonym matching, and reusable formatting templates.
+              </div>
+
+              <div className="p-4 bg-gray-50/50 dark:bg-darkBg/30 border border-gray-100 dark:border-darkBorder rounded-2xl space-y-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                  <Sparkles className="w-4 h-4 text-emerald-500" />
+                  <span>Schema-Agnostic Ingestion</span>
                 </div>
+                <p className="text-[11px] text-gray-400 leading-normal">
+                  Our column mapping engine automatically pairs custom bank column names (e.g. "Debit A/C No", "amt_inr") with canonical AML fields.
+                </p>
                 <button
-                  type="submit"
-                  disabled={csvLoading || !csvFile}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-xs font-semibold text-white rounded-xl shadow-lg shadow-blue-900/10 transition-all outline-none"
+                  type="button"
+                  onClick={() => setIsImporterOpen(true)}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white rounded-xl shadow-lg shadow-blue-900/10 transition-all flex items-center justify-center gap-2"
                 >
-                  {csvLoading ? 'Parsing and Predicting...' : 'Execute Import & Predict'}
+                  <Upload className="w-4 h-4" />
+                  <span>Launch Column Mapping Importer</span>
                 </button>
-              </form>
+              </div>
             </div>
 
           </div>
@@ -538,7 +557,49 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {activeTab === 'templates' && (
+          <div className="glass-panel p-6 animate-fade-in">
+            <TemplateManager API_URL={API_URL} />
+          </div>
+        )}
+
       </main>
+
+      {/* Column Mapping Importer Modal */}
+      {isImporterOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-5xl my-8 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-darkBorder">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">
+                    Bulk Transaction Importer with Column Mapping
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Map any CSV structure to the AML canonical schema with human confirmation and reusable templates.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setIsImporterOpen(false); fetchSystemStats(); }}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-darkBg transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <ColumnMappingImporter 
+              API_URL={API_URL} 
+              onImportComplete={() => {
+                fetchSystemStats();
+              }} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

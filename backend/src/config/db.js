@@ -75,6 +75,38 @@ const AuditLogSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
+const UploadMappingTemplateSchema = new mongoose.Schema({
+  template_id: { type: String, required: true, unique: true },
+  template_name: { type: String, required: true },
+  source_signature: { type: String, required: true, index: true },
+  headers: [{ type: String }],
+  mapping: { type: Object, required: true },
+  created_by: { type: String, default: 'System' },
+  created_at: { type: Date, default: Date.now },
+  last_used_at: { type: Date, default: Date.now },
+  usage_count: { type: Number, default: 1 }
+});
+
+const UploadJobSchema = new mongoose.Schema({
+  upload_id: { type: String, required: true, unique: true },
+  file_path: { type: String, required: true },
+  original_filename: { type: String, required: true },
+  headers: [{ type: String }],
+  source_signature: { type: String, required: true },
+  row_count_estimate: { type: Number, default: 0 },
+  status: { type: String, enum: ['pending_mapping', 'mapping_confirmed', 'processing', 'completed', 'failed'], default: 'pending_mapping' },
+  mapping: { type: Object, default: null },
+  auto_applied: { type: Boolean, default: false },
+  auto_applied_template_id: { type: String, default: null },
+  auto_applied_template_name: { type: String, default: null },
+  processed_count: { type: Number, default: 0 },
+  flagged_count: { type: Number, default: 0 },
+  created_by: { type: String, default: 'System' },
+  created_at: { type: Date, default: Date.now },
+  completed_at: { type: Date, default: null },
+  error: { type: String, default: null }
+});
+
 // JSON File Fallback DB Class Mocking Mongoose
 class FileModel {
   constructor(collectionName, schema) {
@@ -105,7 +137,7 @@ class FileModel {
 
   _write(data) {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+      fs.writeFileSync(this.filePath, JSON.stringify(data));
     } catch (e) {
       console.error(`Error writing ${this.name}: ${e.message}`);
     }
@@ -114,7 +146,27 @@ class FileModel {
   async find(filter = {}) {
     const data = this._read();
     return data.filter(item => {
+      // Support Mongoose $or operator
+      if (filter.$or && Array.isArray(filter.$or)) {
+        const matchesAny = filter.$or.some(subFilter => {
+          for (let key in subFilter) {
+            if (subFilter[key] && typeof subFilter[key] === 'object' && !Array.isArray(subFilter[key])) {
+              const op = Object.keys(subFilter[key])[0];
+              const val = subFilter[key][op];
+              if (op === '$in' && (!Array.isArray(val) || !val.includes(item[key]))) return false;
+              if (op === '$gte' && item[key] < val) return false;
+              if (op === '$lte' && item[key] > val) return false;
+            } else if (item[key] !== subFilter[key]) {
+              return false;
+            }
+          }
+          return true;
+        });
+        if (!matchesAny) return false;
+      }
+
       for (let key in filter) {
+        if (key === '$or') continue;
         // Handle basic filters (string/number matches, arrays)
         if (filter[key] && typeof filter[key] === 'object' && !Array.isArray(filter[key])) {
           // Handle mongoose $gte, $lte, $in, $regex operators
@@ -122,7 +174,7 @@ class FileModel {
           const val = filter[key][op];
           if (op === '$gte' && item[key] < val) return false;
           if (op === '$lte' && item[key] > val) return false;
-          if (op === '$in' && !val.includes(item[key])) return false;
+          if (op === '$in' && (!Array.isArray(val) || !val.includes(item[key]))) return false;
           if (op === '$regex') {
             const regex = new RegExp(val, filter[key].$options || '');
             if (!regex.test(item[key])) return false;
@@ -141,8 +193,14 @@ class FileModel {
   }
 
   async findById(id) {
-    const field = this.name === 'User' ? '_id' : (this.name === 'Transaction' ? 'transaction_id' : (this.name === 'Alert' ? 'alert_id' : (this.name === 'Case' ? 'case_id' : '_id')));
-    return this.findOne({ [field]: id });
+    const field = this.name === 'User' ? '_id' : 
+      (this.name === 'Transaction' ? 'transaction_id' : 
+      (this.name === 'Alert' ? 'alert_id' : 
+      (this.name === 'Case' ? 'case_id' : 
+      (this.name === 'UploadMappingTemplate' ? 'template_id' :
+      (this.name === 'UploadJob' ? 'upload_id' : '_id')))));
+    const data = this._read();
+    return data.find(item => item[field] === id || item._id === id) || null;
   }
 
   async create(doc) {
@@ -165,10 +223,40 @@ class FileModel {
     return newDoc;
   }
 
-  async findByIdAndUpdate(id, update, options = { new: true }) {
-    const field = this.name === 'User' ? '_id' : (this.name === 'Transaction' ? 'transaction_id' : (this.name === 'Alert' ? 'alert_id' : (this.name === 'Case' ? 'case_id' : '_id')));
+  async insertMany(docs) {
+    if (!Array.isArray(docs) || docs.length === 0) return [];
     const data = this._read();
-    const index = data.findIndex(item => item[field] === id);
+    const inserted = [];
+    const now = new Date().toISOString();
+
+    for (const doc of docs) {
+      const newDoc = { ...doc };
+      if (!newDoc._id) {
+        newDoc._id = Math.random().toString(36).substring(2, 11);
+      }
+      if (!newDoc.createdAt) {
+        newDoc.createdAt = now;
+      }
+      if (this.schema.updatedAt && !newDoc.updatedAt) {
+        newDoc.updatedAt = now;
+      }
+      data.push(newDoc);
+      inserted.push(newDoc);
+    }
+
+    this._write(data);
+    return inserted;
+  }
+
+  async findByIdAndUpdate(id, update, options = { new: true }) {
+    const field = this.name === 'User' ? '_id' : 
+      (this.name === 'Transaction' ? 'transaction_id' : 
+      (this.name === 'Alert' ? 'alert_id' : 
+      (this.name === 'Case' ? 'case_id' : 
+      (this.name === 'UploadMappingTemplate' ? 'template_id' :
+      (this.name === 'UploadJob' ? 'upload_id' : '_id')))));
+    const data = this._read();
+    const index = data.findIndex(item => item[field] === id || item._id === id);
     
     if (index === -1) return null;
     
@@ -225,7 +313,7 @@ class FileModel {
 }
 
 // Setup models holder
-let User, Transaction, Alert, Case, AuditLog;
+let User, Transaction, Alert, Case, AuditLog, UploadMappingTemplate, UploadJob;
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/aml_db';
@@ -245,6 +333,8 @@ async function connectDB() {
     Alert = mongoose.models.Alert || mongoose.model('Alert', AlertSchema);
     Case = mongoose.models.Case || mongoose.model('Case', CaseSchema);
     AuditLog = mongoose.models.AuditLog || mongoose.model('AuditLog', AuditLogSchema);
+    UploadMappingTemplate = mongoose.models.UploadMappingTemplate || mongoose.model('UploadMappingTemplate', UploadMappingTemplateSchema);
+    UploadJob = mongoose.models.UploadJob || mongoose.model('UploadJob', UploadJobSchema);
 
     // Seed default users if empty in MongoDB
     const admin = await User.findOne({ username: 'admin' });
@@ -285,6 +375,8 @@ async function connectDB() {
     Alert = new FileModel('Alert', AlertSchema);
     Case = new FileModel('Case', CaseSchema);
     AuditLog = new FileModel('AuditLog', AuditLogSchema);
+    UploadMappingTemplate = new FileModel('UploadMappingTemplate', UploadMappingTemplateSchema);
+    UploadJob = new FileModel('UploadJob', UploadJobSchema);
     
     // Seed default users if empty
     const admin = await User.findOne({ username: 'admin' });
@@ -316,10 +408,10 @@ async function connectDB() {
     }
   }
 
-  // Seed default transactions if empty (under both Mongo & File modes)
+  // Seed default transactions only if explicitly configured via AUTO_SEED=true
   try {
     const txCount = await Transaction.countDocuments({});
-    if (txCount === 0) {
+    if (process.env.AUTO_SEED === 'true' && txCount === 0) {
       console.log("Database transaction log is empty. Bootstrapping initial records...");
       const csvPath = path.join(__dirname, '..', '..', '..', 'dataset', 'dataset.csv');
       if (fs.existsSync(csvPath)) {
@@ -487,6 +579,8 @@ module.exports = {
     get Transaction() { return Transaction; },
     get Alert() { return Alert; },
     get Case() { return Case; },
-    get AuditLog() { return AuditLog; }
+    get AuditLog() { return AuditLog; },
+    get UploadMappingTemplate() { return UploadMappingTemplate; },
+    get UploadJob() { return UploadJob; }
   }
 };

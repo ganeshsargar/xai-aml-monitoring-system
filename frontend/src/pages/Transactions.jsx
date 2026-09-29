@@ -13,8 +13,11 @@ import {
   FileSpreadsheet,
   Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Upload,
+  Database
 } from 'lucide-react';
+import ColumnMappingImporter from '../components/ColumnMappingImporter';
 
 const mapPaymentMethod = (method) => {
   const mapping = {
@@ -52,6 +55,9 @@ const Transactions = () => {
   // Case creation fields
   const [isCaseModalOpen, setIsCaseModalOpen] = useState(false);
   const [caseTitle, setCaseTitle] = useState('');
+
+  // Column mapping upload modal state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const fetchTransactions = async () => {
     try {
@@ -238,12 +244,23 @@ const Transactions = () => {
               </button>
             </div>
 
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBorder/40 text-xs font-semibold text-gray-600 dark:text-gray-400 rounded-lg transition-all"
-            >
-              <Download className="w-3.5 h-3.5" /> Export Page (CSV)
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBorder/40 text-xs font-semibold text-gray-600 dark:text-gray-400 rounded-lg transition-all"
+              >
+                <Download className="w-3.5 h-3.5" /> Export Page (CSV)
+              </button>
+
+              {(user?.role === 'Admin' || user?.role === 'Investigator') && (
+                <button
+                  onClick={() => setIsUploadModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white rounded-lg transition-all shadow-sm shadow-blue-900/10"
+                >
+                  <Upload className="w-3.5 h-3.5" /> Import CSV
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -639,6 +656,42 @@ const Transactions = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Column Mapping Importer Modal */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-5xl my-8 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-darkBorder">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-800 dark:text-gray-100">
+                    Import Transactions with Column Mapping
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Upload any CSV format. Auto-detect headers, configure canonical mappings, or auto-apply saved templates.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setIsUploadModalOpen(false); fetchTransactions(); }}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-darkBg transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <ColumnMappingImporter 
+              API_URL={API_URL} 
+              onImportComplete={() => {
+                fetchTransactions();
+              }} 
+            />
           </div>
         </div>
       )}

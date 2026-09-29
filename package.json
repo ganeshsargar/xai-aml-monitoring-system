@@ -1,0 +1,14 @@
+{
+  "name": "fundtrace-ai-root",
+  "version": "1.0.0",
+  "description": "FundTraceAI - Enterprise Anti-Money Laundering Platform Workspace",
+  "private": true,
+  "scripts": {
+    "test": "npm test --prefix backend",
+    "build": "npm run build --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "start:backend": "npm start --prefix backend",
+    "start:ml": ".venv\\Scripts\\python ml-service/app.py"
+  }
+}

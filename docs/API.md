@@ -88,18 +88,142 @@ The Express Backend Gateway exposes REST API endpoints under `/api`. All endpoin
   }
   ```
 
-### Upload Bulk Transaction CSV
+### Upload Bulk Transaction CSV (Legacy Gated Endpoint)
 * **Endpoint**: `POST /api/transactions/import`
 * **Access**: Admin, Investigator
 * **Headers**: `Content-Type: multipart/form-data`
 * **Form Field**: `file` (a `.csv` file containing transaction rows)
+* **Behavior**: Pipeline gated. Delegates to header detection and auto-applies mapping if matching template signature exists; otherwise requires mapping confirmation.
+
+---
+
+## 📊 2B. Column Mapping & Upload Gateway (Phase A)
+
+### 1. Detect Headers & Staging
+* **Endpoint**: `POST /api/uploads/detect-headers`
+* **Access**: Admin, Investigator
+* **Headers**: `Content-Type: multipart/form-data`
+* **Form Field**: `file` (a `.csv` file)
+* **Description**: Stages raw file with unique `upload_id`, reads headers and first 5 preview rows using a streaming reader (does not load full file into memory), computes deterministic `source_signature`, and checks for an exact matching saved template.
 * **Response (200 OK)**:
   ```json
   {
     "success": true,
-    "message": "CSV Import completed successfully. Processed 100 transactions. Flagged 8 suspicious.",
+    "upload_id": "upl_1727623912_abc123",
+    "headers": ["Txn_Ref_No", "Debtor_Acc", "Creditor_Acc", "Val", "CCY", "Booking_Date"],
+    "preview_rows": [
+      { "Txn_Ref_No": "TX001", "Debtor_Acc": "ACC1", "Creditor_Acc": "ACC2", "Val": "50000", "CCY": "INR", "Booking_Date": "2026-05-10T10:00:00Z" }
+    ],
+    "row_count_estimate": 100,
+    "source_signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "auto_applied_template": {
+      "template_id": "tmpl_12345",
+      "template_name": "Core Banking Standard Export",
+      "mapping": { "transaction_id": "Txn_Ref_No", "amount": "Val", ... }
+    }
+  }
+  ```
+
+### 2. Auto-Suggested Column Mapping
+* **Endpoint**: `GET /api/uploads/:upload_id/suggested-mapping`
+* **Access**: Admin, Investigator
+* **Description**: Evaluates raw headers against canonical schema using exact synonym matching and Levenshtein distance fallback (similarity >= 0.6). Resolves conflicts greedily to guarantee 1-to-1 assignments, and flags missing REQUIRED fields.
+* **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "upload_id": "upl_1727623912_abc123",
+    "source_signature": "e3b0c442...",
+    "raw_headers": ["Txn_Ref_No", "Debtor_Acc", ...],
+    "suggestions": [
+      {
+        "canonical_field": "transaction_id",
+        "display_label": "Transaction ID",
+        "description": "Unique identifier for the financial transaction",
+        "expected_type": "string",
+        "required": true,
+        "suggested_raw_header": "Txn_Ref_No",
+        "confidence": 0.95,
+        "method": "synonym"
+      }
+    ],
+    "missing_required": [],
+    "unmapped_raw": ["Internal_Audit_Code"]
+  }
+  ```
+
+### 3. Confirm Mapping & Trigger Ingestion
+* **Endpoint**: `POST /api/uploads/:upload_id/mapping`
+* **Access**: Admin, Investigator
+* **Payload**:
+  ```json
+  {
+    "mapping": {
+      "transaction_id": "Txn_Ref_No",
+      "timestamp": "Booking_Date",
+      "sender_account": "Debtor_Acc",
+      "receiver_account": "Creditor_Acc",
+      "amount": "Val",
+      "currency": "CCY",
+      "sender_name": "Payer",
+      "receiver_name": "Payee",
+      "country": "Origin_Jurisdiction",
+      "payment_method": "Channel"
+    },
+    "save_as_template": true,
+    "template_name": "Core Banking Standard Export"
+  }
+  ```
+* **Validation**:
+  - Every REQUIRED field must be mapped to a valid raw header present in the file.
+  - No two canonical fields may be mapped to the same raw column.
+* **Pipeline Execution**: Streams staged file, translates each row to canonical fields, executes AML feature engineering & batch inference, inserts transactions & alerts to DB, and logs audit trail.
+* **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Import completed successfully. Processed 100 transactions and raised 8 alerts in 1.4s.",
+    "upload_id": "upl_1727623912_abc123",
     "processed": 100,
-    "flagged": 8
+    "flagged": 8,
+    "elapsed_seconds": 1.4,
+    "mapping": { ... },
+    "template_saved": true
+  }
+  ```
+
+### 4. List Mapping Templates
+* **Endpoint**: `GET /api/uploads/mapping-templates`
+* **Access**: Authenticated
+* **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "templates": [
+      {
+        "template_id": "tmpl_12345",
+        "template_name": "Core Banking Standard Export",
+        "source_signature": "e3b0c442...",
+        "headers_count": 10,
+        "headers": ["Txn_Ref_No", "Debtor_Acc", ...],
+        "mapping": { "transaction_id": "Txn_Ref_No", ... },
+        "usage_count": 4,
+        "created_by": "admin",
+        "created_at": "2026-05-15T14:30:00.000Z",
+        "last_used_at": "2026-05-16T09:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+### 5. Delete Mapping Template
+* **Endpoint**: `DELETE /api/uploads/mapping-templates/:id`
+* **Access**: Admin, Investigator
+* **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Mapping template deleted successfully."
   }
   ```
 
