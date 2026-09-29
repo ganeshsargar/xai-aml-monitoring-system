@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function TemplateManager({ API_URL }) {
+  const targetApiUrl = API_URL || import.meta.env.VITE_API_URL || 'http://localhost:5050';
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
@@ -22,8 +23,8 @@ export default function TemplateManager({ API_URL }) {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/api/uploads/mapping-templates`, {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${targetApiUrl}/api/uploads/mapping-templates`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
@@ -40,7 +41,7 @@ export default function TemplateManager({ API_URL }) {
 
   useEffect(() => {
     fetchTemplates();
-  }, [API_URL]);
+  }, [targetApiUrl]);
 
   const handleDeleteTemplate = async (templateId, templateName) => {
     if (!window.confirm(`Are you sure you want to delete the mapping template "${templateName}"?`)) {
@@ -48,8 +49,8 @@ export default function TemplateManager({ API_URL }) {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.delete(`${API_URL}/api/uploads/mapping-templates/${templateId}`, {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.delete(`${targetApiUrl}/api/uploads/mapping-templates/${templateId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 

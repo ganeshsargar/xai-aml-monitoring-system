@@ -11,6 +11,9 @@ let token;
 
 test.before(async () => {
   await connectDB();
+  if (models.UploadMappingTemplate.deleteMany) {
+    await models.UploadMappingTemplate.deleteMany({});
+  }
 
   await new Promise((resolve) => {
     server = app.listen(0, () => {
@@ -33,6 +36,9 @@ test.before(async () => {
 });
 
 test.after(async () => {
+  if (models.UploadMappingTemplate.deleteMany) {
+    await models.UploadMappingTemplate.deleteMany({});
+  }
   if (server) {
     server.close();
   }

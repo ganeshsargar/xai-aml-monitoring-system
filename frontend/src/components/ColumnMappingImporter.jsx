@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Upload,
@@ -13,7 +14,8 @@ import {
   X,
   Layers,
   HelpCircle,
-  Database
+  Database,
+  LayoutDashboard
 } from 'lucide-react';
 
 const CANONICAL_FIELD_INFO = {
@@ -37,7 +39,10 @@ const CANONICAL_FIELD_INFO = {
 
 const REQUIRED_FIELDS = ['transaction_id', 'timestamp', 'sender_account', 'receiver_account', 'amount', 'currency'];
 
-export default function ColumnMappingImporter({ API_URL, onImportComplete }) {
+export default function ColumnMappingImporter({ API_URL, onImportComplete, onClose }) {
+  const navigate = useNavigate();
+  const targetApiUrl = API_URL || import.meta.env.VITE_API_URL || 'http://localhost:5050';
+
   // Steps: 'select', 'detecting', 'auto_applied', 'mapping', 'importing', 'success'
   const [step, setStep] = useState('select');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -95,8 +100,8 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete }) {
     formData.append('file', file);
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post(`${API_URL}/api/uploads/detect-headers`, formData, {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.post(`${targetApiUrl}/api/uploads/detect-headers`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -133,8 +138,8 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete }) {
   // Fetch suggested mappings from columnMappingService
   const fetchSuggestions = async (uplId, headers) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/api/uploads/${uplId}/suggested-mapping`, {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${targetApiUrl}/api/uploads/${uplId}/suggested-mapping`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
@@ -211,14 +216,14 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete }) {
     setStep('importing');
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
       const payload = {
         mapping,
         save_as_template: saveAsTemplate,
         template_name: templateName
       };
 
-      const res = await axios.post(`${API_URL}/api/uploads/${uploadId}/mapping`, payload, {
+      const res = await axios.post(`${targetApiUrl}/api/uploads/${uploadId}/mapping`, payload, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -694,12 +699,34 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete }) {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-3 border-t border-emerald-500/20">
             <button
               onClick={handleReset}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white rounded-xl shadow-md transition-all"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-darkBorder dark:hover:bg-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200 rounded-xl transition-all"
             >
               Import Another Dataset
+            </button>
+            <button
+              onClick={() => {
+                if (onImportComplete) onImportComplete(importResult);
+                if (onClose) onClose();
+                navigate('/transactions');
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white rounded-xl shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>View Transactions</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => {
+                if (onImportComplete) onImportComplete(importResult);
+                if (onClose) onClose();
+                navigate('/dashboard');
+              }}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white rounded-xl shadow-md transition-all flex items-center gap-1.5"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Go to Dashboard</span>
             </button>
           </div>
         </div>

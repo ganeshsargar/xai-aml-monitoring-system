@@ -290,6 +290,13 @@ class FileModel {
     return updatedDoc;
   }
 
+  async findOneAndUpdate(filter = {}, update = {}, options = { new: true }) {
+    const results = await this.find(filter);
+    if (!results || results.length === 0) return null;
+    const target = results[0];
+    return this.findByIdAndUpdate(target._id, update, options);
+  }
+
   async countDocuments(filter = {}) {
     const results = await this.find(filter);
     return results.length;

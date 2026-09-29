@@ -297,7 +297,12 @@ const createTransaction = async (req, res) => {
 const updateTransaction = async (req, res) => {
   const { id } = req.params;
   try {
-    const updated = await models.Transaction.findByIdAndUpdate(id, req.body);
+    let updated;
+    if (typeof models.Transaction.findOneAndUpdate === 'function') {
+      updated = await models.Transaction.findOneAndUpdate({ transaction_id: id }, req.body, { new: true });
+    } else {
+      updated = await models.Transaction.findByIdAndUpdate(id, req.body);
+    }
     if (!updated) {
       return res.status(404).json({ success: false, error: 'Transaction not found.' });
     }

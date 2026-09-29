@@ -593,6 +593,7 @@ const AdminPanel = () => {
 
             <ColumnMappingImporter 
               API_URL={API_URL} 
+              onClose={() => setIsImporterOpen(false)}
               onImportComplete={() => {
                 fetchSystemStats();
               }} 

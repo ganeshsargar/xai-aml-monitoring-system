@@ -16,6 +16,15 @@ if (!fs.existsSync(stagingDir)) {
   fs.mkdirSync(stagingDir, { recursive: true });
 }
 
+// Helper to safely update UploadJob in both Mongoose and FileModel
+async function updateUploadJob(uploadId, update) {
+  if (typeof models.UploadJob.findOneAndUpdate === 'function') {
+    return await models.UploadJob.findOneAndUpdate({ upload_id: uploadId }, update, { new: true });
+  } else {
+    return await models.UploadJob.findByIdAndUpdate(uploadId, update, { new: true });
+  }
+}
+
 /**
  * Helper: Run ML batch scoring or fallback to rule-based risk calculation
  */
@@ -36,7 +45,7 @@ async function scoreTransactionsBatch(transactions) {
     const response = await axios.post(
       `${mlServiceUrl}/batch-predict`,
       { transactions: batchPayload },
-      { timeout: 60000 }
+      { timeout: 8000 }
     );
 
     if (response.data && response.data.success) {
@@ -350,17 +359,31 @@ const confirmMapping = async (req, res) => {
       });
 
       if (existingTemplate) {
-        savedTemplate = await models.UploadMappingTemplate.findByIdAndUpdate(
-          existingTemplate._id || existingTemplate.template_id,
-          {
-            template_name: templateName,
-            mapping: cleanedMapping,
-            headers: job.headers,
-            last_used_at: new Date(),
-            $set: { usage_count: (existingTemplate.usage_count || 1) + 1 }
-          },
-          { new: true }
-        );
+        if (typeof models.UploadMappingTemplate.findOneAndUpdate === 'function') {
+          savedTemplate = await models.UploadMappingTemplate.findOneAndUpdate(
+            { source_signature: job.source_signature },
+            {
+              template_name: templateName,
+              mapping: cleanedMapping,
+              headers: job.headers,
+              last_used_at: new Date(),
+              $set: { usage_count: (existingTemplate.usage_count || 1) + 1 }
+            },
+            { new: true }
+          );
+        } else {
+          savedTemplate = await models.UploadMappingTemplate.findByIdAndUpdate(
+            existingTemplate._id || existingTemplate.template_id,
+            {
+              template_name: templateName,
+              mapping: cleanedMapping,
+              headers: job.headers,
+              last_used_at: new Date(),
+              $set: { usage_count: (existingTemplate.usage_count || 1) + 1 }
+            },
+            { new: true }
+          );
+        }
       } else {
         const templateId = 'tmpl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
         savedTemplate = await models.UploadMappingTemplate.create({
@@ -378,13 +401,10 @@ const confirmMapping = async (req, res) => {
     }
 
     // 4. Update Job Status & Mapping
-    await models.UploadJob.findByIdAndUpdate(
-      job.upload_id,
-      {
-        mapping: cleanedMapping,
-        status: 'processing'
-      }
-    );
+    await updateUploadJob(job.upload_id, {
+      mapping: cleanedMapping,
+      status: 'processing'
+    });
 
     // 5. Full Streaming Parse using Confirmed Mapping
     if (!fs.existsSync(job.file_path)) {
@@ -440,9 +460,19 @@ const confirmMapping = async (req, res) => {
     const existingSet = new Set(existingDocs.map(d => d.transaction_id));
     const newTxs = parsedTransactions.filter(t => !existingSet.has(t.transaction_id));
 
-    if (newTxs.length === 0) {
+    // Deduplicate internally within file batch
+    const seenNewIds = new Set();
+    const uniqueNewTxs = [];
+    for (const t of newTxs) {
+      if (!seenNewIds.has(t.transaction_id)) {
+        seenNewIds.add(t.transaction_id);
+        uniqueNewTxs.push(t);
+      }
+    }
+
+    if (uniqueNewTxs.length === 0) {
       if (fs.existsSync(job.file_path)) fs.unlinkSync(job.file_path);
-      await models.UploadJob.findByIdAndUpdate(job._id || job.upload_id, {
+      await updateUploadJob(job.upload_id, {
         status: 'completed',
         processed_count: 0,
         flagged_count: 0,
@@ -463,8 +493,8 @@ const confirmMapping = async (req, res) => {
     let totalProcessed = 0;
     let totalAlerts = 0;
 
-    for (let i = 0; i < newTxs.length; i += BATCH_SIZE) {
-      const chunk = newTxs.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < uniqueNewTxs.length; i += BATCH_SIZE) {
+      const chunk = uniqueNewTxs.slice(i, i + BATCH_SIZE);
       const scoredMap = await scoreTransactionsBatch(chunk);
 
       const txDocs = [];
@@ -509,9 +539,17 @@ const confirmMapping = async (req, res) => {
       }
 
       if (models.Transaction.insertMany) {
-        await models.Transaction.insertMany(txDocs, { ordered: false });
+        try {
+          await models.Transaction.insertMany(txDocs, { ordered: false });
+        } catch (insertErr) {
+          console.warn('[Column Mapping Pipeline] Partial batch insert warning:', insertErr.message);
+        }
         if (alertDocs.length > 0) {
-          await models.Alert.insertMany(alertDocs, { ordered: false });
+          try {
+            await models.Alert.insertMany(alertDocs, { ordered: false });
+          } catch (alertErr) {
+            console.warn('[Column Mapping Pipeline] Partial alerts insert warning:', alertErr.message);
+          }
         }
       } else {
         for (const doc of txDocs) await models.Transaction.create(doc);
@@ -530,7 +568,7 @@ const confirmMapping = async (req, res) => {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
     // Update Ingestion Job Record
-    await models.UploadJob.findByIdAndUpdate(job.upload_id, {
+    await updateUploadJob(job.upload_id, {
       status: 'completed',
       processed_count: totalProcessed,
       flagged_count: totalAlerts,
@@ -558,10 +596,12 @@ const confirmMapping = async (req, res) => {
 
   } catch (error) {
     if (upload_id) {
-      await models.UploadJob.findByIdAndUpdate(upload_id, {
-        status: 'failed',
-        error: error.message
-      });
+      try {
+        await updateUploadJob(upload_id, {
+          status: 'failed',
+          error: error.message
+        });
+      } catch (err) {}
     }
     return res.status(500).json({ success: false, error: error.message });
   }

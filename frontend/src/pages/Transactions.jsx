@@ -688,6 +688,7 @@ const Transactions = () => {
 
             <ColumnMappingImporter 
               API_URL={API_URL} 
+              onClose={() => setIsUploadModalOpen(false)}
               onImportComplete={() => {
                 fetchTransactions();
               }} 
