@@ -246,6 +246,22 @@ def _build_rich_reasons(shap_explanations, features_dict, risk_score):
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        'service': 'FundTraceAI ML Microservice',
+        'status': 'online',
+        'model_loaded': model is not None,
+        'best_model': metrics.get('best_model') if metrics else None,
+        'endpoints': {
+            'health': '/health',
+            'predict': 'POST /predict',
+            'batch_predict': 'POST /batch-predict',
+            'graph_analysis': 'POST /graph-analysis',
+            'train': 'POST /train'
+        }
+    })
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({

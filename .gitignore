@@ -49,8 +49,10 @@ backend/uploads/*
 
 # ML Model checkpoints & generated data files
 *.csv
+!dataset/dataset.csv
 *.xlsx
-ml-service/models/*.pkl
+# ml-service/models/*.pkl allowed for deployment
+!ml-service/models/*.pkl
 !ml-service/models/.gitkeep
 
 # Editor & System Files
