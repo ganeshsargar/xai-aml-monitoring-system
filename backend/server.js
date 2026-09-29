@@ -47,6 +47,15 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
+// Root status endpoint for cloud health checks (Render / Vercel / Railway)
+app.get('/', (req, res) => {
+  res.json({
+    service: 'FundTraceAI API Gateway',
+    status: 'online',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Mount API endpoints
 app.use('/api', apiRouter);
 
@@ -62,7 +71,7 @@ app.use((err, req, res, next) => {
 // Initialize database and start listening
 async function startServer() {
   await connectDB();
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`==================================================`);
     console.log(`  AML EXPRESS BACKEND API RUNNING ON PORT ${PORT}`);
     console.log(`  API Health endpoint: http://127.0.0.1:${PORT}/api/admin/system-stats`);
