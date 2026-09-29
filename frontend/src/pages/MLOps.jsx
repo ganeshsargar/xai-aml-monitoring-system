@@ -70,8 +70,10 @@ const MLOps = () => {
     setRetraining(true);
     setRetrainStatus('Contacting machine learning service...');
     
-    // Hit Flask ML Service train endpoint directly (or fail gracefully)
-    axios.post(`${ML_SERVICE_URL || 'http://localhost:5000'}/train`)
+    const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+    axios.post(`${API_URL}/api/admin/train`, {}, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
       .then(res => {
         if (res.data.success) {
           setRetrainStatus('Training complete! Refreshing registry metrics...');

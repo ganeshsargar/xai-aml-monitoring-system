@@ -92,13 +92,16 @@ const AdminPanel = () => {
   const handleTrainModels = async () => {
     try {
       setTrainingLoading(true);
-      const res = await axios.post(`${ML_SERVICE_URL}/train`); // POST to python service
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}/api/admin/train`, {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data.success) {
-        alert(`Training Completed! Selected Best Classifier: ${res.data.metrics.best_model}`);
+        alert(res.data.message || `Training Completed! Selected Best Classifier: ${res.data.metrics.best_model}`);
         fetchSystemStats();
       }
     } catch (err) {
-      alert("Flask training failed, using rules-engine fallback: " + err.message);
+      alert("Comparative trainer failed: " + (err.response?.data?.error || err.message));
     } finally {
       setTrainingLoading(false);
     }
