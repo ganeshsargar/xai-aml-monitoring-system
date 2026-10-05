@@ -9,23 +9,52 @@ const GENESIS_HASH = '0'.repeat(64);
  */
 const computeLogHash = ({ sequence, previous_hash, timestamp, username, role, action, ip_address, details }) => {
   const normTimestamp = timestamp instanceof Date ? timestamp.toISOString() : new Date(timestamp).toISOString();
-  const payload = `${sequence}|${previous_hash}|${normTimestamp}|${username}|${role}|${action}|${ip_address || '127.0.0.1'}|${details || ''}`;
+  const strDetails = typeof details === 'object' && details !== null ? JSON.stringify(details) : String(details || '');
+  const payload = `${sequence}|${previous_hash}|${normTimestamp}|${username}|${role}|${action}|${ip_address || '127.0.0.1'}|${strDetails}`;
   return crypto.createHash('sha256').update(payload, 'utf8').digest('hex');
 };
 
 /**
  * Appends a tamper-evident audit log with cryptographic hash-chaining.
+ * Supports both positional params: logAction(username, role, action, ipAddress, details)
+ * and object param: logAction({ user/username, role, action, ip_address/ipAddress, details })
  */
-const logAction = async (username, role, action, ipAddress, details) => {
+const logAction = async (usernameOrObj, role, action, ipAddress, details) => {
   try {
+    let finalUsername = 'System';
+    let finalRole = 'System';
+    let finalAction = 'UNKNOWN_ACTION';
+    let finalIp = '127.0.0.1';
+    let finalDetails = '';
+
+    if (usernameOrObj && typeof usernameOrObj === 'object') {
+      finalUsername = usernameOrObj.username || usernameOrObj.user || 'System';
+      finalRole = usernameOrObj.role || 'System';
+      finalAction = usernameOrObj.action || 'UNKNOWN_ACTION';
+      finalIp = usernameOrObj.ip_address || usernameOrObj.ipAddress || usernameOrObj.ip || '127.0.0.1';
+      finalDetails = usernameOrObj.details !== undefined ? usernameOrObj.details : '';
+    } else {
+      finalUsername = usernameOrObj || 'System';
+      finalRole = role || 'System';
+      finalAction = action || 'UNKNOWN_ACTION';
+      finalIp = ipAddress || '127.0.0.1';
+      finalDetails = details !== undefined ? details : '';
+    }
+
+    const strDetails = typeof finalDetails === 'object' && finalDetails !== null 
+      ? JSON.stringify(finalDetails) 
+      : String(finalDetails || '');
+
     const timestamp = new Date();
     
     // Find the latest audit log entry to link the hash chain
     let lastLog = null;
     try {
-      const logs = await models.AuditLog.find().sort({ sequence: -1 }).limit(1);
-      if (Array.isArray(logs) && logs.length > 0) {
-        lastLog = logs[0];
+      if (typeof models.AuditLog.find === 'function') {
+        const logs = await models.AuditLog.find().sort({ sequence: -1 }).limit(1);
+        if (Array.isArray(logs) && logs.length > 0) {
+          lastLog = logs[0];
+        }
       }
     } catch (findErr) {
       if (typeof models.AuditLog.find === 'function') {
@@ -43,11 +72,11 @@ const logAction = async (username, role, action, ipAddress, details) => {
       sequence,
       previous_hash,
       timestamp,
-      username: username || 'System',
-      role: role || 'System',
-      action: action || 'UNKNOWN_ACTION',
-      ip_address: ipAddress || '127.0.0.1',
-      details: details || ''
+      username: finalUsername,
+      role: finalRole,
+      action: finalAction,
+      ip_address: finalIp,
+      details: strDetails
     });
 
     const entry = {
@@ -55,11 +84,11 @@ const logAction = async (username, role, action, ipAddress, details) => {
       sequence,
       previous_hash,
       hash,
-      username: username || 'System',
-      role: role || 'System',
-      action: action || 'UNKNOWN_ACTION',
-      ip_address: ipAddress || '127.0.0.1',
-      details: details || '',
+      username: finalUsername,
+      role: finalRole,
+      action: finalAction,
+      ip_address: finalIp,
+      details: strDetails,
       timestamp
     };
 

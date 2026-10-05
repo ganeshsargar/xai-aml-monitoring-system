@@ -191,6 +191,10 @@ test('Trustworthiness: Transaction Immutability & Adjustments', async (t) => {
 
 test('Trustworthiness: Cryptographic Audit Log Hash Chain & Verification', async (t) => {
   await t.test('1. Append-only logs form a sequential hash chain', async () => {
+    if (models.AuditLog && typeof models.AuditLog.deleteMany === 'function') {
+      await models.AuditLog.deleteMany({});
+    }
+
     const log1 = await logAction('admin', 'Admin', 'SYSTEM_INIT', '127.0.0.1', 'System node started');
     const log2 = await logAction('investigator', 'Investigator', 'ALERT_REVIEWED', '127.0.0.1', 'Reviewed alert ALT-1001');
     const log3 = await logAction('auditor', 'Auditor', 'COMPLIANCE_AUDIT', '127.0.0.1', 'Audit sampling completed');

@@ -1,0 +1,8 @@
+entity_id,name,aliases,type,list_name,program,country,dob,designation_date,remarks
+SANCT-001,Victor Moriarity Sterling,Victor M. Sterling; Sterling Victor; V. M. Sterling,Individual,OFAC-SAMPLE,GLOBAL-ILLICIT-SAMPLE,RU,1972-04-12,2021-03-15,Fictional sample designated actor for AML testing
+SANCT-002,AeroPhantom Maritime Logistics,Phantom Logistics LLC; AeroPhantom Shipping,Entity,UN-SAMPLE,NON-PROLIF-SAMPLE,KP,,2019-11-20,Fictional maritime front entity
+SANCT-003,Hassan Al-Zahir Farouk,Hassan Farook; H. A. Farouk; Al-Zahir Farouk,Individual,OFAC-SAMPLE,SDNT-SAMPLE,SY,1980-08-25,2020-06-10,Fictional designated illicit financier
+SANCT-004,Zephyr Global Trading FZE,Zephyr Trading; Zephyr Global DMCC,Entity,EU-SAMPLE,SANCTIONS-SAMPLE,AE,,2022-01-14,Fictional offshore trading front
+SANCT-005,Carlos Eduardo Montez,Carlos E. Montez; C. Montez; Eduardo Montez,Individual,OFAC-SAMPLE,NARCO-SAMPLE,CO,1968-12-03,2018-09-05,Fictional illicit procurement facilitator
+SANCT-006,Vanguard Iron & Mineral Group,Vanguard Minerals; Vanguard Iron Corp,Entity,UN-SAMPLE,RAW-MATERIALS-SAMPLE,MM,,2023-05-18,Fictional sanctioned extractives corporation
+SANCT-007,Alexei Borislav Vane,Alexei B. Vane; Alex Vane; Borislav Vane,Individual,UK-HMT-SAMPLE,CYBER-SAMPLE,BY,1985-02-17,2022-08-29,Fictional ransomware syndicate coordinator

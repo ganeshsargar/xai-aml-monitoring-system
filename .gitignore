@@ -44,13 +44,15 @@ htmlcov/
 # Local databases and uploads
 backend/data/*.json
 !backend/data/seed_*.json
+!backend/data/watchlists/*.csv
 backend/uploads/*
 !backend/uploads/.gitkeep
 
 # ML Model checkpoints & generated data files
 *.csv
-!dataset/dataset.csv
-!dataset/customers.csv
+!dataset/*.csv
+!backend/data/watchlists/*.csv
+!ml-service/xai_eval/results/*
 *.xlsx
 # ml-service/models/*.pkl allowed for deployment
 !ml-service/models/*.pkl

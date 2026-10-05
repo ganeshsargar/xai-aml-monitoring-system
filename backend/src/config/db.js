@@ -694,6 +694,23 @@ class FileModel {
     }
     return { deletedCount: 0 };
   }
+
+  async deleteMany(filter = {}) {
+    const data = this._read();
+    if (Object.keys(filter).length === 0) {
+      this._write([]);
+      return { deletedCount: data.length };
+    }
+    const remaining = data.filter(item => {
+      for (let key in filter) {
+        if (item[key] === filter[key]) return false;
+      }
+      return true;
+    });
+    const deletedCount = data.length - remaining.length;
+    this._write(remaining);
+    return { deletedCount };
+  }
 }
 
 // Setup models holder
