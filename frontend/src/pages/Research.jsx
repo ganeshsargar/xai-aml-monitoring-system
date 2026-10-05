@@ -28,10 +28,10 @@ const Research = () => {
               MCA Thesis / IEEE Review Ready
             </div>
             <h2 className="text-2xl font-black text-gray-800 dark:text-white">
-              Argus: Explainable AI & Graph Analytics for Anti-Money Laundering
+              FundTrace AI: Explainable AI & Graph Analytics for Anti-Money Laundering
             </h2>
             <p className="text-xs text-gray-400 leading-relaxed max-w-3xl">
-              This dossier presents the architectural blueprint, research gap analysis, and system methodology behind the Argus AML platform. Engineered to solve the limitations of rule-based compliance systems through a hybrid machine learning pipeline, local SHAP attribution, and NetworkX topological analysis.
+              This dossier presents the architectural blueprint, research gap analysis, and system methodology behind the FundTrace AI platform. Engineered to solve the limitations of rule-based compliance systems through a hybrid machine learning pipeline, local SHAP attribution, and NetworkX topological analysis.
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ const Research = () => {
                   <tr className="border-b border-gray-100 dark:border-darkBorder text-gray-400 uppercase font-bold">
                     <th className="pb-2">Metric / Dimension</th>
                     <th className="pb-2">Legacy Rule Engine</th>
-                    <th className="pb-2 text-rose-500">Argus Proposed</th>
+                    <th className="pb-2 text-rose-500">FundTrace AI Proposed</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-darkBorder/40 text-slate-600 dark:text-slate-400">
@@ -123,7 +123,7 @@ const Research = () => {
           <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-darkBorder">
             <GitBranch className="w-5 h-5 text-orange-500" />
             <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">
-              Argus Hybrid AI & Graph Pipeline Flow
+              FundTrace AI Hybrid AI & Graph Pipeline Flow
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center pt-2">
@@ -159,7 +159,7 @@ const Research = () => {
               <h4 className="text-xs font-bold uppercase tracking-wider">Explainable AI (SHAP)</h4>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              SHAP (SHapley Additive exPlanations) assigns each feature an importance value for a particular prediction. In Argus, this allows investigators to see exactly why a transaction was flagged—such as the exact percentage contribution of the target country risk versus transfer velocity—meeting the regulatory need for explainability.
+              SHAP (SHapley Additive exPlanations) assigns each feature an importance value for a particular prediction. In FundTrace AI, this allows investigators to see exactly why a transaction was flagged—such as the exact percentage contribution of the target country risk versus transfer velocity—meeting the regulatory need for explainability.
             </p>
           </div>
 
@@ -169,7 +169,7 @@ const Research = () => {
               <h4 className="text-xs font-bold uppercase tracking-wider">Topological Graph theory</h4>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              By mapping accounts to vertices and transactions to directed edges, Argus models the banking ecosystem. PageRank detects highly active transit hubs, Betweenness centrality reveals critical bridge nodes, and Cycle detection uncovers round-tripping wash loops designed to layer money.
+              By mapping accounts to vertices and transactions to directed edges, FundTrace AI models the banking ecosystem. PageRank detects highly active transit hubs, Betweenness centrality reveals critical bridge nodes, and Cycle detection uncovers round-tripping wash loops designed to layer money.
             </p>
           </div>
 
@@ -179,7 +179,7 @@ const Research = () => {
               <h4 className="text-xs font-bold uppercase tracking-wider">Academic Contribution</h4>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              Argus advances financial fraud literature by proving that combining behavioral tabular classifiers with structural graph analytics yields a 12% improvement in recall compared to rule engines alone, while preserving the transparency required for legal compliance and auditing.
+              FundTrace AI advances financial fraud literature by proving that combining behavioral tabular classifiers with structural graph analytics yields a 12% improvement in recall compared to rule engines alone, while preserving the transparency required for legal compliance and auditing.
             </p>
           </div>
 

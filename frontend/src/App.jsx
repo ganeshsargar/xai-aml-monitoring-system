@@ -10,6 +10,8 @@ import Alerts from './pages/Alerts';
 import Cases from './pages/Cases';
 import AdminPanel from './pages/AdminPanel';
 import RiskMap from './pages/RiskMap';
+import Customer360 from './pages/Customer360';
+import Reports from './pages/Reports';
 import Home from './pages/Home';
 
 // Protected Route Wrapper enforcing JWT validation and Role checks
@@ -80,6 +82,24 @@ function AppRoutes() {
         } 
       />
 
+      {/* Customer 360 Entity Profiling */}
+      <Route 
+        path="/customers" 
+        element={
+          <ProtectedRoute allowedRoles={['Admin', 'Investigator', 'Auditor']}>
+            <Customer360 />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customers/:id" 
+        element={
+          <ProtectedRoute allowedRoles={['Admin', 'Investigator', 'Auditor']}>
+            <Customer360 />
+          </ProtectedRoute>
+        } 
+      />
+
       {/* World Risk Map */}
       <Route 
         path="/risk-map" 
@@ -96,6 +116,16 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['Admin', 'Investigator']}>
             <Cases />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Regulatory Reports (STR / CTR) */}
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute allowedRoles={['Admin', 'Investigator', 'Auditor']}>
+            <Reports />
           </ProtectedRoute>
         } 
       />

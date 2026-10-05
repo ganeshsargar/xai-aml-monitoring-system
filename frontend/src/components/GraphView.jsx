@@ -102,7 +102,7 @@ const GraphView = ({ elements, onNodeClick }) => {
             'curve-style': 'bezier',
             'arrow-scale': 1.2,
             'opacity': 0.7,
-            'label': (ele) => `₹${parseFloat(ele.data('amount') || 0).toLocaleString()}`,
+            'label': (ele) => ele.data('edge_type') === 'shared_device' ? (ele.data('label') || 'Shared Device/IP') : `₹${parseFloat(ele.data('amount') || 0).toLocaleString()}`,
             'font-size': '8px',
             'color': '#94a3b8',
             'text-rotation': 'autorotate',
@@ -134,6 +134,22 @@ const GraphView = ({ elements, onNodeClick }) => {
             'label': (ele) => `₹${parseFloat(ele.data('amount') || 0).toLocaleString()} (Round-Trip)`,
             'color': '#f97316',
             'font-size': '9px',
+            'font-weight': 'bold'
+          }
+        },
+
+        // Shared Device / IP Linkages
+        {
+          selector: 'edge[edge_type="shared_device"]',
+          style: {
+            'line-color': '#a855f7', // Purple/Violet
+            'target-arrow-shape': 'none',
+            'line-style': 'dotted',
+            'width': 3,
+            'opacity': 0.9,
+            'label': (ele) => ele.data('label') || 'Shared Device/IP',
+            'color': '#c084fc',
+            'font-size': '8px',
             'font-weight': 'bold'
           }
         },

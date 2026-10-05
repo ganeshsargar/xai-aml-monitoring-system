@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const mongoose = require('mongoose');
+const { getHighRiskCountries, getAlertLevel } = require('./src/config/riskConfig');
 
 const TARGET_URI = process.env.MONGODB_URI;
 
@@ -52,7 +53,7 @@ function computeRisk(tx) {
   shap.push({ feature: 'amount', shap_value: amount > 25000 ? 0.1 : -0.1, actual_value: amount });
 
   // 2. High risk jurisdictions
-  const highRiskCountries = ['KY', 'PA', 'AE', 'RU', 'BS', 'LU'];
+  const highRiskCountries = getHighRiskCountries();
   if (highRiskCountries.includes(country)) {
     score += 30;
     reasons.push(`Transacting with high-risk jurisdiction / offshore haven (${country})`);
@@ -285,16 +286,8 @@ async function refineDatabase() {
     };
     processedTransactions.push(txDoc);
 
-    // Alert threshold calibration:
-    // Critical: >= 80
-    // High: >= 60
-    // Medium: >= 35
-    // Low: >= 20
-    let alertLevel = null;
-    if (txDoc.risk_score >= 80) alertLevel = 'Critical';
-    else if (txDoc.risk_score >= 60) alertLevel = 'High';
-    else if (txDoc.risk_score >= 35) alertLevel = 'Medium';
-    else if (txDoc.risk_score >= 20) alertLevel = 'Low';
+    // Alert threshold calibration using shared riskConfig
+    const alertLevel = getAlertLevel(txDoc.risk_score);
 
     if (alertLevel) {
       const alertId = 'ALT' + Math.floor(100000 + Math.random() * 900000);

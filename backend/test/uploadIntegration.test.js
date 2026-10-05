@@ -42,6 +42,10 @@ test.after(async () => {
   if (server) {
     server.close();
   }
+  const mongoose = require('mongoose');
+  if (mongoose.connection && mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
 });
 
 test('Integration Test 1: Upload CSV with non-canonical headers detects headers & staging job', async () => {

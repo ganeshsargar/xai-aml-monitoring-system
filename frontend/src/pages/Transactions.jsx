@@ -15,7 +15,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
-  Database
+  Database,
+  ShieldCheck,
+  Layers,
+  Cpu,
+  CheckCircle2
 } from 'lucide-react';
 import ColumnMappingImporter from '../components/ColumnMappingImporter';
 
@@ -420,16 +424,135 @@ const Transactions = () => {
                     <AlertTriangle className={`w-5 h-5 ${selectedTx.risk_score >= 50 ? 'text-rose-500 animate-bounce' : 'text-emerald-500'}`} />
                     <div>
                       <h4 className="text-xs uppercase font-extrabold tracking-wider">
-                        Risk Rating
+                        Fused Hybrid Risk Rating
                       </h4>
                       <p className="text-[10px] text-gray-400 mt-0.5">
-                        Evaluated by Argus XAI Classifier
+                        Calibrated ML Classifier + Deterministic Scenario Rule Engine
                       </p>
                     </div>
                   </div>
                   <span className="text-3xl font-black">
                     {selectedTx.risk_score}%
                   </span>
+                </div>
+
+                {/* Hybrid Fusion Score Decomposition (ML vs Rule Engine) */}
+                <div className="glass-panel p-5 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-indigo-500" />
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Dual Risk Fusion (ML + Rules)
+                      </h4>
+                    </div>
+                    {selectedTx.score_breakdown?.critical_override && (
+                      <span className="text-[9px] bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-bold px-2 py-0.5 rounded-full border border-red-500/20">
+                        Critical Floor Enforced
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 bg-gray-50/80 dark:bg-darkBg/60 rounded-xl border border-gray-100 dark:border-darkBorder/40 space-y-1.5">
+                      <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-[10px]">
+                        <span className="flex items-center gap-1 font-semibold uppercase tracking-wider">
+                          <Cpu className="w-3 h-3 text-blue-500" /> Calibrated ML
+                        </span>
+                        <span className="font-bold text-blue-500 font-mono">
+                          {selectedTx.score_breakdown?.ml_score ?? selectedTx.ml_score ?? selectedTx.risk_score}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-200 dark:bg-darkBorder/55 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full" 
+                          style={{ width: `${selectedTx.score_breakdown?.ml_score ?? selectedTx.ml_score ?? selectedTx.risk_score}%` }} 
+                        />
+                      </div>
+                      <span className="text-[9px] text-gray-400 block">Weight: {((selectedTx.score_breakdown?.ml_weight ?? 0.50) * 100).toFixed(0)}%</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50/80 dark:bg-darkBg/60 rounded-xl border border-gray-100 dark:border-darkBorder/40 space-y-1.5">
+                      <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 text-[10px]">
+                        <span className="flex items-center gap-1 font-semibold uppercase tracking-wider">
+                          <ShieldCheck className="w-3 h-3 text-amber-500" /> Scenario Rules
+                        </span>
+                        <span className="font-bold text-amber-500 font-mono">
+                          {selectedTx.score_breakdown?.rule_score ?? selectedTx.rule_score ?? 0}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-200 dark:bg-darkBorder/55 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-amber-500 rounded-full" 
+                          style={{ width: `${selectedTx.score_breakdown?.rule_score ?? selectedTx.rule_score ?? 0}%` }} 
+                        />
+                      </div>
+                      <span className="text-[9px] text-gray-400 block">Weight: {((selectedTx.score_breakdown?.rule_weight ?? 0.50) * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-slate-50 dark:bg-darkBg/30 rounded-lg text-[10px] text-gray-500 dark:text-gray-400 font-mono flex items-center justify-between">
+                    <span>Formula:</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      {selectedTx.score_breakdown?.formula || `Final = 0.50 * ML(${selectedTx.ml_score ?? selectedTx.risk_score}) + 0.50 * Rules(${selectedTx.rule_score ?? 0}) = ${selectedTx.risk_score}`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Scenario Rule Engine Hits */}
+                <div className="glass-panel p-5 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" /> Scenario Rule Hits
+                    </h4>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      (selectedTx.rule_hits && selectedTx.rule_hits.length > 0)
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                        : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    }`}>
+                      {selectedTx.rule_hits?.length || 0} Triggered
+                    </span>
+                  </div>
+
+                  {selectedTx.rule_hits && selectedTx.rule_hits.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedTx.rule_hits.map((hit, idx) => (
+                        <div 
+                          key={idx} 
+                          className="p-3 bg-gray-50/80 dark:bg-darkBg/60 border border-gray-100 dark:border-darkBorder/40 rounded-xl space-y-2 text-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                hit.severity === 'Critical' ? 'bg-red-500 text-white' :
+                                hit.severity === 'High' ? 'bg-orange-500 text-white' :
+                                hit.severity === 'Medium' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white'
+                              }`}>
+                                {hit.severity}
+                              </span>
+                              <span className="font-bold text-gray-800 dark:text-white">
+                                {hit.name}
+                              </span>
+                            </div>
+                            <span className="font-mono text-[10px] text-gray-400 font-semibold">
+                              Score: {hit.score}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed bg-white/60 dark:bg-darkBg/80 p-2 rounded-lg border border-gray-100 dark:border-darkBorder/20">
+                            {hit.explanation}
+                          </p>
+                          <div className="flex items-center justify-between text-[9px] text-gray-400 font-mono">
+                            <span>ID: {hit.scenario_id}</span>
+                            <span>Weight: {hit.weight || 1}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/20 rounded-xl text-center text-xs text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span>No deterministic AML scenario rules triggered. Evaluated across all 7 typologies.</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Composite Risk Assessment Factor Progress Bars */}

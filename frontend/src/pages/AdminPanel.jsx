@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import ColumnMappingImporter from '../components/ColumnMappingImporter';
 import TemplateManager from '../components/TemplateManager';
+import RiskConfigEditor from '../components/RiskConfigEditor';
+import ScenarioManager from '../components/ScenarioManager';
 
 const AdminPanel = () => {
   const { API_URL, ML_SERVICE_URL, user } = useContext(AuthContext);
@@ -42,6 +44,8 @@ const AdminPanel = () => {
   // Audit log states
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [verificationLoading, setVerificationLoading] = useState(false);
 
   const fetchSystemStats = async () => {
     try {
@@ -83,10 +87,28 @@ const AdminPanel = () => {
     }
   };
 
+  const handleVerifyAuditChain = async () => {
+    try {
+      setVerificationLoading(true);
+      const res = await axios.get(`${API_URL}/api/admin/audit-logs/verify`);
+      if (res.data) {
+        setVerificationResult(res.data);
+      }
+    } catch (err) {
+      setVerificationResult({
+        verified: false,
+        message: err.response?.data?.message || err.message
+      });
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSystemStats();
     if (user.role === 'Admin') fetchUsers();
     fetchAuditLogs();
+    handleVerifyAuditChain();
   }, [API_URL, user]);
 
   const handleTrainModels = async () => {
@@ -243,6 +265,32 @@ const AdminPanel = () => {
               }`}
             >
               User Management
+            </button>
+          )}
+
+          {user.role === 'Admin' && (
+            <button
+              onClick={() => setActiveTab('risk-config')}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${
+                activeTab === 'risk-config' 
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              Risk Rules & Thresholds
+            </button>
+          )}
+
+          {user.role === 'Admin' && (
+            <button
+              onClick={() => setActiveTab('scenarios')}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition-all ${
+                activeTab === 'scenarios' 
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              Scenario Rule Engine
             </button>
           )}
 
@@ -499,40 +547,91 @@ const AdminPanel = () => {
         )}
 
         {activeTab === 'audit' && (
-          <div className="glass-panel p-6 space-y-4 animate-fade-in">
-            <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-darkBorder">
-              <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                <History className="w-4 h-4" /> System Audit Logs
-              </h4>
+          <div className="glass-panel p-6 space-y-6 animate-fade-in">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pb-4 border-b border-gray-100 dark:border-darkBorder">
+              <div>
+                <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <History className="w-4 h-4 text-indigo-500" /> Immutable Append-Only Audit Ledger
+                </h4>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Cryptographically secured with SHA-256 hash-chaining linking every event to Genesis.
+                </p>
+              </div>
               
-              <button
-                onClick={handleExportAuditLogs}
-                disabled={auditLogs.length === 0}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBorder/40 text-xs font-semibold text-gray-600 dark:text-gray-400 rounded-lg transition-all"
-              >
-                <Download className="w-3.5 h-3.5" /> Export Audit Log (CSV)
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleVerifyAuditChain}
+                  disabled={verificationLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white rounded-lg shadow-sm transition-all"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  {verificationLoading ? 'Verifying Chain...' : 'Verify Cryptographic Integrity'}
+                </button>
+                <button
+                  onClick={handleExportAuditLogs}
+                  disabled={auditLogs.length === 0}
+                  className="flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-darkBorder hover:bg-gray-50 dark:hover:bg-darkBorder/40 text-xs font-semibold text-gray-600 dark:text-gray-400 rounded-lg transition-all"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export (CSV)
+                </button>
+              </div>
             </div>
+
+            {/* Cryptographic Proof Verification Card */}
+            {verificationResult && (
+              <div className={`p-4 rounded-xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${
+                verificationResult.verified
+                  ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200'
+                  : 'bg-red-50/70 dark:bg-red-950/20 border-red-200 dark:border-red-800/40 text-red-900 dark:text-red-200'
+              }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    {verificationResult.verified ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    )}
+                    <span className="font-bold text-xs uppercase tracking-wider">
+                      {verificationResult.verified ? 'Audit Chain Verified — Zero Tampering Detected' : 'Audit Chain Alert — Integrity Violation'}
+                    </span>
+                  </div>
+                  <p className="text-xs opacity-90">{verificationResult.message}</p>
+                </div>
+
+                <div className="text-[11px] font-mono opacity-80 space-y-0.5 text-right">
+                  <div>Verified Records: <span className="font-bold">{verificationResult.total_entries || 0}</span></div>
+                  {verificationResult.latest_hash && (
+                    <div className="truncate max-w-[280px]" title={verificationResult.latest_hash}>
+                      Head Hash: {verificationResult.latest_hash.substring(0, 18)}...
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-gray-100/50 dark:bg-darkBg/50 text-[10px] font-bold uppercase tracking-wider text-gray-400 border-b border-gray-200/50 dark:border-darkBorder/50">
+                    <th className="px-3 py-3"># Seq</th>
                     <th className="px-4 py-3">Timestamp</th>
                     <th className="px-4 py-3">Audited Operator</th>
                     <th className="px-4 py-3">Action Type</th>
-                    <th className="px-4 py-3">IP Address</th>
                     <th className="px-4 py-3">Details Summary</th>
+                    <th className="px-4 py-3">SHA-256 Hash</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200/50 dark:divide-darkBorder/50 font-medium text-gray-600 dark:text-gray-400">
                   {auditLoading ? (
                     Array.from({ length: 5 }).map((_, idx) => (
-                      <tr key={idx}><td colSpan="5" className="px-4 py-3 skeleton h-10 animate-pulse" /></tr>
+                      <tr key={idx}><td colSpan="6" className="px-4 py-3 skeleton h-10 animate-pulse" /></tr>
                     ))
                   ) : auditLogs.length > 0 ? (
                     auditLogs.map((log, idx) => (
                       <tr key={idx} className="hover:bg-gray-100/20 dark:hover:bg-darkBg/10">
+                        <td className="px-3 py-3 font-mono text-[10px] text-gray-400 font-bold">
+                          #{log.sequence || (auditLogs.length - idx)}
+                        </td>
                         <td className="px-4 py-3 font-mono text-[10px] text-gray-400">{new Date(log.timestamp).toLocaleString()}</td>
                         <td className="px-4 py-3">
                           <span className="font-semibold text-gray-800 dark:text-gray-300 block">{log.username}</span>
@@ -540,19 +639,30 @@ const AdminPanel = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            log.action.includes('FAILED') ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
-                            log.action.includes('SUCCESS') || log.action.includes('REGISTERED') ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' :
+                            log.action.includes('FAILED') || log.action.includes('DELETED') ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
+                            log.action.includes('ADJUSTED') ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
+                            log.action.includes('SUCCESS') || log.action.includes('CREATED') ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' :
                             'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
                           }`}>
                             {log.action}
                           </span>
                         </td>
-                        <td className="px-4 py-3 font-mono text-gray-400">{log.ip_address}</td>
-                        <td className="px-4 py-3 text-gray-800 dark:text-gray-300">{log.details}</td>
+                        <td className="px-4 py-3 text-gray-800 dark:text-gray-300 max-w-xs truncate" title={log.details}>
+                          {log.details}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-[10px] text-gray-400">
+                          {log.hash ? (
+                            <span className="cursor-help" title={`Hash: ${log.hash}\nPrevious: ${log.previous_hash || 'Genesis'}`}>
+                              {log.hash.substring(0, 12)}...
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">Legacy</span>
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan="5" className="text-center py-12 text-gray-400">No actions recorded in audit logs yet.</td></tr>
+                    <tr><td colSpan="6" className="text-center py-12 text-gray-400">No actions recorded in audit logs yet.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -566,6 +676,17 @@ const AdminPanel = () => {
           </div>
         )}
 
+        {activeTab === 'risk-config' && (
+          <div className="animate-fade-in">
+            <RiskConfigEditor API_URL={API_URL} />
+          </div>
+        )}
+
+        {activeTab === 'scenarios' && user.role === 'Admin' && (
+          <div className="animate-fade-in">
+            <ScenarioManager API_URL={API_URL} />
+          </div>
+        )}
       </main>
 
       {/* Column Mapping Importer Modal */}

@@ -1,0 +1,801 @@
+customer_id,name,type,occupation_or_business_type,declared_monthly_income_or_turnover,kyc_risk_rating,is_pep,onboarding_date,country_of_residence,beneficial_owner_ids,customer_name,risk_tier,occupation,base_city,is_previously_flagged,kyc_status,account_created_at,account_number
+CUST10000,Vivaan Rao,individual,Clerk,20000.0,High,0,2020-10-09,IN,,Vivaan Rao,High,Clerk,Bengaluru,1,Verified,2020-10-09,ACC20000
+CUST10001,Royal Enterprises,business,E-commerce Retailer,60000.0,Med,0,2022-07-28,IN,BO_Tushar_Thakur,Royal Enterprises,Med,E-commerce Retailer,Coimbatore,1,Verified,2022-07-28,ACC20001
+CUST10002,Priya Dubey,individual,Unemployed,25000.0,High,0,2023-01-14,IN,,Priya Dubey,High,Unemployed,Nagpur,1,Verified,2023-01-14,ACC20002
+CUST10003,Parvati Gupta,individual,Driver,15000.0,Med,0,2021-10-30,IN,,Parvati Gupta,Med,Driver,Noida,0,Verified,2021-10-30,ACC20003
+CUST10004,Yash Kumar,individual,Student,20000.0,Med,0,2023-08-15,IN,,Yash Kumar,Med,Student,Nagpur,1,Verified,2023-08-15,ACC20004
+CUST10005,Manoj Bansal,individual,Clerk,25000.0,Med,0,2024-07-10,IN,,Manoj Bansal,Med,Clerk,Kolkata,0,Verified,2024-07-10,ACC20005
+CUST10006,Meera Garg,individual,Delivery Associate,20000.0,Med,0,2020-07-28,IN,,Meera Garg,Med,Delivery Associate,Bhubaneswar,1,Verified,2020-07-28,ACC20006
+CUST10007,Pooja Sethi,individual,Unemployed,20000.0,Med,0,2021-04-27,IN,,Pooja Sethi,Med,Unemployed,Jaipur,1,Verified,2021-04-27,ACC20007
+CUST10008,Kunal Bhatia,individual,Driver,30000.0,High,0,2024-02-24,IN,,Kunal Bhatia,High,Driver,Bengaluru,1,Verified,2024-02-24,ACC20008
+CUST10009,Priya Khatri,individual,Driver,15000.0,High,0,2022-04-20,IN,,Priya Khatri,High,Driver,Vadodara,1,Verified,2022-04-20,ACC20009
+CUST10010,Gaurav Thakur,individual,Unemployed,25000.0,High,0,2022-05-19,IN,,Gaurav Thakur,High,Unemployed,Patna,1,Verified,2022-05-19,ACC20010
+CUST10011,Ananya Bhatt,individual,Student,25000.0,Med,0,2023-10-23,IN,,Ananya Bhatt,Med,Student,Ranchi,1,Verified,2023-10-23,ACC20011
+CUST10012,Aarav Kohli,individual,Unemployed,30000.0,High,0,2023-03-15,IN,,Aarav Kohli,High,Unemployed,Ahmedabad,1,Verified,2023-03-15,ACC20012
+CUST10013,Vanguard Trading Co,business,E-commerce Retailer,60000.0,High,0,2023-12-31,IN,BO_Sunita_Rathore,Vanguard Trading Co,High,E-commerce Retailer,Agra,1,Verified,2023-12-31,ACC20013
+CUST10014,Pranav Malhotra,individual,Unemployed,30000.0,Med,0,2022-06-20,IN,,Pranav Malhotra,Med,Unemployed,Thane,1,Verified,2022-06-20,ACC20014
+CUST10015,Sonia Rathore,individual,Clerk,20000.0,High,0,2024-08-05,IN,,Sonia Rathore,High,Clerk,Delhi,1,Verified,2024-08-05,ACC20015
+CUST10016,Akash Yadav,individual,Clerk,20000.0,Med,0,2021-09-10,IN,,Akash Yadav,Med,Clerk,Kochi,0,Verified,2021-09-10,ACC20016
+CUST10017,Matrix Holdings,business,Consulting Firm,100000.0,High,0,2021-02-23,IN,BO_Pranav_Singh,Matrix Holdings,High,Consulting Firm,Noida,1,Verified,2021-02-23,ACC20017
+CUST10018,Asha Shah,individual,Clerk,20000.0,High,0,2022-07-23,IN,,Asha Shah,High,Clerk,Thane,1,Verified,2022-07-23,ACC20018
+CUST10019,Asha Rathore,individual,Student,15000.0,Med,0,2024-11-03,CA,,Asha Rathore,Med,Student,Kolkata,0,Verified,2024-11-03,ACC20019
+CUST10020,Arjun Bose,individual,Driver,15000.0,Med,0,2020-07-12,IN,,Arjun Bose,Med,Driver,Surat,0,Verified,2020-07-12,ACC20020
+CUST10021,Manisha Bajaj,individual,Driver,20000.0,High,0,2024-08-06,IN,,Manisha Bajaj,High,Driver,Vadodara,1,Verified,2024-08-06,ACC20021
+CUST10022,Vanguard Solutions Pvt Ltd,business,Retail Store,40000.0,Med,0,2024-07-17,IN,BO_Sai_Kohli,Vanguard Solutions Pvt Ltd,Med,Retail Store,Ahmedabad,0,Verified,2024-07-17,ACC20022
+CUST10023,Sonia Kohli,individual,Student,15000.0,High,0,2021-12-29,IN,,Sonia Kohli,High,Student,Jaipur,1,Verified,2021-12-29,ACC20023
+CUST10024,Kiran Agarwal,individual,Unemployed,30000.0,High,0,2024-07-08,IN,,Kiran Agarwal,High,Unemployed,Agra,1,Pending,2024-07-08,ACC20024
+CUST10025,Royal Ventures,business,Import/Export,80000.0,Med,0,2023-04-30,IN,BO_Riya_Saxena,Royal Ventures,Med,Import/Export,Bhubaneswar,0,Verified,2023-04-30,ACC20025
+CUST10026,Parvati Mittal,individual,Delivery Associate,15000.0,Med,0,2021-03-16,IN,,Parvati Mittal,Med,Delivery Associate,Chennai,1,Verified,2021-03-16,ACC20026
+CUST10027,Neel Rao,individual,Unemployed,20000.0,Med,0,2021-05-15,IN,,Neel Rao,Med,Unemployed,Visakhapatnam,0,Verified,2021-05-15,ACC20027
+CUST10028,Reyansh Garg,individual,Driver,25000.0,High,0,2024-03-11,IN,,Reyansh Garg,High,Driver,Jaipur,1,Verified,2024-03-11,ACC20028
+CUST10029,Manisha Sharma,individual,Student,15000.0,Med,0,2024-02-02,IN,,Manisha Sharma,Med,Student,Bhubaneswar,1,Verified,2024-02-02,ACC20029
+CUST10030,Aditya Menon,individual,Unemployed,15000.0,Med,0,2023-07-11,IN,,Aditya Menon,Med,Unemployed,Kanpur,0,Verified,2023-07-11,ACC20030
+CUST10031,Renu Mehta,individual,Clerk,20000.0,Med,0,2022-08-12,IN,,Renu Mehta,Med,Clerk,Patna,0,Verified,2022-08-12,ACC20031
+CUST10032,Akash Nair,individual,Unemployed,20000.0,Med,0,2024-09-15,IN,,Akash Nair,Med,Unemployed,Ahmedabad,1,Verified,2024-09-15,ACC20032
+CUST10033,Sarita Iyer,individual,Clerk,15000.0,Med,0,2023-05-13,IN,,Sarita Iyer,Med,Clerk,Ranchi,1,Verified,2023-05-13,ACC20033
+CUST10034,Usha Thakur,individual,Unemployed,15000.0,High,0,2023-12-04,IN,,Usha Thakur,High,Unemployed,Jaipur,1,Verified,2023-12-04,ACC20034
+CUST10035,Lakshmi Desai,individual,Driver,15000.0,High,0,2023-07-01,IN,,Lakshmi Desai,High,Driver,Indore,1,Verified,2023-07-01,ACC20035
+CUST10036,Pranav Bajaj,individual,Clerk,25000.0,High,0,2023-01-27,IN,,Pranav Bajaj,High,Clerk,Gurgaon,1,Verified,2023-01-27,ACC20036
+CUST10037,Aditi Bajaj,individual,Driver,25000.0,High,0,2024-03-18,IN,,Aditi Bajaj,High,Driver,Gurgaon,1,Verified,2024-03-18,ACC20037
+CUST10038,Renu Sethi,individual,Unemployed,30000.0,Med,1,2023-04-26,IN,,Renu Sethi,Med,Unemployed,Kochi,0,Verified,2023-04-26,ACC20038
+CUST10039,Amit Khatri,individual,Clerk,30000.0,Med,0,2020-10-18,IN,,Amit Khatri,Med,Clerk,Bengaluru,1,Verified,2020-10-18,ACC20039
+CUST10040,Reyansh Nair,individual,Unemployed,20000.0,Med,0,2024-08-31,IN,,Reyansh Nair,Med,Unemployed,Bhopal,0,Verified,2024-08-31,ACC20040
+CUST10041,Harshit Sethi,individual,Clerk,30000.0,High,0,2021-03-31,IN,,Harshit Sethi,High,Clerk,Ranchi,1,Verified,2021-03-31,ACC20041
+CUST10042,Sneha Chopra,individual,Delivery Associate,30000.0,High,0,2024-03-30,IN,,Sneha Chopra,High,Delivery Associate,Kochi,1,Verified,2024-03-30,ACC20042
+CUST10043,Vikram Tiwari,individual,Delivery Associate,30000.0,Med,0,2024-01-13,IN,,Vikram Tiwari,Med,Delivery Associate,Bhopal,0,Verified,2024-01-13,ACC20043
+CUST10044,Meera Chauhan,individual,Driver,20000.0,High,0,2023-04-28,IN,,Meera Chauhan,High,Driver,Lucknow,1,Verified,2023-04-28,ACC20044
+CUST10045,Royal Exports,business,Import/Export,60000.0,High,0,2021-11-18,IN,BO_Deepak_Jain,Royal Exports,High,Import/Export,Delhi,1,Verified,2021-11-18,ACC20045
+CUST10046,Sonia Verma,individual,Delivery Associate,30000.0,High,0,2023-04-02,IN,,Sonia Verma,High,Delivery Associate,Bhubaneswar,1,Verified,2023-04-02,ACC20046
+CUST10047,Neha Iyer,individual,Driver,20000.0,High,0,2022-09-29,IN,,Neha Iyer,High,Driver,Gurgaon,1,Verified,2022-09-29,ACC20047
+CUST10048,Ishaan Arora,individual,Delivery Associate,15000.0,Med,0,2021-03-17,IN,,Ishaan Arora,Med,Delivery Associate,Noida,0,Verified,2021-03-17,ACC20048
+CUST10049,Kavya Trivedi,individual,Unemployed,20000.0,High,0,2022-10-19,IN,,Kavya Trivedi,High,Unemployed,Bhubaneswar,1,Verified,2022-10-19,ACC20049
+CUST10050,Kunal Thakur,individual,Salaried Executive,299975.57,Low,0,2020-07-18,IN,,Kunal Thakur,Low,Salaried Executive,Delhi,0,Verified,2020-07-18,ACC20050
+CUST10051,Divya Verma,individual,Retail Trader,75381.32,Low,0,2021-10-05,IN,,Divya Verma,Low,Retail Trader,Thane,0,Verified,2021-10-05,ACC20051
+CUST10052,Priya Kohli,individual,Retail Trader,290389.71,Low,0,2024-01-03,US,,Priya Kohli,Low,Retail Trader,Coimbatore,0,Verified,2024-01-03,ACC20052
+CUST10053,Gaurav Trivedi,individual,Student,284489.71,Low,0,2021-05-29,IN,,Gaurav Trivedi,Low,Student,Chandigarh,0,Verified,2021-05-29,ACC20053
+CUST10054,Neha Joshi,individual,Retail Trader,242398.37,Low,0,2022-11-06,IN,,Neha Joshi,Low,Retail Trader,Noida,0,Verified,2022-11-06,ACC20054
+CUST10055,Sarita Yadav,individual,Software Engineer,149883.7,Med,0,2022-05-07,IN,,Sarita Yadav,Med,Software Engineer,Indore,0,Verified,2022-05-07,ACC20055
+CUST10056,Mohit Rao,individual,Retail Trader,249172.79,Low,0,2022-06-25,IN,,Mohit Rao,Low,Retail Trader,Coimbatore,0,Verified,2022-06-25,ACC20056
+CUST10057,Usha Patel,individual,Consultant,268632.26,Low,0,2021-07-03,IN,,Usha Patel,Low,Consultant,Lucknow,0,Verified,2021-07-03,ACC20057
+CUST10058,Ananya Yadav,individual,Teacher,129028.62,Low,0,2021-08-01,IN,,Ananya Yadav,Low,Teacher,Jaipur,0,Verified,2021-08-01,ACC20058
+CUST10059,Divya Patel,individual,Teacher,225819.79,Low,0,2021-01-19,IN,,Divya Patel,Low,Teacher,Chandigarh,0,Verified,2021-01-19,ACC20059
+CUST10060,Reyansh Pillai,individual,Teacher,142166.3,Low,0,2022-11-09,IN,,Reyansh Pillai,Low,Teacher,Visakhapatnam,0,Verified,2022-11-09,ACC20060
+CUST10061,Manisha Jain,individual,Chartered Accountant,221256.56,Low,0,2024-03-31,IN,,Manisha Jain,Low,Chartered Accountant,Lucknow,0,Verified,2024-03-31,ACC20061
+CUST10062,Sachin Chopra,individual,Teacher,92341.93,Low,0,2020-08-30,IN,,Sachin Chopra,Low,Teacher,Surat,0,Pending,2020-08-30,ACC20062
+CUST10063,Shreya Iyer,individual,Chartered Accountant,82552.01,High,1,2021-12-06,IN,,Shreya Iyer,High,Chartered Accountant,Delhi,1,Pending,2021-12-06,ACC20063
+CUST10064,Tushar Agarwal,individual,Civil Servant,265142.22,Med,0,2021-09-15,IN,,Tushar Agarwal,Med,Civil Servant,Bhopal,0,Verified,2021-09-15,ACC20064
+CUST10065,Arjun Reddy,individual,Clerk,65233.09,Low,0,2021-09-09,IN,,Arjun Reddy,Low,Clerk,Delhi,0,Verified,2021-09-09,ACC20065
+CUST10066,Aditi Patel,individual,Teacher,66389.66,Low,0,2020-06-28,IN,,Aditi Patel,Low,Teacher,Ranchi,0,Verified,2020-06-28,ACC20066
+CUST10067,Amit Menon,individual,Retail Trader,297358.28,Low,0,2021-07-04,US,,Amit Menon,Low,Retail Trader,Ranchi,0,Verified,2021-07-04,ACC20067
+CUST10068,Akash Patel,individual,Doctor,98564.27,Low,0,2022-08-20,IN,,Akash Patel,Low,Doctor,Agra,0,Verified,2022-08-20,ACC20068
+CUST10069,Sterling Ventures,business,Jewellery Merchant,2816825.56,Low,0,2021-08-14,IN,BO_Kavya_Garg,Sterling Ventures,Low,Jewellery Merchant,Pune,0,Verified,2021-08-14,ACC20069
+CUST10070,Mohit Mehta,individual,Consultant,254057.26,Low,0,2023-03-15,IN,,Mohit Mehta,Low,Consultant,Bhubaneswar,0,Verified,2023-03-15,ACC20070
+CUST10071,Rohan Srivastava,individual,Freelancer,115584.17,Low,0,2021-11-24,IN,,Rohan Srivastava,Low,Freelancer,Bengaluru,0,Verified,2021-11-24,ACC20071
+CUST10072,Kunal Desai,individual,Retail Trader,101347.49,Med,0,2021-09-12,IN,,Kunal Desai,Med,Retail Trader,Mumbai,0,Pending,2021-09-12,ACC20072
+CUST10073,Meera Sethi,individual,Salaried Executive,237223.89,Low,0,2022-06-12,IN,,Meera Sethi,Low,Salaried Executive,Kolkata,0,Pending,2022-06-12,ACC20073
+CUST10074,Sarita Yadav,individual,Software Engineer,159552.75,Low,0,2024-05-03,IN,,Sarita Yadav,Low,Software Engineer,Lucknow,0,Verified,2024-05-03,ACC20074
+CUST10075,Akash Pandey,individual,Retired,44724.74,Low,0,2024-04-10,JP,,Akash Pandey,Low,Retired,Visakhapatnam,0,Verified,2024-04-10,ACC20075
+CUST10076,Pinnacle Industries,business,Consulting Firm,2502775.58,Low,0,2021-06-02,IN,BO_Renu_Yadav,Pinnacle Industries,Low,Consulting Firm,Delhi,0,Verified,2021-06-02,ACC20076
+CUST10077,Shreya Tiwari,individual,Freelancer,163448.63,Low,0,2023-08-01,IN,,Shreya Tiwari,Low,Freelancer,Surat,0,Verified,2023-08-01,ACC20077
+CUST10078,Reyansh Iyer,individual,Software Engineer,157283.69,Med,0,2022-02-17,IN,,Reyansh Iyer,Med,Software Engineer,Surat,0,Verified,2022-02-17,ACC20078
+CUST10079,Usha Choudhary,individual,Clerk,99588.69,Low,0,2021-07-25,IN,,Usha Choudhary,Low,Clerk,Chennai,0,Verified,2021-07-25,ACC20079
+CUST10080,Lakshmi Mishra,individual,Chartered Accountant,282575.82,Med,0,2023-05-04,IN,,Lakshmi Mishra,Med,Chartered Accountant,Bhubaneswar,0,Verified,2023-05-04,ACC20080
+CUST10081,Geeta Mehta,individual,Clerk,177723.85,Low,0,2021-11-17,IN,,Geeta Mehta,Low,Clerk,Lucknow,0,Verified,2021-11-17,ACC20081
+CUST10082,Riya Sethi,individual,Student,96894.05,Low,0,2020-09-30,IN,,Riya Sethi,Low,Student,Kochi,0,Verified,2020-09-30,ACC20082
+CUST10083,Lakshmi Mittal,individual,Doctor,166262.09,Low,0,2021-08-13,IN,,Lakshmi Mittal,Low,Doctor,Hyderabad,0,Verified,2021-08-13,ACC20083
+CUST10084,Nisha Srivastava,individual,Salaried Executive,226447.61,Low,0,2024-01-22,IN,,Nisha Srivastava,Low,Salaried Executive,Kochi,0,Pending,2024-01-22,ACC20084
+CUST10085,Tushar Pandey,individual,Civil Servant,56283.56,Low,0,2021-12-07,IN,,Tushar Pandey,Low,Civil Servant,Lucknow,0,Verified,2021-12-07,ACC20085
+CUST10086,Geeta Thakur,individual,Salaried Executive,198626.76,Low,0,2023-04-25,US,,Geeta Thakur,Low,Salaried Executive,Indore,0,Pending,2023-04-25,ACC20086
+CUST10087,Yash Shah,individual,Clerk,79086.67,Low,0,2023-02-08,IN,,Yash Shah,Low,Clerk,Surat,0,Verified,2023-02-08,ACC20087
+CUST10088,Riya Chauhan,individual,Student,184970.94,Low,0,2024-06-25,IN,,Riya Chauhan,Low,Student,Nagpur,0,Verified,2024-06-25,ACC20088
+CUST10089,Sonia Mehta,individual,Teacher,157204.73,Low,0,2024-11-14,IN,,Sonia Mehta,Low,Teacher,Thane,0,Verified,2024-11-14,ACC20089
+CUST10090,Priya Kumar,individual,Clerk,285487.44,Low,0,2022-07-19,IN,,Priya Kumar,Low,Clerk,Thane,0,Verified,2022-07-19,ACC20090
+CUST10091,Nikhil Choudhary,individual,Software Engineer,97859.51,Low,0,2021-01-01,IN,,Nikhil Choudhary,Low,Software Engineer,Bhubaneswar,0,Verified,2021-01-01,ACC20091
+CUST10092,Preeti Khatri,individual,Freelancer,293004.75,Low,0,2023-04-27,IN,,Preeti Khatri,Low,Freelancer,Ahmedabad,0,Verified,2023-04-27,ACC20092
+CUST10093,Harshit Malhotra,individual,Retail Trader,101416.1,Low,0,2021-02-08,IN,,Harshit Malhotra,Low,Retail Trader,Noida,0,Verified,2021-02-08,ACC20093
+CUST10094,Aditya Menon,individual,Clerk,43841.6,Low,0,2023-04-09,IN,,Aditya Menon,Low,Clerk,Indore,0,Verified,2023-04-09,ACC20094
+CUST10095,Pinnacle Holdings,business,E-commerce Retailer,10783203.1,Low,0,2022-03-23,DE,BO_Priya_Reddy,Pinnacle Holdings,Low,E-commerce Retailer,Patna,0,Verified,2022-03-23,ACC20095
+CUST10096,Sanjay Kumar,individual,Doctor,234850.15,Low,0,2021-02-21,SG,,Sanjay Kumar,Low,Doctor,Kanpur,0,Verified,2021-02-21,ACC20096
+CUST10097,Kavya Thakur,individual,Software Engineer,155518.3,Low,0,2021-08-24,IN,,Kavya Thakur,Low,Software Engineer,Noida,0,Verified,2021-08-24,ACC20097
+CUST10098,Royal Industries,business,Retail Store,12961617.04,Med,0,2023-09-07,IN,BO_Vikram_Arora,Royal Industries,Med,Retail Store,Noida,0,Verified,2023-09-07,ACC20098
+CUST10099,Aditi Mittal,individual,Student,65919.12,Low,0,2022-03-01,IN,,Aditi Mittal,Low,Student,Ahmedabad,0,Verified,2022-03-01,ACC20099
+CUST10100,Vanguard Holdings,business,E-commerce Retailer,9253844.94,Low,0,2021-04-02,IN,BO_Neel_Mishra,Vanguard Holdings,Low,E-commerce Retailer,Bhopal,0,Verified,2021-04-02,ACC20100
+CUST10101,Meera Gupta,individual,Freelancer,133190.44,Med,0,2022-11-22,IN,,Meera Gupta,Med,Freelancer,Gurgaon,0,Verified,2022-11-22,ACC20101
+CUST10102,Mohit Bansal,individual,Salaried Executive,140507.01,Low,0,2022-05-17,IN,,Mohit Bansal,Low,Salaried Executive,Pune,0,Verified,2022-05-17,ACC20102
+CUST10103,Vivaan Singh,individual,Chartered Accountant,99545.76,Low,0,2024-07-16,IN,,Vivaan Singh,Low,Chartered Accountant,Vadodara,0,Verified,2024-07-16,ACC20103
+CUST10104,Asha Iyer,individual,Chartered Accountant,240207.67,Low,0,2023-05-16,IN,,Asha Iyer,Low,Chartered Accountant,Chennai,0,Pending,2023-05-16,ACC20104
+CUST10105,Parvati Chopra,individual,Software Engineer,210180.28,Low,0,2020-06-30,IN,,Parvati Chopra,Low,Software Engineer,Coimbatore,0,Verified,2020-06-30,ACC20105
+CUST10106,Arjun Agarwal,individual,Freelancer,146554.55,Low,0,2022-05-30,IN,,Arjun Agarwal,Low,Freelancer,Visakhapatnam,0,Verified,2022-05-30,ACC20106
+CUST10107,Sneha Arora,individual,Salaried Executive,227719.39,Low,0,2023-03-27,IN,,Sneha Arora,Low,Salaried Executive,Mumbai,0,Verified,2023-03-27,ACC20107
+CUST10108,Kiran Dubey,individual,Civil Servant,63609.88,Low,0,2024-06-21,IN,,Kiran Dubey,Low,Civil Servant,Chennai,0,Verified,2024-06-21,ACC20108
+CUST10109,Harshit Bhatia,individual,Retired,223720.49,Low,0,2023-04-10,IN,,Harshit Bhatia,Low,Retired,Agra,0,Verified,2023-04-10,ACC20109
+CUST10110,Rohan Mittal,individual,Civil Servant,267592.15,Med,0,2022-07-07,IN,,Rohan Mittal,Med,Civil Servant,Ahmedabad,0,Verified,2022-07-07,ACC20110
+CUST10111,Kiran Mishra,individual,Freelancer,60197.75,Low,0,2022-10-29,IN,,Kiran Mishra,Low,Freelancer,Gurgaon,0,Verified,2022-10-29,ACC20111
+CUST10112,Global Trading Co,business,Consulting Firm,3286442.0,Low,0,2021-10-21,IN,BO_Parvati_Agarwal,Global Trading Co,Low,Consulting Firm,Vadodara,0,Verified,2021-10-21,ACC20112
+CUST10113,Deepak Bansal,individual,Civil Servant,284399.42,Med,0,2024-08-20,CH,,Deepak Bansal,Med,Civil Servant,Surat,0,Verified,2024-08-20,ACC20113
+CUST10114,Pooja Mehta,individual,Civil Servant,162780.19,Low,0,2021-10-21,IN,,Pooja Mehta,Low,Civil Servant,Ranchi,0,Verified,2021-10-21,ACC20114
+CUST10115,Rajesh Rathore,individual,Retail Trader,197596.92,Low,0,2021-03-27,IN,,Rajesh Rathore,Low,Retail Trader,Jaipur,0,Verified,2021-03-27,ACC20115
+CUST10116,Sachin Menon,individual,Chartered Accountant,128021.21,Low,0,2021-03-28,IN,,Sachin Menon,Low,Chartered Accountant,Chennai,0,Verified,2021-03-28,ACC20116
+CUST10117,Reyansh Chauhan,individual,Teacher,134691.52,Low,0,2023-03-06,IN,,Reyansh Chauhan,Low,Teacher,Ranchi,0,Verified,2023-03-06,ACC20117
+CUST10118,Arjun Mehta,individual,Doctor,234925.51,Low,0,2022-06-10,IN,,Arjun Mehta,Low,Doctor,Bhopal,0,Verified,2022-06-10,ACC20118
+CUST10119,Pooja Bhatt,individual,Software Engineer,126470.81,Low,0,2021-08-07,IN,,Pooja Bhatt,Low,Software Engineer,Gurgaon,0,Verified,2021-08-07,ACC20119
+CUST10120,Neha Singh,individual,Salaried Executive,89172.13,Low,0,2020-08-21,IN,,Neha Singh,Low,Salaried Executive,Lucknow,0,Verified,2020-08-21,ACC20120
+CUST10121,Rajesh Chopra,individual,Doctor,135754.97,Low,0,2021-03-06,IN,,Rajesh Chopra,Low,Doctor,Bengaluru,0,Verified,2021-03-06,ACC20121
+CUST10122,Rajesh Verma,individual,Clerk,279108.05,Low,0,2021-09-16,IN,,Rajesh Verma,Low,Clerk,Noida,0,Verified,2021-09-16,ACC20122
+CUST10123,Apex Holdings,business,Import/Export,16324459.85,Low,0,2024-06-06,IN,BO_Usha_Saxena,Apex Holdings,Low,Import/Export,Hyderabad,0,Verified,2024-06-06,ACC20123
+CUST10124,Nisha Patel,individual,Student,265688.97,Low,0,2020-07-22,IN,,Nisha Patel,Low,Student,Visakhapatnam,0,Verified,2020-07-22,ACC20124
+CUST10125,Divya Bansal,individual,Chartered Accountant,227755.46,Med,0,2023-08-08,IN,,Divya Bansal,Med,Chartered Accountant,Jaipur,0,Verified,2023-08-08,ACC20125
+CUST10126,Sachin Mittal,individual,Software Engineer,81943.72,Low,0,2020-09-10,IN,,Sachin Mittal,Low,Software Engineer,Coimbatore,0,Verified,2020-09-10,ACC20126
+CUST10127,Preeti Mittal,individual,Civil Servant,296430.97,High,0,2023-02-25,IN,,Preeti Mittal,High,Civil Servant,Bengaluru,1,Verified,2023-02-25,ACC20127
+CUST10128,Lakshmi Rao,individual,Retail Trader,49885.61,Low,0,2022-05-23,IN,,Lakshmi Rao,Low,Retail Trader,Kanpur,0,Verified,2022-05-23,ACC20128
+CUST10129,Global Exports,business,Jewellery Merchant,12236094.04,High,0,2022-05-27,IN,BO_Kunal_Gupta,Global Exports,High,Jewellery Merchant,Coimbatore,1,Verified,2022-05-27,ACC20129
+CUST10130,Sunita Bhatt,individual,Doctor,288796.43,Med,0,2022-12-31,US,,Sunita Bhatt,Med,Doctor,Visakhapatnam,0,Verified,2022-12-31,ACC20130
+CUST10131,Vanguard Industries,business,E-commerce Retailer,11170838.65,Low,0,2022-10-02,IN,BO_Manoj_Pillai,Vanguard Industries,Low,E-commerce Retailer,Lucknow,0,Verified,2022-10-02,ACC20131
+CUST10132,Nexus Trading Co,business,Wholesale Trading,3248360.03,Low,0,2020-11-12,IN,BO_Shreya_Reddy,Nexus Trading Co,Low,Wholesale Trading,Agra,0,Verified,2020-11-12,ACC20132
+CUST10133,Sonia Bajaj,individual,Doctor,277937.81,Low,0,2021-03-18,IN,,Sonia Bajaj,Low,Doctor,Agra,0,Verified,2021-03-18,ACC20133
+CUST10134,Pinnacle Exports,business,Wholesale Trading,16543918.5,Low,0,2021-12-21,IN,BO_Usha_Khatri,Pinnacle Exports,Low,Wholesale Trading,Gurgaon,0,Verified,2021-12-21,ACC20134
+CUST10135,Manoj Menon,individual,Doctor,287059.87,Low,0,2023-11-06,IN,,Manoj Menon,Low,Doctor,Chennai,0,Verified,2023-11-06,ACC20135
+CUST10136,Lakshmi Shah,individual,Retired,239281.8,Med,0,2024-09-17,IN,,Lakshmi Shah,Med,Retired,Ranchi,0,Verified,2024-09-17,ACC20136
+CUST10137,Neel Bose,individual,Doctor,255306.44,Med,0,2023-12-30,IN,,Neel Bose,Med,Doctor,Delhi,0,Verified,2023-12-30,ACC20137
+CUST10138,Riya Tiwari,individual,Retail Trader,110505.9,Low,0,2021-12-06,IN,,Riya Tiwari,Low,Retail Trader,Kochi,0,Verified,2021-12-06,ACC20138
+CUST10139,Divya Saxena,individual,Civil Servant,285989.5,Low,0,2023-05-06,IN,,Divya Saxena,Low,Civil Servant,Visakhapatnam,0,Verified,2023-05-06,ACC20139
+CUST10140,Sarita Malhotra,individual,Retail Trader,71675.61,Low,0,2022-11-04,IN,,Sarita Malhotra,Low,Retail Trader,Hyderabad,0,Verified,2022-11-04,ACC20140
+CUST10141,Rohan Pillai,individual,Software Engineer,237225.96,Med,0,2024-02-06,IN,,Rohan Pillai,Med,Software Engineer,Bengaluru,0,Verified,2024-02-06,ACC20141
+CUST10142,Amit Bansal,individual,Salaried Executive,144947.68,Low,0,2022-10-05,FR,,Amit Bansal,Low,Salaried Executive,Ahmedabad,0,Verified,2022-10-05,ACC20142
+CUST10143,Usha Mittal,individual,Chartered Accountant,244715.87,Low,0,2022-04-11,IN,,Usha Mittal,Low,Chartered Accountant,Chennai,0,Verified,2022-04-11,ACC20143
+CUST10144,Renu Sharma,individual,Software Engineer,40036.03,Low,0,2020-11-05,IN,,Renu Sharma,Low,Software Engineer,Indore,0,Verified,2020-11-05,ACC20144
+CUST10145,Aditi Joshi,individual,Salaried Executive,98186.47,Low,0,2024-07-28,IN,,Aditi Joshi,Low,Salaried Executive,Bhopal,0,Verified,2024-07-28,ACC20145
+CUST10146,Pinnacle Logistics,business,Import/Export,6888531.77,Low,0,2021-09-22,IN,BO_Suresh_Nair,Pinnacle Logistics,Low,Import/Export,Gurgaon,0,Verified,2021-09-22,ACC20146
+CUST10147,Manoj Kumar,individual,Retired,179181.72,Low,0,2024-10-23,IN,,Manoj Kumar,Low,Retired,Bhopal,0,Verified,2024-10-23,ACC20147
+CUST10148,Manoj Reddy,individual,Freelancer,39304.19,Low,0,2020-10-24,IN,,Manoj Reddy,Low,Freelancer,Hyderabad,0,Verified,2020-10-24,ACC20148
+CUST10149,Rahul Agarwal,individual,Salaried Executive,128359.25,Low,0,2020-07-22,IN,,Rahul Agarwal,Low,Salaried Executive,Chandigarh,0,Verified,2020-07-22,ACC20149
+CUST10150,Ishaan Kumar,individual,Freelancer,240690.46,Low,0,2024-09-05,IN,,Ishaan Kumar,Low,Freelancer,Delhi,0,Verified,2024-09-05,ACC20150
+CUST10151,Kiran Thakur,individual,Clerk,102128.15,Low,0,2022-12-03,IN,,Kiran Thakur,Low,Clerk,Delhi,0,Verified,2022-12-03,ACC20151
+CUST10152,Rohan Saxena,individual,Student,270713.93,Med,0,2022-10-04,IN,,Rohan Saxena,Med,Student,Kolkata,0,Verified,2022-10-04,ACC20152
+CUST10153,Parvati Chauhan,individual,Consultant,247304.24,Low,0,2021-07-19,GB,,Parvati Chauhan,Low,Consultant,Vadodara,0,Verified,2021-07-19,ACC20153
+CUST10154,Nexus Ventures,business,Logistics & Transport,9749441.62,Low,0,2022-12-15,IN,BO_Priya_Tiwari,Nexus Ventures,Low,Logistics & Transport,Patna,0,Verified,2022-12-15,ACC20154
+CUST10155,Rajesh Rao,individual,Civil Servant,294707.23,Low,0,2021-05-08,IN,,Rajesh Rao,Low,Civil Servant,Visakhapatnam,0,Verified,2021-05-08,ACC20155
+CUST10156,Vivaan Mehta,individual,Retail Trader,214693.55,Low,0,2023-08-08,IN,,Vivaan Mehta,Low,Retail Trader,Kanpur,0,Verified,2023-08-08,ACC20156
+CUST10157,Aditya Kohli,individual,Doctor,214951.45,Low,0,2020-08-24,IN,,Aditya Kohli,Low,Doctor,Chennai,0,Verified,2020-08-24,ACC20157
+CUST10158,Mohit Rao,individual,Teacher,289537.81,Low,0,2022-01-08,IN,,Mohit Rao,Low,Teacher,Vadodara,0,Verified,2022-01-08,ACC20158
+CUST10159,Yash Tiwari,individual,Teacher,299036.75,Med,0,2022-03-04,IN,,Yash Tiwari,Med,Teacher,Chennai,0,Verified,2022-03-04,ACC20159
+CUST10160,Yash Tiwari,individual,Software Engineer,249786.0,High,0,2021-03-07,IN,,Yash Tiwari,High,Software Engineer,Bengaluru,1,Verified,2021-03-07,ACC20160
+CUST10161,Aditi Bose,individual,Freelancer,223034.4,Low,0,2022-11-24,IN,,Aditi Bose,Low,Freelancer,Hyderabad,0,Pending,2022-11-24,ACC20161
+CUST10162,Riya Yadav,individual,Salaried Executive,130637.58,Low,0,2021-10-31,IN,,Riya Yadav,Low,Salaried Executive,Bengaluru,0,Verified,2021-10-31,ACC20162
+CUST10163,Yash Choudhary,individual,Retired,143860.71,Low,0,2024-03-22,US,,Yash Choudhary,Low,Retired,Thane,0,Verified,2024-03-22,ACC20163
+CUST10164,Ishaan Rathore,individual,Civil Servant,190763.29,Low,0,2022-02-08,IN,,Ishaan Rathore,Low,Civil Servant,Delhi,0,Verified,2022-02-08,ACC20164
+CUST10165,Aditi Bose,individual,Doctor,120505.1,Low,0,2022-01-06,IN,,Aditi Bose,Low,Doctor,Bengaluru,0,Verified,2022-01-06,ACC20165
+CUST10166,Manisha Rao,individual,Doctor,200630.93,Low,0,2021-05-01,IN,,Manisha Rao,Low,Doctor,Coimbatore,0,Verified,2021-05-01,ACC20166
+CUST10167,Pranav Kohli,individual,Chartered Accountant,258270.45,Med,0,2024-10-06,IN,,Pranav Kohli,Med,Chartered Accountant,Noida,0,Verified,2024-10-06,ACC20167
+CUST10168,Pooja Sethi,individual,Student,198798.73,Med,0,2021-11-12,IN,,Pooja Sethi,Med,Student,Surat,0,Verified,2021-11-12,ACC20168
+CUST10169,Gaurav Pandey,individual,Consultant,155189.2,Low,0,2022-08-05,IN,,Gaurav Pandey,Low,Consultant,Pune,0,Verified,2022-08-05,ACC20169
+CUST10170,Nexus Holdings,business,Consulting Firm,3919173.8,Low,0,2023-02-19,IN,BO_Manisha_Shah,Nexus Holdings,Low,Consulting Firm,Hyderabad,0,Verified,2023-02-19,ACC20170
+CUST10171,Kabir Singh,individual,Consultant,285527.0,Low,0,2024-01-11,IN,,Kabir Singh,Low,Consultant,Coimbatore,0,Verified,2024-01-11,ACC20171
+CUST10172,Priya Yadav,individual,Retired,158706.01,Low,0,2024-06-02,IN,,Priya Yadav,Low,Retired,Visakhapatnam,0,Verified,2024-06-02,ACC20172
+CUST10173,Sonia Bansal,individual,Salaried Executive,48393.21,Med,0,2021-04-04,IN,,Sonia Bansal,Med,Salaried Executive,Surat,0,Verified,2021-04-04,ACC20173
+CUST10174,Rajesh Agarwal,individual,Consultant,227789.64,Low,0,2022-09-05,IN,,Rajesh Agarwal,Low,Consultant,Vadodara,0,Verified,2022-09-05,ACC20174
+CUST10175,Sai Trivedi,individual,Retired,154343.91,Med,0,2021-06-06,IN,,Sai Trivedi,Med,Retired,Hyderabad,0,Verified,2021-06-06,ACC20175
+CUST10176,Nexus Holdings,business,E-commerce Retailer,18870548.49,Med,0,2022-01-26,IN,BO_Divya_Kohli,Nexus Holdings,Med,E-commerce Retailer,Delhi,0,Verified,2022-01-26,ACC20176
+CUST10177,Nexus Industries,business,E-commerce Retailer,9954288.35,Low,0,2023-02-01,IN,BO_Anjali_Agarwal,Nexus Industries,Low,E-commerce Retailer,Lucknow,0,Verified,2023-02-01,ACC20177
+CUST10178,Kunal Menon,individual,Retail Trader,124138.96,Low,0,2020-12-13,IN,,Kunal Menon,Low,Retail Trader,Bhopal,0,Verified,2020-12-13,ACC20178
+CUST10179,Gaurav Joshi,individual,Student,189681.07,Low,0,2021-01-24,IN,,Gaurav Joshi,Low,Student,Agra,0,Verified,2021-01-24,ACC20179
+CUST10180,Lakshmi Bhatia,individual,Retail Trader,95298.95,Low,0,2021-12-26,IN,,Lakshmi Bhatia,Low,Retail Trader,Agra,0,Verified,2021-12-26,ACC20180
+CUST10181,Sarita Khatri,individual,Teacher,43366.19,Low,0,2024-10-26,IN,,Sarita Khatri,Low,Teacher,Indore,0,Verified,2024-10-26,ACC20181
+CUST10182,Deepak Bhatt,individual,Retail Trader,278938.05,Low,0,2024-07-29,IN,,Deepak Bhatt,Low,Retail Trader,Visakhapatnam,0,Verified,2024-07-29,ACC20182
+CUST10183,Akash Choudhary,individual,Retired,134858.57,Low,0,2021-12-08,IN,,Akash Choudhary,Low,Retired,Kanpur,0,Verified,2021-12-08,ACC20183
+CUST10184,Gaurav Mittal,individual,Freelancer,105055.98,Med,0,2023-05-12,IN,,Gaurav Mittal,Med,Freelancer,Ahmedabad,0,Verified,2023-05-12,ACC20184
+CUST10185,Hemant Pillai,individual,Freelancer,89928.62,Low,0,2022-12-20,IN,,Hemant Pillai,Low,Freelancer,Kochi,0,Verified,2022-12-20,ACC20185
+CUST10186,Preeti Khatri,individual,Retired,135618.96,Med,0,2020-08-03,IN,,Preeti Khatri,Med,Retired,Surat,0,Verified,2020-08-03,ACC20186
+CUST10187,Reyansh Bansal,individual,Clerk,208832.59,Low,0,2021-11-26,IN,,Reyansh Bansal,Low,Clerk,Vadodara,0,Verified,2021-11-26,ACC20187
+CUST10188,Titan Logistics,business,Real Estate,2439160.45,Med,0,2023-08-15,IN,BO_Sneha_Garg,Titan Logistics,Med,Real Estate,Indore,0,Verified,2023-08-15,ACC20188
+CUST10189,Gaurav Agarwal,individual,Salaried Executive,290597.47,Low,0,2021-04-06,IN,,Gaurav Agarwal,Low,Salaried Executive,Bhopal,0,Verified,2021-04-06,ACC20189
+CUST10190,Shreya Desai,individual,Consultant,206162.95,Low,0,2021-09-15,IN,,Shreya Desai,Low,Consultant,Patna,0,Verified,2021-09-15,ACC20190
+CUST10191,Ananya Mishra,individual,Doctor,282489.49,Med,0,2020-07-04,IN,,Ananya Mishra,Med,Doctor,Patna,0,Pending,2020-07-04,ACC20191
+CUST10192,Aditya Sharma,individual,Consultant,185509.9,High,0,2023-05-01,IN,,Aditya Sharma,High,Consultant,Noida,1,Verified,2023-05-01,ACC20192
+CUST10193,Ishaan Bhatt,individual,Clerk,107301.83,Low,0,2020-10-28,IN,,Ishaan Bhatt,Low,Clerk,Jaipur,0,Verified,2020-10-28,ACC20193
+CUST10194,Nexus Ventures,business,Financial Advisory,13976421.09,Low,0,2022-08-26,IN,BO_Renu_Garg,Nexus Ventures,Low,Financial Advisory,Visakhapatnam,0,Verified,2022-08-26,ACC20194
+CUST10195,Kabir Chopra,individual,Doctor,161525.34,Low,0,2022-10-10,IN,,Kabir Chopra,Low,Doctor,Ranchi,0,Verified,2022-10-10,ACC20195
+CUST10196,Sonia Sethi,individual,Salaried Executive,104311.58,Low,0,2021-03-07,IN,,Sonia Sethi,Low,Salaried Executive,Surat,0,Verified,2021-03-07,ACC20196
+CUST10197,Yash Menon,individual,Freelancer,66115.17,Low,0,2021-06-24,IN,,Yash Menon,Low,Freelancer,Chennai,0,Verified,2021-06-24,ACC20197
+CUST10198,Neha Saxena,individual,Student,221014.29,Low,0,2021-03-14,IN,,Neha Saxena,Low,Student,Ranchi,0,Verified,2021-03-14,ACC20198
+CUST10199,Asha Patel,individual,Retired,153388.21,Low,0,2021-10-05,IN,,Asha Patel,Low,Retired,Bhubaneswar,0,Verified,2021-10-05,ACC20199
+CUST10200,Preeti Thakur,individual,Doctor,78602.35,Low,0,2021-02-09,IN,,Preeti Thakur,Low,Doctor,Coimbatore,0,Verified,2021-02-09,ACC20200
+CUST10201,Amit Singh,individual,Clerk,69965.25,Low,0,2021-10-16,IN,,Amit Singh,Low,Clerk,Kochi,0,Verified,2021-10-16,ACC20201
+CUST10202,Sterling Enterprises,business,Real Estate,12198758.4,Low,0,2021-11-21,US,BO_Suresh_Kumar,Sterling Enterprises,Low,Real Estate,Bhopal,0,Verified,2021-11-21,ACC20202
+CUST10203,Hemant Agarwal,individual,Civil Servant,294258.32,Low,0,2022-10-12,IN,,Hemant Agarwal,Low,Civil Servant,Nagpur,0,Verified,2022-10-12,ACC20203
+CUST10204,Akash Thakur,individual,Doctor,208186.54,Low,0,2021-11-29,IN,,Akash Thakur,Low,Doctor,Chennai,0,Verified,2021-11-29,ACC20204
+CUST10205,Aarav Verma,individual,Consultant,157696.03,Low,0,2022-10-19,IN,,Aarav Verma,Low,Consultant,Ahmedabad,0,Verified,2022-10-19,ACC20205
+CUST10206,Divya Joshi,individual,Salaried Executive,249511.72,Low,0,2024-11-01,IN,,Divya Joshi,Low,Salaried Executive,Bengaluru,0,Verified,2024-11-01,ACC20206
+CUST10207,Titan Enterprises,business,Real Estate,15200009.95,Low,0,2023-09-16,IN,BO_Sneha_Thakur,Titan Enterprises,Low,Real Estate,Ranchi,0,Verified,2023-09-16,ACC20207
+CUST10208,Shreya Iyer,individual,Freelancer,187669.24,Low,0,2023-02-16,IN,,Shreya Iyer,Low,Freelancer,Chennai,0,Pending,2023-02-16,ACC20208
+CUST10209,Deepak Menon,individual,Consultant,51153.77,Med,0,2023-12-11,IN,,Deepak Menon,Med,Consultant,Indore,0,Verified,2023-12-11,ACC20209
+CUST10210,Nexus Exports,business,E-commerce Retailer,7396587.46,Low,0,2022-10-25,IN,BO_Neel_Menon,Nexus Exports,Low,E-commerce Retailer,Vadodara,0,Verified,2022-10-25,ACC20210
+CUST10211,Aditi Mehta,individual,Clerk,277406.41,Med,0,2021-10-19,IN,,Aditi Mehta,Med,Clerk,Nagpur,0,Verified,2021-10-19,ACC20211
+CUST10212,Mohit Patel,individual,Clerk,259490.35,Low,0,2023-11-09,IN,,Mohit Patel,Low,Clerk,Nagpur,0,Verified,2023-11-09,ACC20212
+CUST10213,Asha Kumar,individual,Teacher,248232.41,Low,0,2023-09-16,IN,,Asha Kumar,Low,Teacher,Lucknow,0,Verified,2023-09-16,ACC20213
+CUST10214,Pooja Malhotra,individual,Freelancer,66088.79,Low,0,2023-07-26,IN,,Pooja Malhotra,Low,Freelancer,Chandigarh,0,Verified,2023-07-26,ACC20214
+CUST10215,Manisha Desai,individual,Consultant,135875.36,Low,0,2023-06-17,IN,,Manisha Desai,Low,Consultant,Bhopal,0,Verified,2023-06-17,ACC20215
+CUST10216,Pranav Choudhary,individual,Chartered Accountant,277297.58,Low,0,2021-10-08,IN,,Pranav Choudhary,Low,Chartered Accountant,Patna,0,Verified,2021-10-08,ACC20216
+CUST10217,Sonia Bhatia,individual,Freelancer,145658.19,Low,0,2022-10-18,IN,,Sonia Bhatia,Low,Freelancer,Ahmedabad,0,Verified,2022-10-18,ACC20217
+CUST10218,Gaurav Jain,individual,Consultant,237290.57,Low,0,2020-10-11,IN,,Gaurav Jain,Low,Consultant,Kolkata,0,Verified,2020-10-11,ACC20218
+CUST10219,Ishaan Thakur,individual,Clerk,83772.66,High,0,2024-08-05,IN,,Ishaan Thakur,High,Clerk,Bhubaneswar,1,Verified,2024-08-05,ACC20219
+CUST10220,Akash Singh,individual,Salaried Executive,144283.94,Low,0,2020-12-16,IN,,Akash Singh,Low,Salaried Executive,Pune,0,Verified,2020-12-16,ACC20220
+CUST10221,Renu Garg,individual,Civil Servant,282484.49,Low,0,2024-11-01,IN,,Renu Garg,Low,Civil Servant,Vadodara,0,Verified,2024-11-01,ACC20221
+CUST10222,Sterling Ventures,business,Retail Store,10790996.6,Low,0,2024-04-28,IN,BO_Rajesh_Chopra,Sterling Ventures,Low,Retail Store,Visakhapatnam,0,Verified,2024-04-28,ACC20222
+CUST10223,Nisha Reddy,individual,Chartered Accountant,105841.06,Low,0,2022-08-25,IN,,Nisha Reddy,Low,Chartered Accountant,Ahmedabad,0,Pending,2022-08-25,ACC20223
+CUST10224,Gaurav Patel,individual,Civil Servant,297793.8,Low,0,2022-08-26,IN,,Gaurav Patel,Low,Civil Servant,Vadodara,0,Verified,2022-08-26,ACC20224
+CUST10225,Tushar Bose,individual,Software Engineer,167462.47,Low,0,2021-10-02,US,,Tushar Bose,Low,Software Engineer,Visakhapatnam,0,Verified,2021-10-02,ACC20225
+CUST10226,Asha Sethi,individual,Clerk,106840.19,Low,0,2023-05-09,IN,,Asha Sethi,Low,Clerk,Coimbatore,0,Verified,2023-05-09,ACC20226
+CUST10227,Kamla Desai,individual,Salaried Executive,289789.34,Low,0,2020-12-05,IN,,Kamla Desai,Low,Salaried Executive,Bengaluru,0,Verified,2020-12-05,ACC20227
+CUST10228,Preeti Trivedi,individual,Civil Servant,272579.33,Low,0,2024-02-21,IN,,Preeti Trivedi,Low,Civil Servant,Chandigarh,0,Verified,2024-02-21,ACC20228
+CUST10229,Suresh Singh,individual,Software Engineer,150828.39,Low,0,2020-08-12,IN,,Suresh Singh,Low,Software Engineer,Agra,0,Verified,2020-08-12,ACC20229
+CUST10230,Vivaan Garg,individual,Consultant,242640.26,Low,0,2021-10-28,IN,,Vivaan Garg,Low,Consultant,Indore,0,Verified,2021-10-28,ACC20230
+CUST10231,Nikhil Patel,individual,Retail Trader,113275.56,Low,0,2023-06-04,IN,,Nikhil Patel,Low,Retail Trader,Chandigarh,0,Verified,2023-06-04,ACC20231
+CUST10232,Nikhil Desai,individual,Chartered Accountant,63235.99,High,1,2023-03-13,IN,,Nikhil Desai,High,Chartered Accountant,Ranchi,1,Verified,2023-03-13,ACC20232
+CUST10233,Zenith Exports,business,Jewellery Merchant,11804223.1,Low,0,2024-06-03,IN,BO_Kabir_Verma,Zenith Exports,Low,Jewellery Merchant,Bengaluru,0,Verified,2024-06-03,ACC20233
+CUST10234,Asha Trivedi,individual,Salaried Executive,112339.55,Low,0,2021-10-15,IN,,Asha Trivedi,Low,Salaried Executive,Ahmedabad,0,Verified,2021-10-15,ACC20234
+CUST10235,Nikhil Bose,individual,Doctor,106263.53,Low,0,2023-12-27,IN,,Nikhil Bose,Low,Doctor,Indore,0,Verified,2023-12-27,ACC20235
+CUST10236,Manoj Reddy,individual,Teacher,226038.35,Low,0,2022-05-11,IN,,Manoj Reddy,Low,Teacher,Surat,0,Verified,2022-05-11,ACC20236
+CUST10237,Usha Arora,individual,Student,248080.26,Low,0,2021-04-10,GB,,Usha Arora,Low,Student,Surat,0,Verified,2021-04-10,ACC20237
+CUST10238,Divya Choudhary,individual,Chartered Accountant,82073.88,Low,0,2020-10-20,IN,,Divya Choudhary,Low,Chartered Accountant,Bhopal,0,Pending,2020-10-20,ACC20238
+CUST10239,Vikram Trivedi,individual,Consultant,251371.05,Low,0,2021-10-06,IN,,Vikram Trivedi,Low,Consultant,Vadodara,0,Verified,2021-10-06,ACC20239
+CUST10240,Vivaan Srivastava,individual,Freelancer,90556.83,Med,0,2024-07-15,IN,,Vivaan Srivastava,Med,Freelancer,Kochi,0,Verified,2024-07-15,ACC20240
+CUST10241,Ishaan Garg,individual,Consultant,99135.61,Low,0,2020-07-01,IN,,Ishaan Garg,Low,Consultant,Thane,0,Pending,2020-07-01,ACC20241
+CUST10242,Kiran Thakur,individual,Retired,279726.37,Low,0,2024-09-19,IN,,Kiran Thakur,Low,Retired,Kanpur,0,Verified,2024-09-19,ACC20242
+CUST10243,Neha Garg,individual,Software Engineer,63982.9,Low,0,2023-12-29,IN,,Neha Garg,Low,Software Engineer,Delhi,0,Verified,2023-12-29,ACC20243
+CUST10244,Mohit Pandey,individual,Chartered Accountant,290914.95,Low,0,2023-06-23,IN,,Mohit Pandey,Low,Chartered Accountant,Patna,0,Verified,2023-06-23,ACC20244
+CUST10245,Preeti Iyer,individual,Clerk,134141.69,Low,0,2021-01-19,IN,,Preeti Iyer,Low,Clerk,Kanpur,0,Pending,2021-01-19,ACC20245
+CUST10246,Shreya Mishra,individual,Software Engineer,65758.37,Low,0,2023-03-06,IN,,Shreya Mishra,Low,Software Engineer,Kochi,0,Verified,2023-03-06,ACC20246
+CUST10247,Sunita Shah,individual,Clerk,226328.39,Low,0,2024-09-03,IN,,Sunita Shah,Low,Clerk,Hyderabad,0,Verified,2024-09-03,ACC20247
+CUST10248,Kabir Khatri,individual,Doctor,281429.45,Low,0,2021-10-30,IN,,Kabir Khatri,Low,Doctor,Vadodara,0,Verified,2021-10-30,ACC20248
+CUST10249,Parvati Pandey,individual,Civil Servant,83879.72,Low,0,2024-10-05,IN,,Parvati Pandey,Low,Civil Servant,Pune,0,Verified,2024-10-05,ACC20249
+CUST10250,Aarav Kapoor,individual,Teacher,108761.38,Low,0,2021-09-08,IN,,Aarav Kapoor,Low,Teacher,Vadodara,0,Verified,2021-09-08,ACC20250
+CUST10251,Sanjay Joshi,individual,Consultant,212735.88,Med,0,2023-03-03,IN,,Sanjay Joshi,Med,Consultant,Agra,0,Verified,2023-03-03,ACC20251
+CUST10252,Nexus Industries,business,Financial Advisory,4691758.99,Low,0,2021-06-24,IN,BO_Parvati_Menon,Nexus Industries,Low,Financial Advisory,Gurgaon,0,Verified,2021-06-24,ACC20252
+CUST10253,Sterling Trading Co,business,Import/Export,8406162.31,Low,0,2021-07-31,IN,BO_Nikhil_Mishra,Sterling Trading Co,Low,Import/Export,Nagpur,0,Verified,2021-07-31,ACC20253
+CUST10254,Rekha Mittal,individual,Doctor,182051.83,Low,0,2023-02-28,IN,,Rekha Mittal,Low,Doctor,Agra,0,Verified,2023-02-28,ACC20254
+CUST10255,Aarav Yadav,individual,Doctor,86709.05,Low,0,2021-04-06,IN,,Aarav Yadav,Low,Doctor,Gurgaon,0,Verified,2021-04-06,ACC20255
+CUST10256,Amit Yadav,individual,Doctor,56907.72,Low,0,2023-04-15,IN,,Amit Yadav,Low,Doctor,Ahmedabad,0,Verified,2023-04-15,ACC20256
+CUST10257,Sanjay Sethi,individual,Freelancer,239725.12,Low,0,2021-09-18,IN,,Sanjay Sethi,Low,Freelancer,Ranchi,0,Verified,2021-09-18,ACC20257
+CUST10258,Rekha Gupta,individual,Freelancer,151962.14,Low,0,2020-10-18,IN,,Rekha Gupta,Low,Freelancer,Ranchi,0,Verified,2020-10-18,ACC20258
+CUST10259,Aditya Tiwari,individual,Consultant,127372.9,Low,0,2024-04-07,IN,,Aditya Tiwari,Low,Consultant,Ahmedabad,0,Verified,2024-04-07,ACC20259
+CUST10260,Tushar Bansal,individual,Freelancer,196719.38,Low,0,2020-07-10,IN,,Tushar Bansal,Low,Freelancer,Pune,0,Verified,2020-07-10,ACC20260
+CUST10261,Rekha Rao,individual,Retail Trader,177773.66,Low,0,2023-04-21,IN,,Rekha Rao,Low,Retail Trader,Visakhapatnam,0,Pending,2023-04-21,ACC20261
+CUST10262,Kabir Agarwal,individual,Student,278473.71,Med,0,2024-03-19,IN,,Kabir Agarwal,Med,Student,Chennai,0,Verified,2024-03-19,ACC20262
+CUST10263,Usha Nair,individual,Civil Servant,139065.7,Low,0,2021-05-28,IN,,Usha Nair,Low,Civil Servant,Thane,0,Verified,2021-05-28,ACC20263
+CUST10264,Hemant Patel,individual,Student,171637.57,Med,0,2022-11-09,IN,,Hemant Patel,Med,Student,Bhopal,0,Verified,2022-11-09,ACC20264
+CUST10265,Global Industries,business,Wholesale Trading,17226965.44,Med,0,2022-07-08,IN,BO_Kiran_Kapoor,Global Industries,Med,Wholesale Trading,Bhopal,0,Verified,2022-07-08,ACC20265
+CUST10266,Rahul Rathore,individual,Retail Trader,69607.48,Low,0,2021-02-05,IN,,Rahul Rathore,Low,Retail Trader,Delhi,0,Verified,2021-02-05,ACC20266
+CUST10267,Sanjay Verma,individual,Software Engineer,281299.71,Low,0,2022-07-11,IN,,Sanjay Verma,Low,Software Engineer,Chandigarh,0,Verified,2022-07-11,ACC20267
+CUST10268,Aditi Bose,individual,Consultant,59735.1,Low,0,2021-03-14,IN,,Aditi Bose,Low,Consultant,Kolkata,0,Verified,2021-03-14,ACC20268
+CUST10269,Pranav Iyer,individual,Student,208703.59,Low,0,2022-04-02,IN,,Pranav Iyer,Low,Student,Coimbatore,0,Verified,2022-04-02,ACC20269
+CUST10270,Aarav Sharma,individual,Freelancer,126047.15,Med,0,2021-01-12,IN,,Aarav Sharma,Med,Freelancer,Bengaluru,0,Verified,2021-01-12,ACC20270
+CUST10271,Global Trading Co,business,Wholesale Trading,8299891.26,Low,0,2021-04-30,GB,BO_Nikhil_Agarwal,Global Trading Co,Low,Wholesale Trading,Bengaluru,0,Verified,2021-04-30,ACC20271
+CUST10272,Zenith Industries,business,Wholesale Trading,14864992.49,Low,0,2021-06-21,IN,BO_Neel_Mishra,Zenith Industries,Low,Wholesale Trading,Pune,0,Verified,2021-06-21,ACC20272
+CUST10273,Global Exports,business,Wholesale Trading,19320101.15,Low,0,2023-05-16,IN,BO_Ishaan_Nair,Global Exports,Low,Wholesale Trading,Ahmedabad,0,Verified,2023-05-16,ACC20273
+CUST10274,Neha Pillai,individual,Freelancer,42108.47,Med,0,2023-10-10,IN,,Neha Pillai,Med,Freelancer,Visakhapatnam,0,Verified,2023-10-10,ACC20274
+CUST10275,Mohit Singh,individual,Teacher,166145.25,Low,0,2021-08-05,IN,,Mohit Singh,Low,Teacher,Mumbai,0,Pending,2021-08-05,ACC20275
+CUST10276,Ishaan Trivedi,individual,Retail Trader,146528.84,Low,0,2022-04-14,IN,,Ishaan Trivedi,Low,Retail Trader,Ranchi,0,Verified,2022-04-14,ACC20276
+CUST10277,Aarav Reddy,individual,Teacher,45554.12,Low,0,2022-01-31,IN,,Aarav Reddy,Low,Teacher,Chandigarh,0,Verified,2022-01-31,ACC20277
+CUST10278,Tushar Pandey,individual,Software Engineer,204742.38,Low,0,2024-06-15,IN,,Tushar Pandey,Low,Software Engineer,Visakhapatnam,0,Verified,2024-06-15,ACC20278
+CUST10279,Neel Thakur,individual,Chartered Accountant,138543.85,Med,0,2021-02-08,IN,,Neel Thakur,Med,Chartered Accountant,Surat,0,Verified,2021-02-08,ACC20279
+CUST10280,Kamla Nair,individual,Salaried Executive,99787.13,Low,0,2021-06-29,IN,,Kamla Nair,Low,Salaried Executive,Surat,0,Verified,2021-06-29,ACC20280
+CUST10281,Ananya Joshi,individual,Salaried Executive,222593.66,Low,0,2022-12-24,IN,,Ananya Joshi,Low,Salaried Executive,Kochi,0,Verified,2022-12-24,ACC20281
+CUST10282,Manoj Agarwal,individual,Freelancer,241997.85,Med,0,2020-08-07,IN,,Manoj Agarwal,Med,Freelancer,Lucknow,0,Verified,2020-08-07,ACC20282
+CUST10283,Sai Reddy,individual,Freelancer,293388.41,Low,0,2022-01-22,IN,,Sai Reddy,Low,Freelancer,Bhopal,0,Verified,2022-01-22,ACC20283
+CUST10284,Priya Reddy,individual,Software Engineer,271981.13,Low,0,2020-10-08,IN,,Priya Reddy,Low,Software Engineer,Delhi,0,Verified,2020-10-08,ACC20284
+CUST10285,Apex Industries,business,Wholesale Trading,8585120.28,Low,0,2021-10-28,IN,BO_Kamla_Gupta,Apex Industries,Low,Wholesale Trading,Chandigarh,0,Verified,2021-10-28,ACC20285
+CUST10286,Vikram Nair,individual,Student,277701.51,Med,0,2021-09-20,IN,,Vikram Nair,Med,Student,Visakhapatnam,0,Verified,2021-09-20,ACC20286
+CUST10287,Royal Enterprises,business,Consulting Firm,2775139.1,Low,0,2023-02-02,IN,BO_Shreya_Menon,Royal Enterprises,Low,Consulting Firm,Thane,0,Verified,2023-02-02,ACC20287
+CUST10288,Preeti Menon,individual,Freelancer,200020.14,Low,0,2022-02-27,CA,,Preeti Menon,Low,Freelancer,Patna,0,Verified,2022-02-27,ACC20288
+CUST10289,Riya Mehta,individual,Salaried Executive,282085.35,Low,0,2021-05-11,IN,,Riya Mehta,Low,Salaried Executive,Mumbai,0,Verified,2021-05-11,ACC20289
+CUST10290,Matrix Ventures,business,IT Services,5296095.9,High,0,2024-08-03,GB,BO_Deepak_Yadav,Matrix Ventures,High,IT Services,Chandigarh,1,Verified,2024-08-03,ACC20290
+CUST10291,Royal Exports,business,Wholesale Trading,9981473.53,Low,0,2022-02-02,IN,BO_Sonia_Shah,Royal Exports,Low,Wholesale Trading,Bhubaneswar,0,Verified,2022-02-02,ACC20291
+CUST10292,Arjun Dubey,individual,Civil Servant,290517.84,Low,0,2023-02-27,IN,,Arjun Dubey,Low,Civil Servant,Nagpur,0,Verified,2023-02-27,ACC20292
+CUST10293,Vikram Tiwari,individual,Consultant,96906.98,Low,0,2020-08-09,IN,,Vikram Tiwari,Low,Consultant,Chennai,0,Verified,2020-08-09,ACC20293
+CUST10294,Vikram Mishra,individual,Software Engineer,177020.01,Low,0,2023-03-13,IN,,Vikram Mishra,Low,Software Engineer,Hyderabad,0,Verified,2023-03-13,ACC20294
+CUST10295,Aditi Kohli,individual,Salaried Executive,91980.51,Low,0,2020-12-08,IN,,Aditi Kohli,Low,Salaried Executive,Kanpur,0,Verified,2020-12-08,ACC20295
+CUST10296,Sterling Ventures,business,Import/Export,2075018.73,Low,0,2020-09-23,IN,BO_Amit_Rathore,Sterling Ventures,Low,Import/Export,Hyderabad,0,Verified,2020-09-23,ACC20296
+CUST10297,Ishaan Joshi,individual,Salaried Executive,51342.33,Low,0,2023-10-25,IN,,Ishaan Joshi,Low,Salaried Executive,Kanpur,0,Verified,2023-10-25,ACC20297
+CUST10298,Reyansh Bhatia,individual,Retail Trader,103587.47,Low,0,2024-07-24,IN,,Reyansh Bhatia,Low,Retail Trader,Noida,0,Verified,2024-07-24,ACC20298
+CUST10299,Nexus Trading Co,business,Retail Store,18932192.23,Low,0,2020-11-11,IN,BO_Preeti_Dubey,Nexus Trading Co,Low,Retail Store,Mumbai,0,Verified,2020-11-11,ACC20299
+CUST10300,Suresh Kapoor,individual,Doctor,107870.17,Low,0,2021-06-25,IN,,Suresh Kapoor,Low,Doctor,Ahmedabad,0,Verified,2021-06-25,ACC20300
+CUST10301,Manisha Choudhary,individual,Salaried Executive,58246.21,Low,0,2021-04-27,IN,,Manisha Choudhary,Low,Salaried Executive,Visakhapatnam,0,Verified,2021-04-27,ACC20301
+CUST10302,Rekha Verma,individual,Student,242207.68,Low,0,2022-03-17,IN,,Rekha Verma,Low,Student,Coimbatore,0,Verified,2022-03-17,ACC20302
+CUST10303,Ananya Verma,individual,Chartered Accountant,193235.83,Med,0,2023-05-08,IN,,Ananya Verma,Med,Chartered Accountant,Bhopal,0,Verified,2023-05-08,ACC20303
+CUST10304,Sneha Bose,individual,Software Engineer,100682.12,Low,0,2020-06-27,IN,,Sneha Bose,Low,Software Engineer,Delhi,0,Verified,2020-06-27,ACC20304
+CUST10305,Preeti Trivedi,individual,Chartered Accountant,282829.6,Low,0,2023-08-07,IN,,Preeti Trivedi,Low,Chartered Accountant,Kochi,0,Verified,2023-08-07,ACC20305
+CUST10306,Sonia Verma,individual,Freelancer,220648.61,Low,0,2021-10-07,IN,,Sonia Verma,Low,Freelancer,Bhubaneswar,0,Pending,2021-10-07,ACC20306
+CUST10307,Geeta Thakur,individual,Consultant,81522.54,Low,0,2021-07-20,IN,,Geeta Thakur,Low,Consultant,Visakhapatnam,0,Verified,2021-07-20,ACC20307
+CUST10308,Renu Malhotra,individual,Doctor,125301.15,Med,0,2023-02-10,IN,,Renu Malhotra,Med,Doctor,Chennai,0,Verified,2023-02-10,ACC20308
+CUST10309,Hemant Joshi,individual,Retired,263077.41,Low,0,2021-03-18,IN,,Hemant Joshi,Low,Retired,Hyderabad,0,Verified,2021-03-18,ACC20309
+CUST10310,Priya Dubey,individual,Civil Servant,289575.46,Low,0,2021-10-10,IN,,Priya Dubey,Low,Civil Servant,Agra,0,Verified,2021-10-10,ACC20310
+CUST10311,Sonia Chopra,individual,Student,116308.16,Low,0,2020-11-02,IN,,Sonia Chopra,Low,Student,Chandigarh,0,Verified,2020-11-02,ACC20311
+CUST10312,Hemant Sethi,individual,Salaried Executive,83251.67,Med,0,2021-06-30,IN,,Hemant Sethi,Med,Salaried Executive,Coimbatore,0,Verified,2021-06-30,ACC20312
+CUST10313,Rahul Kumar,individual,Teacher,126904.68,Low,0,2024-06-05,IN,,Rahul Kumar,Low,Teacher,Gurgaon,0,Verified,2024-06-05,ACC20313
+CUST10314,Amit Sharma,individual,Consultant,90566.34,Low,0,2020-07-06,IN,,Amit Sharma,Low,Consultant,Mumbai,0,Verified,2020-07-06,ACC20314
+CUST10315,Deepak Bose,individual,Student,165666.73,Low,0,2024-05-10,IN,,Deepak Bose,Low,Student,Kochi,0,Verified,2024-05-10,ACC20315
+CUST10316,Gaurav Iyer,individual,Doctor,154591.17,Low,0,2024-10-23,IN,,Gaurav Iyer,Low,Doctor,Hyderabad,0,Verified,2024-10-23,ACC20316
+CUST10317,Nikhil Bose,individual,Freelancer,54875.64,High,0,2023-01-11,IN,,Nikhil Bose,High,Freelancer,Agra,1,Verified,2023-01-11,ACC20317
+CUST10318,Rajesh Mittal,individual,Doctor,195939.17,Low,0,2023-01-25,IN,,Rajesh Mittal,Low,Doctor,Pune,0,Verified,2023-01-25,ACC20318
+CUST10319,Pranav Thakur,individual,Consultant,210058.44,Low,0,2022-09-21,IN,,Pranav Thakur,Low,Consultant,Bhubaneswar,0,Verified,2022-09-21,ACC20319
+CUST10320,Apex Exports,business,IT Services,6949164.81,Low,0,2023-10-22,IN,BO_Neha_Choudhary,Apex Exports,Low,IT Services,Pune,0,Verified,2023-10-22,ACC20320
+CUST10321,Reyansh Choudhary,individual,Software Engineer,116713.65,Low,0,2021-03-21,IN,,Reyansh Choudhary,Low,Software Engineer,Noida,0,Verified,2021-03-21,ACC20321
+CUST10322,Nikhil Saxena,individual,Doctor,153130.45,Low,0,2023-08-28,IN,,Nikhil Saxena,Low,Doctor,Coimbatore,0,Verified,2023-08-28,ACC20322
+CUST10323,Akash Shah,individual,Software Engineer,212057.41,Low,0,2020-09-06,IN,,Akash Shah,Low,Software Engineer,Vadodara,0,Verified,2020-09-06,ACC20323
+CUST10324,Nisha Mishra,individual,Retired,217073.0,Low,0,2023-08-09,IN,,Nisha Mishra,Low,Retired,Bengaluru,0,Verified,2023-08-09,ACC20324
+CUST10325,Aditya Bhatt,individual,Retail Trader,273620.59,Low,0,2021-06-12,IN,,Aditya Bhatt,Low,Retail Trader,Ranchi,0,Verified,2021-06-12,ACC20325
+CUST10326,Priya Kapoor,individual,Teacher,68439.29,High,0,2022-06-26,IN,,Priya Kapoor,High,Teacher,Bhubaneswar,1,Verified,2022-06-26,ACC20326
+CUST10327,Kavya Desai,individual,Freelancer,277256.09,Low,0,2022-09-12,IN,,Kavya Desai,Low,Freelancer,Jaipur,0,Verified,2022-09-12,ACC20327
+CUST10328,Aarav Arora,individual,Retail Trader,173478.93,Low,0,2024-02-04,IN,,Aarav Arora,Low,Retail Trader,Coimbatore,0,Verified,2024-02-04,ACC20328
+CUST10329,Kabir Sethi,individual,Software Engineer,243222.59,Med,0,2022-08-15,IN,,Kabir Sethi,Med,Software Engineer,Noida,0,Verified,2022-08-15,ACC20329
+CUST10330,Aditya Chopra,individual,Consultant,141788.1,Low,0,2022-09-03,IN,,Aditya Chopra,Low,Consultant,Lucknow,0,Verified,2022-09-03,ACC20330
+CUST10331,Vanguard Ventures,business,Wholesale Trading,1874308.44,Med,0,2023-05-09,IN,BO_Aditi_Menon,Vanguard Ventures,Med,Wholesale Trading,Chandigarh,0,Verified,2023-05-09,ACC20331
+CUST10332,Sneha Agarwal,individual,Consultant,293168.15,Med,0,2023-06-01,IN,,Sneha Agarwal,Med,Consultant,Agra,0,Verified,2023-06-01,ACC20332
+CUST10333,Pooja Mishra,individual,Freelancer,163381.99,Low,0,2024-08-10,IN,,Pooja Mishra,Low,Freelancer,Kolkata,0,Verified,2024-08-10,ACC20333
+CUST10334,Kiran Agarwal,individual,Retired,268023.14,Low,0,2023-10-19,IN,,Kiran Agarwal,Low,Retired,Ahmedabad,0,Verified,2023-10-19,ACC20334
+CUST10335,Nexus Logistics,business,Logistics & Transport,8314510.66,Low,0,2024-03-25,IN,BO_Kiran_Garg,Nexus Logistics,Low,Logistics & Transport,Ahmedabad,0,Verified,2024-03-25,ACC20335
+CUST10336,Ananya Choudhary,individual,Retail Trader,181103.44,Med,0,2023-06-23,IN,,Ananya Choudhary,Med,Retail Trader,Chandigarh,0,Verified,2023-06-23,ACC20336
+CUST10337,Apex Solutions Pvt Ltd,business,Financial Advisory,15926857.5,Low,0,2023-08-30,IN,BO_Sneha_Mittal,Apex Solutions Pvt Ltd,Low,Financial Advisory,Jaipur,0,Verified,2023-08-30,ACC20337
+CUST10338,Asha Khatri,individual,Salaried Executive,160635.76,Low,0,2024-11-16,IN,,Asha Khatri,Low,Salaried Executive,Agra,0,Verified,2024-11-16,ACC20338
+CUST10339,Yash Mittal,individual,Consultant,147308.8,Low,0,2023-07-06,IN,,Yash Mittal,Low,Consultant,Surat,0,Verified,2023-07-06,ACC20339
+CUST10340,Kiran Bhatia,individual,Software Engineer,36947.11,Med,0,2022-10-29,IN,,Kiran Bhatia,Med,Software Engineer,Agra,0,Verified,2022-10-29,ACC20340
+CUST10341,Kabir Choudhary,individual,Software Engineer,124115.17,Low,0,2023-05-16,IN,,Kabir Choudhary,Low,Software Engineer,Chandigarh,0,Verified,2023-05-16,ACC20341
+CUST10342,Divya Mehta,individual,Retired,237850.71,Med,0,2021-07-24,IN,,Divya Mehta,Med,Retired,Lucknow,0,Verified,2021-07-24,ACC20342
+CUST10343,Mohit Yadav,individual,Consultant,103747.96,Low,0,2024-09-22,IN,,Mohit Yadav,Low,Consultant,Coimbatore,0,Verified,2024-09-22,ACC20343
+CUST10344,Yash Iyer,individual,Civil Servant,176678.3,Med,0,2021-02-27,IN,,Yash Iyer,Med,Civil Servant,Surat,0,Verified,2021-02-27,ACC20344
+CUST10345,Manisha Chopra,individual,Consultant,60864.81,Low,0,2021-10-16,IN,,Manisha Chopra,Low,Consultant,Kolkata,0,Verified,2021-10-16,ACC20345
+CUST10346,Mohit Patel,individual,Teacher,129150.1,Low,0,2020-07-03,IN,,Mohit Patel,Low,Teacher,Kanpur,0,Verified,2020-07-03,ACC20346
+CUST10347,Kamla Joshi,individual,Clerk,49224.39,Low,0,2021-06-11,IN,,Kamla Joshi,Low,Clerk,Pune,0,Verified,2021-06-11,ACC20347
+CUST10348,Nikhil Chauhan,individual,Consultant,144473.42,Low,0,2023-10-20,IN,,Nikhil Chauhan,Low,Consultant,Coimbatore,0,Verified,2023-10-20,ACC20348
+CUST10349,Neel Desai,individual,Freelancer,82794.54,Low,0,2023-12-07,IN,,Neel Desai,Low,Freelancer,Delhi,0,Verified,2023-12-07,ACC20349
+CUST10350,Sachin Bose,individual,Retail Trader,237588.19,Low,0,2024-06-06,IN,,Sachin Bose,Low,Retail Trader,Indore,0,Verified,2024-06-06,ACC20350
+CUST10351,Sunita Trivedi,individual,Salaried Executive,44997.21,Low,0,2024-11-05,IN,,Sunita Trivedi,Low,Salaried Executive,Ranchi,0,Verified,2024-11-05,ACC20351
+CUST10352,Gaurav Sharma,individual,Civil Servant,229404.86,Med,0,2023-03-05,IN,,Gaurav Sharma,Med,Civil Servant,Nagpur,0,Verified,2023-03-05,ACC20352
+CUST10353,Sai Gupta,individual,Consultant,286342.79,Low,0,2021-12-26,IN,,Sai Gupta,Low,Consultant,Gurgaon,0,Pending,2021-12-26,ACC20353
+CUST10354,Geeta Bansal,individual,Teacher,78694.13,Med,0,2024-10-25,IN,,Geeta Bansal,Med,Teacher,Patna,0,Pending,2024-10-25,ACC20354
+CUST10355,Vivaan Bhatia,individual,Retired,79780.96,Low,0,2024-09-18,IN,,Vivaan Bhatia,Low,Retired,Noida,0,Verified,2024-09-18,ACC20355
+CUST10356,Arjun Kohli,individual,Salaried Executive,210422.03,Low,0,2021-01-21,IN,,Arjun Kohli,Low,Salaried Executive,Thane,0,Verified,2021-01-21,ACC20356
+CUST10357,Sunita Mehta,individual,Teacher,219225.89,Low,0,2021-03-19,IN,,Sunita Mehta,Low,Teacher,Visakhapatnam,0,Verified,2021-03-19,ACC20357
+CUST10358,Ishaan Mishra,individual,Software Engineer,170569.97,Low,0,2020-07-10,IN,,Ishaan Mishra,Low,Software Engineer,Pune,0,Verified,2020-07-10,ACC20358
+CUST10359,Usha Chauhan,individual,Teacher,129849.29,Low,0,2021-11-07,IN,,Usha Chauhan,Low,Teacher,Pune,0,Verified,2021-11-07,ACC20359
+CUST10360,Riya Sharma,individual,Salaried Executive,212982.78,Med,0,2021-03-04,IN,,Riya Sharma,Med,Salaried Executive,Bengaluru,0,Verified,2021-03-04,ACC20360
+CUST10361,Global Ventures,business,Real Estate,9949897.84,High,0,2024-08-23,IN,BO_Kavya_Srivastava,Global Ventures,High,Real Estate,Kolkata,1,Verified,2024-08-23,ACC20361
+CUST10362,Manoj Khatri,individual,Chartered Accountant,147888.73,Med,0,2024-09-01,IN,,Manoj Khatri,Med,Chartered Accountant,Chennai,0,Verified,2024-09-01,ACC20362
+CUST10363,Suresh Tiwari,individual,Retail Trader,106101.99,Low,0,2023-01-02,IN,,Suresh Tiwari,Low,Retail Trader,Nagpur,0,Verified,2023-01-02,ACC20363
+CUST10364,Usha Trivedi,individual,Freelancer,260427.97,Low,0,2023-12-28,IN,,Usha Trivedi,Low,Freelancer,Chandigarh,0,Verified,2023-12-28,ACC20364
+CUST10365,Kamla Bose,individual,Software Engineer,145247.34,Med,0,2021-02-13,IN,,Kamla Bose,Med,Software Engineer,Agra,0,Verified,2021-02-13,ACC20365
+CUST10366,Vivaan Khatri,individual,Freelancer,292962.81,Med,0,2024-04-16,IN,,Vivaan Khatri,Med,Freelancer,Thane,0,Verified,2024-04-16,ACC20366
+CUST10367,Vikram Sharma,individual,Freelancer,265108.05,Low,0,2020-11-12,IN,,Vikram Sharma,Low,Freelancer,Gurgaon,0,Verified,2020-11-12,ACC20367
+CUST10368,Tushar Arora,individual,Software Engineer,149704.7,Low,0,2021-03-15,IN,,Tushar Arora,Low,Software Engineer,Nagpur,0,Verified,2021-03-15,ACC20368
+CUST10369,Renu Singh,individual,Salaried Executive,205500.66,Med,0,2022-02-22,IN,,Renu Singh,Med,Salaried Executive,Bengaluru,0,Verified,2022-02-22,ACC20369
+CUST10370,Rahul Rao,individual,Salaried Executive,169336.27,Low,0,2023-08-10,IN,,Rahul Rao,Low,Salaried Executive,Thane,0,Verified,2023-08-10,ACC20370
+CUST10371,Kamla Yadav,individual,Clerk,118756.3,Low,0,2024-10-28,IN,,Kamla Yadav,Low,Clerk,Indore,0,Verified,2024-10-28,ACC20371
+CUST10372,Sarita Patel,individual,Retail Trader,290240.38,Med,0,2021-10-09,IN,,Sarita Patel,Med,Retail Trader,Gurgaon,0,Verified,2021-10-09,ACC20372
+CUST10373,Sarita Singh,individual,Teacher,258744.12,Low,0,2021-07-24,IN,,Sarita Singh,Low,Teacher,Gurgaon,0,Verified,2021-07-24,ACC20373
+CUST10374,Kabir Bajaj,individual,Teacher,35582.19,Low,0,2023-04-16,IN,,Kabir Bajaj,Low,Teacher,Kanpur,0,Verified,2023-04-16,ACC20374
+CUST10375,Zenith Industries,business,Import/Export,16704015.21,Low,0,2023-07-02,IN,BO_Deepak_Shah,Zenith Industries,Low,Import/Export,Pune,0,Verified,2023-07-02,ACC20375
+CUST10376,Pooja Srivastava,individual,Teacher,224948.8,Low,0,2021-05-17,IN,,Pooja Srivastava,Low,Teacher,Coimbatore,0,Verified,2021-05-17,ACC20376
+CUST10377,Sanjay Bajaj,individual,Retail Trader,288390.44,Low,0,2021-12-13,IN,,Sanjay Bajaj,Low,Retail Trader,Vadodara,0,Verified,2021-12-13,ACC20377
+CUST10378,Sunita Bhatt,individual,Doctor,218331.69,Med,0,2024-05-05,IN,,Sunita Bhatt,Med,Doctor,Agra,0,Verified,2024-05-05,ACC20378
+CUST10379,Nikhil Mishra,individual,Retail Trader,277716.21,Low,0,2023-01-01,AU,,Nikhil Mishra,Low,Retail Trader,Kochi,0,Verified,2023-01-01,ACC20379
+CUST10380,Tushar Bhatt,individual,Consultant,258414.72,Low,0,2020-10-16,IN,,Tushar Bhatt,Low,Consultant,Noida,0,Verified,2020-10-16,ACC20380
+CUST10381,Yash Pillai,individual,Civil Servant,126502.8,High,0,2021-04-12,GB,,Yash Pillai,High,Civil Servant,Visakhapatnam,1,Verified,2021-04-12,ACC20381
+CUST10382,Yash Joshi,individual,Chartered Accountant,184004.26,Med,0,2020-12-10,IN,,Yash Joshi,Med,Chartered Accountant,Patna,0,Verified,2020-12-10,ACC20382
+CUST10383,Kamla Dubey,individual,Salaried Executive,173523.45,Low,0,2021-03-02,IN,,Kamla Dubey,Low,Salaried Executive,Jaipur,0,Verified,2021-03-02,ACC20383
+CUST10384,Shreya Khatri,individual,Consultant,73803.52,Low,0,2023-10-13,IN,,Shreya Khatri,Low,Consultant,Delhi,0,Verified,2023-10-13,ACC20384
+CUST10385,Renu Khatri,individual,Freelancer,183899.52,Low,0,2022-09-29,IN,,Renu Khatri,Low,Freelancer,Kochi,0,Verified,2022-09-29,ACC20385
+CUST10386,Tushar Bajaj,individual,Salaried Executive,280518.47,Med,0,2021-01-30,IN,,Tushar Bajaj,Med,Salaried Executive,Vadodara,0,Verified,2021-01-30,ACC20386
+CUST10387,Divya Arora,individual,Clerk,254945.62,Low,0,2021-04-17,IN,,Divya Arora,Low,Clerk,Coimbatore,0,Verified,2021-04-17,ACC20387
+CUST10388,Hemant Malhotra,individual,Consultant,153935.95,Low,0,2023-12-14,IN,,Hemant Malhotra,Low,Consultant,Hyderabad,0,Verified,2023-12-14,ACC20388
+CUST10389,Manisha Reddy,individual,Doctor,77646.15,Low,0,2022-04-23,IN,,Manisha Reddy,Low,Doctor,Chennai,0,Verified,2022-04-23,ACC20389
+CUST10390,Neha Singh,individual,Civil Servant,198136.3,Low,0,2021-09-18,IN,,Neha Singh,Low,Civil Servant,Bengaluru,0,Verified,2021-09-18,ACC20390
+CUST10391,Sneha Chopra,individual,Retired,53066.76,Low,0,2021-11-30,IN,,Sneha Chopra,Low,Retired,Kanpur,0,Verified,2021-11-30,ACC20391
+CUST10392,Rahul Jain,individual,Chartered Accountant,112797.2,Low,0,2022-04-06,IN,,Rahul Jain,Low,Chartered Accountant,Hyderabad,0,Verified,2022-04-06,ACC20392
+CUST10393,Mohit Arora,individual,Retail Trader,99614.2,Med,0,2022-10-14,IN,,Mohit Arora,Med,Retail Trader,Hyderabad,0,Verified,2022-10-14,ACC20393
+CUST10394,Shreya Verma,individual,Retired,252858.9,Med,0,2022-06-05,IN,,Shreya Verma,Med,Retired,Surat,0,Verified,2022-06-05,ACC20394
+CUST10395,Anjali Patel,individual,Software Engineer,79359.62,Low,0,2024-11-18,IN,,Anjali Patel,Low,Software Engineer,Pune,0,Verified,2024-11-18,ACC20395
+CUST10396,Asha Khatri,individual,Student,256451.25,Med,0,2020-10-07,IN,,Asha Khatri,Med,Student,Noida,0,Verified,2020-10-07,ACC20396
+CUST10397,Zenith Enterprises,business,Jewellery Merchant,14762063.25,Low,0,2023-12-05,IN,BO_Sai_Singh,Zenith Enterprises,Low,Jewellery Merchant,Vadodara,0,Verified,2023-12-05,ACC20397
+CUST10398,Kavya Mishra,individual,Student,154548.3,Low,0,2022-09-28,IN,,Kavya Mishra,Low,Student,Vadodara,0,Verified,2022-09-28,ACC20398
+CUST10399,Sai Bhatia,individual,Salaried Executive,220733.74,Med,0,2024-04-30,IN,,Sai Bhatia,Med,Salaried Executive,Gurgaon,0,Verified,2024-04-30,ACC20399
+CUST10400,Vanguard Exports,business,Consulting Firm,16709263.85,Low,0,2023-09-10,IN,BO_Priya_Thakur,Vanguard Exports,Low,Consulting Firm,Nagpur,0,Verified,2023-09-10,ACC20400
+CUST10401,Shreya Garg,individual,Doctor,113984.97,Med,0,2020-11-01,IN,,Shreya Garg,Med,Doctor,Mumbai,0,Verified,2020-11-01,ACC20401
+CUST10402,Rohan Gupta,individual,Salaried Executive,186770.43,Low,0,2024-06-12,IN,,Rohan Gupta,Low,Salaried Executive,Patna,0,Verified,2024-06-12,ACC20402
+CUST10403,Pooja Mishra,individual,Civil Servant,260636.6,Low,0,2021-06-19,IN,,Pooja Mishra,Low,Civil Servant,Pune,0,Verified,2021-06-19,ACC20403
+CUST10404,Preeti Singh,individual,Retired,157235.28,Low,0,2024-07-19,IN,,Preeti Singh,Low,Retired,Pune,0,Verified,2024-07-19,ACC20404
+CUST10405,Rahul Bansal,individual,Doctor,212893.32,Low,0,2024-07-14,IN,,Rahul Bansal,Low,Doctor,Lucknow,0,Verified,2024-07-14,ACC20405
+CUST10406,Akash Menon,individual,Freelancer,189805.03,Low,0,2023-02-25,IN,,Akash Menon,Low,Freelancer,Kolkata,0,Verified,2023-02-25,ACC20406
+CUST10407,Sneha Mittal,individual,Student,108320.16,Low,0,2023-01-24,IN,,Sneha Mittal,Low,Student,Thane,0,Verified,2023-01-24,ACC20407
+CUST10408,Geeta Rathore,individual,Software Engineer,81579.09,Med,0,2024-02-21,IN,,Geeta Rathore,Med,Software Engineer,Pune,0,Verified,2024-02-21,ACC20408
+CUST10409,Sai Kumar,individual,Salaried Executive,260140.63,Med,0,2021-09-05,IN,,Sai Kumar,Med,Salaried Executive,Coimbatore,0,Verified,2021-09-05,ACC20409
+CUST10410,Sterling Industries,business,Import/Export,8267644.66,Low,0,2020-10-24,IN,BO_Hemant_Bhatia,Sterling Industries,Low,Import/Export,Chennai,0,Verified,2020-10-24,ACC20410
+CUST10411,Kiran Saxena,individual,Retired,37806.8,Med,0,2021-06-25,IN,,Kiran Saxena,Med,Retired,Ranchi,0,Verified,2021-06-25,ACC20411
+CUST10412,Ananya Sethi,individual,Retail Trader,209744.53,Low,0,2022-03-19,IN,,Ananya Sethi,Low,Retail Trader,Delhi,0,Verified,2022-03-19,ACC20412
+CUST10413,Sai Reddy,individual,Chartered Accountant,97014.95,Low,0,2020-06-27,IN,,Sai Reddy,Low,Chartered Accountant,Bhopal,0,Verified,2020-06-27,ACC20413
+CUST10414,Aditya Mittal,individual,Chartered Accountant,62354.63,Low,0,2023-05-23,IN,,Aditya Mittal,Low,Chartered Accountant,Jaipur,0,Verified,2023-05-23,ACC20414
+CUST10415,Nikhil Mittal,individual,Student,131803.65,Med,0,2022-01-10,IN,,Nikhil Mittal,Med,Student,Ahmedabad,0,Verified,2022-01-10,ACC20415
+CUST10416,Asha Bansal,individual,Clerk,245054.23,Low,0,2024-02-23,IN,,Asha Bansal,Low,Clerk,Ahmedabad,0,Verified,2024-02-23,ACC20416
+CUST10417,Pooja Mehta,individual,Doctor,76699.7,Med,0,2021-03-21,IN,,Pooja Mehta,Med,Doctor,Kochi,0,Verified,2021-03-21,ACC20417
+CUST10418,Vanguard Industries,business,Real Estate,12429631.63,Low,0,2023-07-23,IN,BO_Deepak_Verma,Vanguard Industries,Low,Real Estate,Coimbatore,0,Verified,2023-07-23,ACC20418
+CUST10419,Pinnacle Enterprises,business,Financial Advisory,4217004.35,Low,0,2022-08-26,IN,BO_Ananya_Chauhan,Pinnacle Enterprises,Low,Financial Advisory,Coimbatore,0,Verified,2022-08-26,ACC20419
+CUST10420,Pranav Bajaj,individual,Consultant,286022.28,Low,0,2022-04-13,IN,,Pranav Bajaj,Low,Consultant,Kolkata,0,Verified,2022-04-13,ACC20420
+CUST10421,Neel Bhatia,individual,Doctor,200151.11,Low,0,2021-01-29,IN,,Neel Bhatia,Low,Doctor,Thane,0,Verified,2021-01-29,ACC20421
+CUST10422,Matrix Exports,business,Import/Export,3508547.11,Low,0,2021-02-01,IN,BO_Asha_Bhatt,Matrix Exports,Low,Import/Export,Chennai,0,Verified,2021-02-01,ACC20422
+CUST10423,Renu Kohli,individual,Salaried Executive,267604.45,Low,0,2024-05-27,IN,,Renu Kohli,Low,Salaried Executive,Chennai,0,Verified,2024-05-27,ACC20423
+CUST10424,Aarav Khatri,individual,Civil Servant,149346.66,Med,0,2021-01-05,IN,,Aarav Khatri,Med,Civil Servant,Ahmedabad,0,Verified,2021-01-05,ACC20424
+CUST10425,Hemant Trivedi,individual,Chartered Accountant,191097.74,Low,0,2021-01-07,IN,,Hemant Trivedi,Low,Chartered Accountant,Indore,0,Verified,2021-01-07,ACC20425
+CUST10426,Sneha Patel,individual,Consultant,193547.47,Low,0,2024-11-22,IN,,Sneha Patel,Low,Consultant,Kochi,0,Verified,2024-11-22,ACC20426
+CUST10427,Nisha Sharma,individual,Student,208454.72,Low,0,2022-11-23,IN,,Nisha Sharma,Low,Student,Indore,0,Verified,2022-11-23,ACC20427
+CUST10428,Kamla Thakur,individual,Student,184637.61,High,0,2022-09-12,IN,,Kamla Thakur,High,Student,Indore,1,Verified,2022-09-12,ACC20428
+CUST10429,Ananya Saxena,individual,Retired,182051.51,Low,0,2022-12-29,IN,,Ananya Saxena,Low,Retired,Nagpur,0,Verified,2022-12-29,ACC20429
+CUST10430,Akash Joshi,individual,Freelancer,95889.4,Med,0,2024-05-12,IN,,Akash Joshi,Med,Freelancer,Nagpur,0,Verified,2024-05-12,ACC20430
+CUST10431,Renu Khatri,individual,Freelancer,48793.99,Low,0,2024-05-31,IN,,Renu Khatri,Low,Freelancer,Bhopal,0,Verified,2024-05-31,ACC20431
+CUST10432,Sai Reddy,individual,Teacher,133271.31,Low,0,2022-09-05,IN,,Sai Reddy,Low,Teacher,Visakhapatnam,0,Verified,2022-09-05,ACC20432
+CUST10433,Arjun Chopra,individual,Civil Servant,166007.62,High,1,2021-03-29,IN,,Arjun Chopra,High,Civil Servant,Visakhapatnam,1,Verified,2021-03-29,ACC20433
+CUST10434,Titan Logistics,business,Financial Advisory,4635433.5,Low,0,2024-12-03,US,BO_Riya_Mittal,Titan Logistics,Low,Financial Advisory,Jaipur,0,Verified,2024-12-03,ACC20434
+CUST10435,Kiran Pandey,individual,Retail Trader,88082.25,Low,0,2024-06-02,IN,,Kiran Pandey,Low,Retail Trader,Patna,0,Verified,2024-06-02,ACC20435
+CUST10436,Suresh Bansal,individual,Consultant,94968.31,Low,0,2022-08-29,IN,,Suresh Bansal,Low,Consultant,Jaipur,0,Verified,2022-08-29,ACC20436
+CUST10437,Manisha Kumar,individual,Retired,112976.73,Med,0,2023-06-25,IN,,Manisha Kumar,Med,Retired,Bhubaneswar,0,Verified,2023-06-25,ACC20437
+CUST10438,Amit Trivedi,individual,Retail Trader,163161.92,Low,0,2020-07-29,IN,,Amit Trivedi,Low,Retail Trader,Thane,0,Verified,2020-07-29,ACC20438
+CUST10439,Sunita Joshi,individual,Consultant,52901.88,High,0,2021-02-16,IN,,Sunita Joshi,High,Consultant,Kochi,1,Verified,2021-02-16,ACC20439
+CUST10440,Nisha Thakur,individual,Salaried Executive,220716.92,Low,0,2022-09-08,IN,,Nisha Thakur,Low,Salaried Executive,Bhubaneswar,0,Verified,2022-09-08,ACC20440
+CUST10441,Ananya Choudhary,individual,Chartered Accountant,128687.55,Low,0,2020-09-27,IN,,Ananya Choudhary,Low,Chartered Accountant,Pune,0,Verified,2020-09-27,ACC20441
+CUST10442,Kunal Nair,individual,Consultant,89796.34,Low,0,2021-06-16,IN,,Kunal Nair,Low,Consultant,Ranchi,0,Verified,2021-06-16,ACC20442
+CUST10443,Gaurav Bajaj,individual,Clerk,197664.15,Low,0,2024-09-08,IN,,Gaurav Bajaj,Low,Clerk,Kanpur,0,Verified,2024-09-08,ACC20443
+CUST10444,Preeti Rao,individual,Clerk,83461.04,Low,0,2022-09-11,IN,,Preeti Rao,Low,Clerk,Coimbatore,0,Verified,2022-09-11,ACC20444
+CUST10445,Rajesh Choudhary,individual,Retired,43629.1,Med,0,2020-07-28,IN,,Rajesh Choudhary,Med,Retired,Hyderabad,0,Verified,2020-07-28,ACC20445
+CUST10446,Tushar Sharma,individual,Salaried Executive,213637.31,Low,0,2022-11-24,IN,,Tushar Sharma,Low,Salaried Executive,Jaipur,0,Verified,2022-11-24,ACC20446
+CUST10447,Meera Choudhary,individual,Retail Trader,125920.56,Low,0,2022-07-29,IN,,Meera Choudhary,Low,Retail Trader,Kanpur,0,Verified,2022-07-29,ACC20447
+CUST10448,Amit Chopra,individual,Retail Trader,69751.88,Low,0,2024-05-13,IN,,Amit Chopra,Low,Retail Trader,Kochi,0,Verified,2024-05-13,ACC20448
+CUST10449,Nikhil Malhotra,individual,Doctor,247009.93,Low,0,2024-11-14,IN,,Nikhil Malhotra,Low,Doctor,Bhopal,0,Verified,2024-11-14,ACC20449
+CUST10450,Harshit Chauhan,individual,Retired,225948.49,Low,0,2021-10-09,IN,,Harshit Chauhan,Low,Retired,Delhi,0,Verified,2021-10-09,ACC20450
+CUST10451,Arjun Kapoor,individual,Consultant,161282.95,Low,0,2023-01-18,IN,,Arjun Kapoor,Low,Consultant,Kanpur,0,Verified,2023-01-18,ACC20451
+CUST10452,Kavya Bansal,individual,Salaried Executive,144116.64,Low,0,2021-07-12,IN,,Kavya Bansal,Low,Salaried Executive,Coimbatore,0,Verified,2021-07-12,ACC20452
+CUST10453,Hemant Pillai,individual,Chartered Accountant,121148.93,Low,0,2022-06-02,IN,,Hemant Pillai,Low,Chartered Accountant,Nagpur,0,Verified,2022-06-02,ACC20453
+CUST10454,Neel Bose,individual,Civil Servant,249045.04,Low,0,2021-09-20,IN,,Neel Bose,Low,Civil Servant,Bengaluru,0,Verified,2021-09-20,ACC20454
+CUST10455,Vikram Desai,individual,Civil Servant,112209.43,Low,0,2023-05-28,IN,,Vikram Desai,Low,Civil Servant,Ranchi,0,Verified,2023-05-28,ACC20455
+CUST10456,Sonia Chauhan,individual,Clerk,144707.1,Low,0,2020-11-04,IN,,Sonia Chauhan,Low,Clerk,Jaipur,0,Verified,2020-11-04,ACC20456
+CUST10457,Reyansh Kapoor,individual,Doctor,140217.08,Med,0,2022-04-09,IN,,Reyansh Kapoor,Med,Doctor,Mumbai,0,Verified,2022-04-09,ACC20457
+CUST10458,Reyansh Shah,individual,Consultant,198797.08,Med,0,2022-09-27,IN,,Reyansh Shah,Med,Consultant,Ahmedabad,0,Verified,2022-09-27,ACC20458
+CUST10459,Ishaan Agarwal,individual,Retired,257207.21,Low,0,2023-02-06,IN,,Ishaan Agarwal,Low,Retired,Thane,0,Pending,2023-02-06,ACC20459
+CUST10460,Meera Rathore,individual,Clerk,70805.45,Low,0,2021-08-11,IN,,Meera Rathore,Low,Clerk,Noida,0,Verified,2021-08-11,ACC20460
+CUST10461,Rajesh Chauhan,individual,Civil Servant,204474.99,Low,0,2021-11-24,IN,,Rajesh Chauhan,Low,Civil Servant,Bengaluru,0,Verified,2021-11-24,ACC20461
+CUST10462,Kavya Mehta,individual,Consultant,37797.29,Low,0,2024-02-28,IN,,Kavya Mehta,Low,Consultant,Bhopal,0,Verified,2024-02-28,ACC20462
+CUST10463,Geeta Choudhary,individual,Consultant,37420.14,Low,0,2023-08-18,IN,,Geeta Choudhary,Low,Consultant,Vadodara,0,Verified,2023-08-18,ACC20463
+CUST10464,Manisha Dubey,individual,Student,101222.47,Low,0,2022-10-21,IN,,Manisha Dubey,Low,Student,Bengaluru,0,Verified,2022-10-21,ACC20464
+CUST10465,Sachin Arora,individual,Freelancer,216429.68,Low,0,2023-06-02,IN,,Sachin Arora,Low,Freelancer,Bengaluru,0,Verified,2023-06-02,ACC20465
+CUST10466,Harshit Srivastava,individual,Retail Trader,154983.32,Low,0,2023-02-16,IN,,Harshit Srivastava,Low,Retail Trader,Delhi,0,Pending,2023-02-16,ACC20466
+CUST10467,Global Ventures,business,Logistics & Transport,3813225.25,Low,0,2024-06-02,IN,BO_Aarav_Iyer,Global Ventures,Low,Logistics & Transport,Bhopal,0,Verified,2024-06-02,ACC20467
+CUST10468,Lakshmi Yadav,individual,Chartered Accountant,157876.38,Low,0,2020-09-18,IN,,Lakshmi Yadav,Low,Chartered Accountant,Delhi,0,Verified,2020-09-18,ACC20468
+CUST10469,Rekha Choudhary,individual,Doctor,85930.96,Med,0,2024-11-08,IN,,Rekha Choudhary,Med,Doctor,Ranchi,0,Verified,2024-11-08,ACC20469
+CUST10470,Amit Nair,individual,Freelancer,298551.88,Low,0,2024-05-25,IN,,Amit Nair,Low,Freelancer,Pune,0,Verified,2024-05-25,ACC20470
+CUST10471,Aditi Desai,individual,Doctor,201728.53,Med,0,2022-01-02,IN,,Aditi Desai,Med,Doctor,Bhopal,0,Verified,2022-01-02,ACC20471
+CUST10472,Arjun Bajaj,individual,Teacher,292917.63,Low,0,2024-11-03,IN,,Arjun Bajaj,Low,Teacher,Jaipur,0,Verified,2024-11-03,ACC20472
+CUST10473,Riya Sharma,individual,Salaried Executive,188985.41,Low,0,2024-01-21,IN,,Riya Sharma,Low,Salaried Executive,Bengaluru,0,Verified,2024-01-21,ACC20473
+CUST10474,Gaurav Arora,individual,Chartered Accountant,281674.93,Low,0,2024-08-03,IN,,Gaurav Arora,Low,Chartered Accountant,Chennai,0,Verified,2024-08-03,ACC20474
+CUST10475,Ishaan Yadav,individual,Teacher,118935.98,Low,0,2022-12-23,IN,,Ishaan Yadav,Low,Teacher,Thane,0,Verified,2022-12-23,ACC20475
+CUST10476,Matrix Holdings,business,Import/Export,6137880.46,Low,0,2021-10-16,IN,BO_Yash_Tiwari,Matrix Holdings,Low,Import/Export,Chandigarh,0,Verified,2021-10-16,ACC20476
+CUST10477,Rekha Bansal,individual,Chartered Accountant,229086.64,Med,0,2021-10-25,IN,,Rekha Bansal,Med,Chartered Accountant,Visakhapatnam,0,Verified,2021-10-25,ACC20477
+CUST10478,Kavya Thakur,individual,Chartered Accountant,155330.93,Low,0,2020-10-23,IN,,Kavya Thakur,Low,Chartered Accountant,Mumbai,0,Verified,2020-10-23,ACC20478
+CUST10479,Renu Nair,individual,Chartered Accountant,226065.94,Low,0,2022-10-02,IN,,Renu Nair,Low,Chartered Accountant,Gurgaon,0,Verified,2022-10-02,ACC20479
+CUST10480,Renu Pillai,individual,Chartered Accountant,143598.2,Low,0,2021-03-25,IN,,Renu Pillai,Low,Chartered Accountant,Bhubaneswar,0,Verified,2021-03-25,ACC20480
+CUST10481,Aditya Malhotra,individual,Software Engineer,163623.13,Low,0,2022-09-30,IN,,Aditya Malhotra,Low,Software Engineer,Visakhapatnam,0,Verified,2022-09-30,ACC20481
+CUST10482,Arjun Saxena,individual,Teacher,195577.71,Med,0,2023-10-03,IN,,Arjun Saxena,Med,Teacher,Bhubaneswar,0,Verified,2023-10-03,ACC20482
+CUST10483,Arjun Saxena,individual,Retired,232021.52,Med,0,2020-12-14,IN,,Arjun Saxena,Med,Retired,Agra,0,Verified,2020-12-14,ACC20483
+CUST10484,Global Ventures,business,IT Services,18975164.42,High,0,2020-11-09,IN,BO_Kabir_Shah,Global Ventures,High,IT Services,Nagpur,1,Verified,2020-11-09,ACC20484
+CUST10485,Riya Sethi,individual,Civil Servant,286088.39,Low,0,2020-09-27,IN,,Riya Sethi,Low,Civil Servant,Noida,0,Verified,2020-09-27,ACC20485
+CUST10486,Tushar Bajaj,individual,Student,268948.37,Low,0,2022-09-03,IN,,Tushar Bajaj,Low,Student,Gurgaon,0,Verified,2022-09-03,ACC20486
+CUST10487,Amit Bansal,individual,Chartered Accountant,180771.56,Med,0,2022-08-12,IN,,Amit Bansal,Med,Chartered Accountant,Indore,0,Verified,2022-08-12,ACC20487
+CUST10488,Riya Sethi,individual,Retired,91690.96,Med,0,2023-07-02,IN,,Riya Sethi,Med,Retired,Thane,0,Verified,2023-07-02,ACC20488
+CUST10489,Pranav Gupta,individual,Consultant,192877.15,High,0,2023-03-26,IN,,Pranav Gupta,High,Consultant,Ahmedabad,1,Verified,2023-03-26,ACC20489
+CUST10490,Hemant Rao,individual,Retired,170486.94,Low,0,2024-05-24,IN,,Hemant Rao,Low,Retired,Kanpur,0,Verified,2024-05-24,ACC20490
+CUST10491,Sonia Nair,individual,Teacher,102904.62,Low,0,2021-09-25,IN,,Sonia Nair,Low,Teacher,Patna,0,Verified,2021-09-25,ACC20491
+CUST10492,Sunita Chopra,individual,Clerk,253811.89,Low,0,2024-05-22,IN,,Sunita Chopra,Low,Clerk,Surat,0,Verified,2024-05-22,ACC20492
+CUST10493,Nikhil Patel,individual,Salaried Executive,279295.95,Med,0,2022-06-28,IN,,Nikhil Patel,Med,Salaried Executive,Hyderabad,0,Verified,2022-06-28,ACC20493
+CUST10494,Mohit Kohli,individual,Salaried Executive,202980.08,Low,0,2021-12-26,IN,,Mohit Kohli,Low,Salaried Executive,Vadodara,0,Verified,2021-12-26,ACC20494
+CUST10495,Tushar Iyer,individual,Doctor,48387.75,Low,0,2022-06-05,IN,,Tushar Iyer,Low,Doctor,Coimbatore,0,Verified,2022-06-05,ACC20495
+CUST10496,Shreya Pandey,individual,Doctor,70030.1,Low,0,2024-08-25,IN,,Shreya Pandey,Low,Doctor,Jaipur,0,Verified,2024-08-25,ACC20496
+CUST10497,Hemant Agarwal,individual,Doctor,162444.46,Low,0,2021-09-20,IN,,Hemant Agarwal,Low,Doctor,Agra,0,Pending,2021-09-20,ACC20497
+CUST10498,Riya Kumar,individual,Consultant,240844.55,Med,0,2024-06-03,IN,,Riya Kumar,Med,Consultant,Indore,0,Verified,2024-06-03,ACC20498
+CUST10499,Vikram Bansal,individual,Retail Trader,208683.61,Low,0,2022-12-18,IN,,Vikram Bansal,Low,Retail Trader,Kochi,0,Verified,2022-12-18,ACC20499
+CUST10500,Apex Logistics,business,Real Estate,14179145.71,Low,0,2024-04-17,IN,BO_Pranav_Patel,Apex Logistics,Low,Real Estate,Ahmedabad,0,Verified,2024-04-17,ACC20500
+CUST10501,Asha Pillai,individual,Salaried Executive,125966.91,Low,0,2022-04-14,IN,,Asha Pillai,Low,Salaried Executive,Pune,0,Verified,2022-04-14,ACC20501
+CUST10502,Rekha Chauhan,individual,Consultant,180432.01,High,0,2021-01-10,IN,,Rekha Chauhan,High,Consultant,Mumbai,1,Verified,2021-01-10,ACC20502
+CUST10503,Nisha Gupta,individual,Consultant,80134.71,Low,0,2021-06-17,IN,,Nisha Gupta,Low,Consultant,Thane,0,Verified,2021-06-17,ACC20503
+CUST10504,Matrix Ventures,business,Wholesale Trading,17489222.06,Low,0,2022-10-04,IN,BO_Asha_Mittal,Matrix Ventures,Low,Wholesale Trading,Nagpur,0,Verified,2022-10-04,ACC20504
+CUST10505,Vikram Yadav,individual,Retail Trader,175863.57,Low,0,2022-05-11,IN,,Vikram Yadav,Low,Retail Trader,Chandigarh,0,Verified,2022-05-11,ACC20505
+CUST10506,Nisha Menon,individual,Chartered Accountant,164832.2,Low,0,2021-02-01,IN,,Nisha Menon,Low,Chartered Accountant,Noida,0,Verified,2021-02-01,ACC20506
+CUST10507,Anjali Rao,individual,Salaried Executive,200834.98,Med,0,2024-10-04,IN,,Anjali Rao,Med,Salaried Executive,Jaipur,0,Verified,2024-10-04,ACC20507
+CUST10508,Kiran Bajaj,individual,Doctor,58265.68,Med,0,2021-06-28,IN,,Kiran Bajaj,Med,Doctor,Gurgaon,0,Verified,2021-06-28,ACC20508
+CUST10509,Neel Dubey,individual,Consultant,276079.88,Low,0,2023-10-07,IN,,Neel Dubey,Low,Consultant,Coimbatore,0,Verified,2023-10-07,ACC20509
+CUST10510,Asha Agarwal,individual,Consultant,217461.0,Med,0,2022-07-07,GB,,Asha Agarwal,Med,Consultant,Noida,0,Verified,2022-07-07,ACC20510
+CUST10511,Vikram Kumar,individual,Retired,176234.81,Low,0,2024-02-09,IN,,Vikram Kumar,Low,Retired,Ranchi,0,Verified,2024-02-09,ACC20511
+CUST10512,Deepak Menon,individual,Clerk,232586.58,Low,0,2020-10-13,IN,,Deepak Menon,Low,Clerk,Ranchi,0,Verified,2020-10-13,ACC20512
+CUST10513,Apex Ventures,business,Financial Advisory,11990297.22,Low,0,2021-01-26,IN,BO_Sneha_Iyer,Apex Ventures,Low,Financial Advisory,Bengaluru,0,Verified,2021-01-26,ACC20513
+CUST10514,Anjali Kohli,individual,Clerk,223685.07,Med,0,2022-03-03,IN,,Anjali Kohli,Med,Clerk,Kolkata,0,Verified,2022-03-03,ACC20514
+CUST10515,Apex Ventures,business,Consulting Firm,5617252.93,Low,0,2024-07-21,IN,BO_Divya_Kapoor,Apex Ventures,Low,Consulting Firm,Thane,0,Verified,2024-07-21,ACC20515
+CUST10516,Vikram Srivastava,individual,Teacher,148302.26,Low,0,2022-10-16,IN,,Vikram Srivastava,Low,Teacher,Nagpur,0,Verified,2022-10-16,ACC20516
+CUST10517,Neha Thakur,individual,Retired,204969.36,Low,0,2024-04-24,IN,,Neha Thakur,Low,Retired,Bhubaneswar,0,Verified,2024-04-24,ACC20517
+CUST10518,Riya Chauhan,individual,Retired,139836.97,Low,0,2022-01-11,IN,,Riya Chauhan,Low,Retired,Delhi,0,Verified,2022-01-11,ACC20518
+CUST10519,Aditi Pillai,individual,Clerk,79118.95,Med,0,2021-01-20,IN,,Aditi Pillai,Med,Clerk,Chennai,0,Verified,2021-01-20,ACC20519
+CUST10520,Reyansh Bhatt,individual,Software Engineer,82639.42,Med,0,2021-11-10,IN,,Reyansh Bhatt,Med,Software Engineer,Indore,0,Verified,2021-11-10,ACC20520
+CUST10521,Vanguard Logistics,business,Jewellery Merchant,3168323.73,Low,0,2020-11-23,IN,BO_Mohit_Bose,Vanguard Logistics,Low,Jewellery Merchant,Bengaluru,0,Verified,2020-11-23,ACC20521
+CUST10522,Manoj Patel,individual,Retired,222428.97,High,0,2021-06-29,IN,,Manoj Patel,High,Retired,Nagpur,1,Verified,2021-06-29,ACC20522
+CUST10523,Zenith Holdings,business,Financial Advisory,17619149.97,Med,0,2023-12-03,IN,BO_Priya_Mehta,Zenith Holdings,Med,Financial Advisory,Delhi,0,Verified,2023-12-03,ACC20523
+CUST10524,Hemant Tiwari,individual,Consultant,201010.01,Low,0,2023-10-15,IN,,Hemant Tiwari,Low,Consultant,Ranchi,0,Verified,2023-10-15,ACC20524
+CUST10525,Kamla Yadav,individual,Retired,248975.46,Low,0,2023-09-16,IN,,Kamla Yadav,Low,Retired,Bhopal,0,Verified,2023-09-16,ACC20525
+CUST10526,Neha Kohli,individual,Salaried Executive,99848.99,Low,0,2021-10-19,IN,,Neha Kohli,Low,Salaried Executive,Pune,0,Verified,2021-10-19,ACC20526
+CUST10527,Nexus Enterprises,business,Import/Export,17295841.81,Low,0,2023-04-02,IN,BO_Usha_Kohli,Nexus Enterprises,Low,Import/Export,Bengaluru,0,Verified,2023-04-02,ACC20527
+CUST10528,Ananya Bose,individual,Civil Servant,110360.84,Low,0,2021-09-18,IN,,Ananya Bose,Low,Civil Servant,Kolkata,0,Pending,2021-09-18,ACC20528
+CUST10529,Manoj Gupta,individual,Software Engineer,238655.68,Med,0,2024-07-18,IN,,Manoj Gupta,Med,Software Engineer,Bhubaneswar,0,Verified,2024-07-18,ACC20529
+CUST10530,Ishaan Joshi,individual,Freelancer,262743.1,Low,0,2023-10-01,IN,,Ishaan Joshi,Low,Freelancer,Agra,0,Verified,2023-10-01,ACC20530
+CUST10531,Harshit Chauhan,individual,Software Engineer,163170.69,Med,0,2020-12-17,IN,,Harshit Chauhan,Med,Software Engineer,Agra,0,Verified,2020-12-17,ACC20531
+CUST10532,Preeti Arora,individual,Chartered Accountant,280682.92,Low,0,2020-11-01,IN,,Preeti Arora,Low,Chartered Accountant,Bhopal,0,Verified,2020-11-01,ACC20532
+CUST10533,Sneha Pillai,individual,Teacher,35418.94,Low,0,2024-04-06,IN,,Sneha Pillai,Low,Teacher,Pune,0,Verified,2024-04-06,ACC20533
+CUST10534,Deepak Gupta,individual,Chartered Accountant,127657.26,Low,0,2021-05-02,IN,,Deepak Gupta,Low,Chartered Accountant,Surat,0,Verified,2021-05-02,ACC20534
+CUST10535,Sterling Holdings,business,Retail Store,3605980.11,Low,0,2021-06-21,GB,BO_Kiran_Sethi,Sterling Holdings,Low,Retail Store,Pune,0,Verified,2021-06-21,ACC20535
+CUST10536,Gaurav Choudhary,individual,Clerk,246272.41,Low,0,2021-05-29,IN,,Gaurav Choudhary,Low,Clerk,Vadodara,0,Verified,2021-05-29,ACC20536
+CUST10537,Sarita Mishra,individual,Freelancer,49845.91,Low,0,2021-02-14,IN,,Sarita Mishra,Low,Freelancer,Vadodara,0,Verified,2021-02-14,ACC20537
+CUST10538,Rahul Bansal,individual,Software Engineer,291947.52,Low,0,2022-10-27,IN,,Rahul Bansal,Low,Software Engineer,Bhubaneswar,0,Verified,2022-10-27,ACC20538
+CUST10539,Ananya Kohli,individual,Software Engineer,264117.33,Low,0,2023-02-28,IN,,Ananya Kohli,Low,Software Engineer,Jaipur,0,Verified,2023-02-28,ACC20539
+CUST10540,Riya Saxena,individual,Clerk,254806.23,Low,0,2023-12-11,IN,,Riya Saxena,Low,Clerk,Kochi,0,Verified,2023-12-11,ACC20540
+CUST10541,Reyansh Tiwari,individual,Retired,41607.72,Low,0,2023-11-10,IN,,Reyansh Tiwari,Low,Retired,Bhopal,0,Verified,2023-11-10,ACC20541
+CUST10542,Hemant Desai,individual,Doctor,238912.57,High,0,2022-01-11,IN,,Hemant Desai,High,Doctor,Chennai,1,Verified,2022-01-11,ACC20542
+CUST10543,Matrix Trading Co,business,Retail Store,7253154.38,Low,0,2024-06-08,IN,BO_Kamla_Kohli,Matrix Trading Co,Low,Retail Store,Delhi,0,Verified,2024-06-08,ACC20543
+CUST10544,Kunal Menon,individual,Salaried Executive,188053.36,Med,0,2023-02-15,IN,,Kunal Menon,Med,Salaried Executive,Surat,0,Verified,2023-02-15,ACC20544
+CUST10545,Amit Bajaj,individual,Software Engineer,107253.36,Low,0,2021-06-07,IN,,Amit Bajaj,Low,Software Engineer,Hyderabad,0,Verified,2021-06-07,ACC20545
+CUST10546,Vikram Rao,individual,Doctor,284968.62,Low,0,2023-12-19,IN,,Vikram Rao,Low,Doctor,Agra,0,Verified,2023-12-19,ACC20546
+CUST10547,Arjun Agarwal,individual,Salaried Executive,159744.93,Low,0,2024-08-15,IN,,Arjun Agarwal,Low,Salaried Executive,Nagpur,0,Verified,2024-08-15,ACC20547
+CUST10548,Sonia Garg,individual,Freelancer,220331.86,Low,0,2023-10-25,IN,,Sonia Garg,Low,Freelancer,Gurgaon,0,Verified,2023-10-25,ACC20548
+CUST10549,Vanguard Solutions Pvt Ltd,business,IT Services,16537743.83,Med,0,2022-05-15,IN,BO_Sanjay_Shah,Vanguard Solutions Pvt Ltd,Med,IT Services,Noida,0,Verified,2022-05-15,ACC20549
+CUST10550,Sneha Iyer,individual,Doctor,263190.51,Med,0,2022-09-23,IN,,Sneha Iyer,Med,Doctor,Gurgaon,0,Verified,2022-09-23,ACC20550
+CUST10551,Vikram Srivastava,individual,Clerk,43020.0,Low,0,2022-05-04,IN,,Vikram Srivastava,Low,Clerk,Surat,0,Verified,2022-05-04,ACC20551
+CUST10552,Ishaan Bhatt,individual,Software Engineer,142506.79,Low,0,2021-10-22,IN,,Ishaan Bhatt,Low,Software Engineer,Kochi,0,Verified,2021-10-22,ACC20552
+CUST10553,Sonia Mishra,individual,Teacher,199531.83,High,0,2022-10-09,IN,,Sonia Mishra,High,Teacher,Pune,1,Verified,2022-10-09,ACC20553
+CUST10554,Lakshmi Dubey,individual,Retail Trader,243641.59,Low,0,2021-03-17,IN,,Lakshmi Dubey,Low,Retail Trader,Patna,0,Verified,2021-03-17,ACC20554
+CUST10555,Geeta Joshi,individual,Retail Trader,192960.01,Low,0,2022-06-06,IN,,Geeta Joshi,Low,Retail Trader,Nagpur,0,Verified,2022-06-06,ACC20555
+CUST10556,Titan Exports,business,Wholesale Trading,10644460.23,Low,0,2024-02-23,IN,BO_Reyansh_Kapoor,Titan Exports,Low,Wholesale Trading,Ranchi,0,Verified,2024-02-23,ACC20556
+CUST10557,Zenith Solutions Pvt Ltd,business,Jewellery Merchant,11328232.69,Low,0,2023-10-30,IN,BO_Preeti_Tiwari,Zenith Solutions Pvt Ltd,Low,Jewellery Merchant,Lucknow,0,Verified,2023-10-30,ACC20557
+CUST10558,Gaurav Menon,individual,Student,225214.67,High,0,2021-08-28,IN,,Gaurav Menon,High,Student,Visakhapatnam,1,Verified,2021-08-28,ACC20558
+CUST10559,Sterling Enterprises,business,Wholesale Trading,18169900.36,High,0,2022-11-29,IN,BO_Aarav_Rathore,Sterling Enterprises,High,Wholesale Trading,Surat,1,Verified,2022-11-29,ACC20559
+CUST10560,Tushar Bhatia,individual,Student,200681.79,Low,0,2022-06-26,IN,,Tushar Bhatia,Low,Student,Gurgaon,0,Verified,2022-06-26,ACC20560
+CUST10561,Pinnacle Exports,business,Wholesale Trading,17039309.7,Low,0,2024-03-21,IN,BO_Asha_Bajaj,Pinnacle Exports,Low,Wholesale Trading,Bengaluru,0,Verified,2024-03-21,ACC20561
+CUST10562,Vanguard Exports,business,Import/Export,3066273.72,Low,0,2020-07-02,IN,BO_Deepak_Srivastava,Vanguard Exports,Low,Import/Export,Indore,0,Verified,2020-07-02,ACC20562
+CUST10563,Rajesh Rathore,individual,Clerk,136949.4,Low,0,2024-11-18,IN,,Rajesh Rathore,Low,Clerk,Patna,0,Verified,2024-11-18,ACC20563
+CUST10564,Deepak Thakur,individual,Retail Trader,132247.06,Low,0,2020-12-21,IN,,Deepak Thakur,Low,Retail Trader,Coimbatore,0,Verified,2020-12-21,ACC20564
+CUST10565,Neel Chauhan,individual,Consultant,158208.13,Med,0,2024-06-05,IN,,Neel Chauhan,Med,Consultant,Noida,0,Verified,2024-06-05,ACC20565
+CUST10566,Sai Khatri,individual,Civil Servant,177887.26,Low,0,2022-12-31,IN,,Sai Khatri,Low,Civil Servant,Mumbai,0,Verified,2022-12-31,ACC20566
+CUST10567,Sunita Sethi,individual,Freelancer,122851.21,High,0,2023-04-10,IN,,Sunita Sethi,High,Freelancer,Delhi,1,Verified,2023-04-10,ACC20567
+CUST10568,Aditi Sethi,individual,Consultant,51275.71,Low,0,2024-08-20,IN,,Aditi Sethi,Low,Consultant,Surat,0,Verified,2024-08-20,ACC20568
+CUST10569,Shreya Yadav,individual,Software Engineer,68607.65,Low,0,2023-07-06,IN,,Shreya Yadav,Low,Software Engineer,Jaipur,0,Verified,2023-07-06,ACC20569
+CUST10570,Kunal Joshi,individual,Retail Trader,81272.67,Low,0,2022-06-03,IN,,Kunal Joshi,Low,Retail Trader,Kolkata,0,Verified,2022-06-03,ACC20570
+CUST10571,Geeta Chopra,individual,Retired,263433.82,Low,0,2024-02-10,IN,,Geeta Chopra,Low,Retired,Bhubaneswar,0,Verified,2024-02-10,ACC20571
+CUST10572,Deepak Trivedi,individual,Teacher,210076.83,Low,0,2021-09-07,IN,,Deepak Trivedi,Low,Teacher,Kanpur,0,Verified,2021-09-07,ACC20572
+CUST10573,Sarita Joshi,individual,Salaried Executive,79414.11,Low,0,2020-09-27,IN,,Sarita Joshi,Low,Salaried Executive,Vadodara,0,Verified,2020-09-27,ACC20573
+CUST10574,Nikhil Choudhary,individual,Consultant,73464.71,Low,0,2022-05-29,IN,,Nikhil Choudhary,Low,Consultant,Lucknow,0,Pending,2022-05-29,ACC20574
+CUST10575,Aditya Shah,individual,Retired,203917.4,Low,0,2021-04-08,IN,,Aditya Shah,Low,Retired,Lucknow,0,Verified,2021-04-08,ACC20575
+CUST10576,Kavya Mittal,individual,Retail Trader,138655.75,Low,0,2020-10-22,IN,,Kavya Mittal,Low,Retail Trader,Ranchi,0,Verified,2020-10-22,ACC20576
+CUST10577,Tushar Chopra,individual,Chartered Accountant,180117.33,Med,0,2024-11-09,IN,,Tushar Chopra,Med,Chartered Accountant,Visakhapatnam,0,Verified,2024-11-09,ACC20577
+CUST10578,Sneha Pillai,individual,Consultant,86166.08,Low,0,2021-08-05,IN,,Sneha Pillai,Low,Consultant,Bhubaneswar,0,Verified,2021-08-05,ACC20578
+CUST10579,Rohan Joshi,individual,Software Engineer,261956.82,Low,0,2021-04-17,IN,,Rohan Joshi,Low,Software Engineer,Kolkata,0,Verified,2021-04-17,ACC20579
+CUST10580,Kavya Pillai,individual,Clerk,210026.63,Low,0,2023-05-17,IN,,Kavya Pillai,Low,Clerk,Chandigarh,0,Verified,2023-05-17,ACC20580
+CUST10581,Vikram Reddy,individual,Doctor,241893.79,Low,0,2022-09-30,IN,,Vikram Reddy,Low,Doctor,Delhi,0,Verified,2022-09-30,ACC20581
+CUST10582,Ananya Tiwari,individual,Software Engineer,165306.27,Low,0,2023-12-04,IN,,Ananya Tiwari,Low,Software Engineer,Hyderabad,0,Verified,2023-12-04,ACC20582
+CUST10583,Pooja Arora,individual,Civil Servant,63156.17,Low,0,2024-09-23,IN,,Pooja Arora,Low,Civil Servant,Coimbatore,0,Verified,2024-09-23,ACC20583
+CUST10584,Vivaan Yadav,individual,Doctor,208009.31,High,1,2024-09-17,IN,,Vivaan Yadav,High,Doctor,Jaipur,1,Verified,2024-09-17,ACC20584
+CUST10585,Kiran Sethi,individual,Salaried Executive,171576.5,Low,0,2022-06-24,IN,,Kiran Sethi,Low,Salaried Executive,Patna,0,Verified,2022-06-24,ACC20585
+CUST10586,Rekha Iyer,individual,Salaried Executive,136872.33,Low,0,2024-03-30,IN,,Rekha Iyer,Low,Salaried Executive,Kanpur,0,Verified,2024-03-30,ACC20586
+CUST10587,Arjun Garg,individual,Civil Servant,59026.75,Med,0,2024-06-22,IN,,Arjun Garg,Med,Civil Servant,Ranchi,0,Verified,2024-06-22,ACC20587
+CUST10588,Ananya Rathore,individual,Salaried Executive,291390.93,Low,0,2022-09-27,IN,,Ananya Rathore,Low,Salaried Executive,Noida,0,Verified,2022-09-27,ACC20588
+CUST10589,Harshit Tiwari,individual,Freelancer,85208.09,Low,0,2021-08-07,IN,,Harshit Tiwari,Low,Freelancer,Nagpur,0,Verified,2021-08-07,ACC20589
+CUST10590,Aditi Yadav,individual,Retired,290712.77,Med,0,2024-10-31,IN,,Aditi Yadav,Med,Retired,Delhi,0,Verified,2024-10-31,ACC20590
+CUST10591,Kiran Joshi,individual,Teacher,248882.48,Low,0,2021-02-14,IN,,Kiran Joshi,Low,Teacher,Vadodara,0,Verified,2021-02-14,ACC20591
+CUST10592,Sai Gupta,individual,Freelancer,72521.48,Low,0,2021-06-16,IN,,Sai Gupta,Low,Freelancer,Chandigarh,0,Verified,2021-06-16,ACC20592
+CUST10593,Apex Ventures,business,IT Services,9939414.97,Low,0,2024-04-30,IN,BO_Sonia_Kumar,Apex Ventures,Low,IT Services,Agra,0,Verified,2024-04-30,ACC20593
+CUST10594,Parvati Malhotra,individual,Student,124395.92,Low,0,2022-09-02,IN,,Parvati Malhotra,Low,Student,Gurgaon,0,Verified,2022-09-02,ACC20594
+CUST10595,Royal Enterprises,business,Financial Advisory,4708781.5,Low,0,2020-09-04,IN,BO_Meera_Mehta,Royal Enterprises,Low,Financial Advisory,Chandigarh,0,Verified,2020-09-04,ACC20595
+CUST10596,Riya Bhatia,individual,Salaried Executive,70343.28,Low,0,2022-10-25,IN,,Riya Bhatia,Low,Salaried Executive,Mumbai,0,Verified,2022-10-25,ACC20596
+CUST10597,Apex Solutions Pvt Ltd,business,IT Services,14574713.1,Low,0,2021-01-13,IN,BO_Shreya_Mishra,Apex Solutions Pvt Ltd,Low,IT Services,Ranchi,0,Verified,2021-01-13,ACC20597
+CUST10598,Zenith Ventures,business,E-commerce Retailer,9832753.92,Low,0,2021-01-17,IN,BO_Ananya_Arora,Zenith Ventures,Low,E-commerce Retailer,Kolkata,0,Verified,2021-01-17,ACC20598
+CUST10599,Reyansh Garg,individual,Consultant,127181.2,High,1,2023-08-09,IN,,Reyansh Garg,High,Consultant,Visakhapatnam,1,Pending,2023-08-09,ACC20599
+CUST10600,Asha Thakur,individual,Retired,93108.18,Low,0,2023-05-17,IN,,Asha Thakur,Low,Retired,Hyderabad,0,Verified,2023-05-17,ACC20600
+CUST10601,Sunita Yadav,individual,Doctor,77336.29,Low,0,2022-11-19,IN,,Sunita Yadav,Low,Doctor,Indore,0,Verified,2022-11-19,ACC20601
+CUST10602,Sachin Srivastava,individual,Salaried Executive,62671.59,Low,0,2024-01-15,IN,,Sachin Srivastava,Low,Salaried Executive,Bhopal,0,Verified,2024-01-15,ACC20602
+CUST10603,Royal Industries,business,Financial Advisory,12225592.85,Low,0,2023-02-05,IN,BO_Kunal_Khatri,Royal Industries,Low,Financial Advisory,Hyderabad,0,Verified,2023-02-05,ACC20603
+CUST10604,Matrix Logistics,business,Consulting Firm,17990255.27,Low,0,2024-08-14,IN,BO_Sonia_Yadav,Matrix Logistics,Low,Consulting Firm,Chennai,0,Verified,2024-08-14,ACC20604
+CUST10605,Ananya Trivedi,individual,Chartered Accountant,71147.22,Low,0,2023-05-31,IN,,Ananya Trivedi,Low,Chartered Accountant,Chennai,0,Verified,2023-05-31,ACC20605
+CUST10606,Meera Agarwal,individual,Software Engineer,260687.61,Low,0,2022-12-31,IN,,Meera Agarwal,Low,Software Engineer,Surat,0,Verified,2022-12-31,ACC20606
+CUST10607,Harshit Arora,individual,Doctor,188202.18,Low,0,2022-08-13,IN,,Harshit Arora,Low,Doctor,Bhopal,0,Verified,2022-08-13,ACC20607
+CUST10608,Sunita Srivastava,individual,Consultant,38843.52,Med,0,2023-07-15,IN,,Sunita Srivastava,Med,Consultant,Coimbatore,0,Verified,2023-07-15,ACC20608
+CUST10609,Neel Sethi,individual,Salaried Executive,145709.54,High,0,2020-10-23,IN,,Neel Sethi,High,Salaried Executive,Delhi,1,Verified,2020-10-23,ACC20609
+CUST10610,Parvati Shah,individual,Clerk,166250.54,Low,0,2021-01-14,IN,,Parvati Shah,Low,Clerk,Pune,0,Verified,2021-01-14,ACC20610
+CUST10611,Mohit Patel,individual,Salaried Executive,162142.48,Low,0,2021-09-22,IN,,Mohit Patel,Low,Salaried Executive,Mumbai,0,Pending,2021-09-22,ACC20611
+CUST10612,Ishaan Pandey,individual,Doctor,244312.56,Low,0,2021-05-16,IN,,Ishaan Pandey,Low,Doctor,Noida,0,Verified,2021-05-16,ACC20612
+CUST10613,Rahul Chauhan,individual,Salaried Executive,113596.35,Low,0,2021-06-28,IN,,Rahul Chauhan,Low,Salaried Executive,Kochi,0,Verified,2021-06-28,ACC20613
+CUST10614,Renu Jain,individual,Freelancer,282044.47,Med,0,2022-11-19,IN,,Renu Jain,Med,Freelancer,Hyderabad,0,Verified,2022-11-19,ACC20614
+CUST10615,Aditya Saxena,individual,Chartered Accountant,81445.86,Low,0,2020-12-12,IN,,Aditya Saxena,Low,Chartered Accountant,Chennai,0,Pending,2020-12-12,ACC20615
+CUST10616,Rohan Mittal,individual,Clerk,230405.72,Med,0,2020-12-25,IN,,Rohan Mittal,Med,Clerk,Patna,0,Verified,2020-12-25,ACC20616
+CUST10617,Meera Bhatt,individual,Civil Servant,147076.22,Low,0,2022-05-22,IN,,Meera Bhatt,Low,Civil Servant,Visakhapatnam,0,Verified,2022-05-22,ACC20617
+CUST10618,Rekha Khatri,individual,Retired,273354.57,Low,0,2021-02-24,IN,,Rekha Khatri,Low,Retired,Kochi,0,Pending,2021-02-24,ACC20618
+CUST10619,Divya Srivastava,individual,Software Engineer,56245.16,Low,0,2024-06-29,IN,,Divya Srivastava,Low,Software Engineer,Jaipur,0,Verified,2024-06-29,ACC20619
+CUST10620,Zenith Logistics,business,E-commerce Retailer,19113938.19,Low,0,2021-11-21,IN,BO_Deepak_Khatri,Zenith Logistics,Low,E-commerce Retailer,Bhopal,0,Verified,2021-11-21,ACC20620
+CUST10621,Mohit Verma,individual,Consultant,85101.07,Med,0,2022-01-04,IN,,Mohit Verma,Med,Consultant,Indore,0,Verified,2022-01-04,ACC20621
+CUST10622,Lakshmi Desai,individual,Clerk,192239.67,Med,0,2022-06-06,IN,,Lakshmi Desai,Med,Clerk,Coimbatore,0,Verified,2022-06-06,ACC20622
+CUST10623,Priya Reddy,individual,Teacher,163324.42,Low,0,2024-08-29,IN,,Priya Reddy,Low,Teacher,Surat,0,Verified,2024-08-29,ACC20623
+CUST10624,Priya Thakur,individual,Consultant,83304.34,Low,0,2021-03-10,IN,,Priya Thakur,Low,Consultant,Kolkata,0,Verified,2021-03-10,ACC20624
+CUST10625,Nexus Solutions Pvt Ltd,business,Jewellery Merchant,6317533.15,Low,0,2021-03-11,IN,BO_Manisha_Gupta,Nexus Solutions Pvt Ltd,Low,Jewellery Merchant,Kanpur,0,Verified,2021-03-11,ACC20625
+CUST10626,Priya Thakur,individual,Consultant,67194.86,Med,0,2020-08-13,IN,,Priya Thakur,Med,Consultant,Thane,0,Verified,2020-08-13,ACC20626
+CUST10627,Kunal Thakur,individual,Retired,122789.37,Low,0,2023-04-20,CH,,Kunal Thakur,Low,Retired,Gurgaon,0,Verified,2023-04-20,ACC20627
+CUST10628,Amit Jain,individual,Freelancer,64763.64,Low,0,2021-02-14,IN,,Amit Jain,Low,Freelancer,Surat,0,Verified,2021-02-14,ACC20628
+CUST10629,Sneha Tiwari,individual,Chartered Accountant,59507.5,Low,0,2021-08-27,IN,,Sneha Tiwari,Low,Chartered Accountant,Kochi,0,Verified,2021-08-27,ACC20629
+CUST10630,Vivaan Patel,individual,Retired,260104.62,Med,0,2022-01-20,IN,,Vivaan Patel,Med,Retired,Bhopal,0,Verified,2022-01-20,ACC20630
+CUST10631,Arjun Bajaj,individual,Chartered Accountant,140352.87,Low,0,2022-10-05,IN,,Arjun Bajaj,Low,Chartered Accountant,Surat,0,Verified,2022-10-05,ACC20631
+CUST10632,Amit Rathore,individual,Software Engineer,92159.22,Low,0,2022-08-05,IN,,Amit Rathore,Low,Software Engineer,Surat,0,Verified,2022-08-05,ACC20632
+CUST10633,Rajesh Mishra,individual,Doctor,256410.56,Low,0,2023-03-23,IN,,Rajesh Mishra,Low,Doctor,Visakhapatnam,0,Pending,2023-03-23,ACC20633
+CUST10634,Titan Exports,business,IT Services,1622449.06,Low,0,2023-12-11,IN,BO_Meera_Mishra,Titan Exports,Low,IT Services,Chandigarh,0,Verified,2023-12-11,ACC20634
+CUST10635,Divya Chopra,individual,Student,111707.74,Med,0,2023-03-26,IN,,Divya Chopra,Med,Student,Surat,0,Verified,2023-03-26,ACC20635
+CUST10636,Sneha Verma,individual,Salaried Executive,75816.35,Low,0,2021-05-10,IN,,Sneha Verma,Low,Salaried Executive,Noida,0,Verified,2021-05-10,ACC20636
+CUST10637,Ananya Yadav,individual,Freelancer,205868.25,Low,0,2022-02-28,US,,Ananya Yadav,Low,Freelancer,Agra,0,Verified,2022-02-28,ACC20637
+CUST10638,Preeti Dubey,individual,Consultant,201418.95,Low,0,2024-04-03,IN,,Preeti Dubey,Low,Consultant,Patna,0,Verified,2024-04-03,ACC20638
+CUST10639,Priya Bhatia,individual,Salaried Executive,73726.34,Low,0,2022-12-03,IN,,Priya Bhatia,Low,Salaried Executive,Jaipur,0,Verified,2022-12-03,ACC20639
+CUST10640,Suresh Singh,individual,Consultant,112290.99,Low,0,2023-11-03,IN,,Suresh Singh,Low,Consultant,Kolkata,0,Verified,2023-11-03,ACC20640
+CUST10641,Priya Thakur,individual,Chartered Accountant,266197.43,Low,0,2023-03-28,IN,,Priya Thakur,Low,Chartered Accountant,Chandigarh,0,Verified,2023-03-28,ACC20641
+CUST10642,Titan Holdings,business,Import/Export,1738606.78,Low,0,2022-08-13,IN,BO_Manoj_Yadav,Titan Holdings,Low,Import/Export,Kolkata,0,Verified,2022-08-13,ACC20642
+CUST10643,Sneha Malhotra,individual,Retired,197558.52,Low,0,2021-12-10,IN,,Sneha Malhotra,Low,Retired,Chandigarh,0,Verified,2021-12-10,ACC20643
+CUST10644,Vanguard Trading Co,business,IT Services,16648627.76,Med,0,2023-03-06,IN,BO_Sunita_Bansal,Vanguard Trading Co,Med,IT Services,Chennai,0,Verified,2023-03-06,ACC20644
+CUST10645,Neha Chauhan,individual,Chartered Accountant,80634.9,Low,0,2024-04-05,IN,,Neha Chauhan,Low,Chartered Accountant,Chandigarh,0,Verified,2024-04-05,ACC20645
+CUST10646,Ishaan Kapoor,individual,Doctor,294994.04,Low,0,2024-04-19,IN,,Ishaan Kapoor,Low,Doctor,Ranchi,0,Verified,2024-04-19,ACC20646
+CUST10647,Divya Shah,individual,Salaried Executive,245159.62,Low,0,2024-04-04,IN,,Divya Shah,Low,Salaried Executive,Delhi,0,Verified,2024-04-04,ACC20647
+CUST10648,Sachin Shah,individual,Software Engineer,278825.99,Med,0,2023-11-21,IN,,Sachin Shah,Med,Software Engineer,Mumbai,0,Verified,2023-11-21,ACC20648
+CUST10649,Meera Bhatia,individual,Chartered Accountant,128333.87,Low,0,2021-06-27,IN,,Meera Bhatia,Low,Chartered Accountant,Coimbatore,0,Verified,2021-06-27,ACC20649
+CUST10650,Sachin Sharma,individual,Retired,92504.49,Low,0,2020-09-11,IN,,Sachin Sharma,Low,Retired,Patna,0,Verified,2020-09-11,ACC20650
+CUST10651,Anjali Choudhary,individual,Chartered Accountant,220005.22,Low,0,2024-04-28,IN,,Anjali Choudhary,Low,Chartered Accountant,Kanpur,0,Pending,2024-04-28,ACC20651
+CUST10652,Anjali Iyer,individual,Student,64904.05,Low,0,2024-04-22,IN,,Anjali Iyer,Low,Student,Bhopal,0,Verified,2024-04-22,ACC20652
+CUST10653,Manisha Gupta,individual,Software Engineer,121950.58,Low,0,2021-07-23,IN,,Manisha Gupta,Low,Software Engineer,Gurgaon,0,Pending,2021-07-23,ACC20653
+CUST10654,Manisha Mishra,individual,Consultant,296015.02,Med,0,2022-04-04,IN,,Manisha Mishra,Med,Consultant,Kanpur,0,Verified,2022-04-04,ACC20654
+CUST10655,Geeta Khatri,individual,Software Engineer,140037.99,Low,0,2024-04-03,IN,,Geeta Khatri,Low,Software Engineer,Nagpur,0,Verified,2024-04-03,ACC20655
+CUST10656,Kunal Bose,individual,Software Engineer,131383.15,Low,0,2022-08-29,IN,,Kunal Bose,Low,Software Engineer,Bhubaneswar,0,Verified,2022-08-29,ACC20656
+CUST10657,Sachin Bhatia,individual,Retail Trader,107337.79,Low,0,2022-09-06,IN,,Sachin Bhatia,Low,Retail Trader,Gurgaon,0,Verified,2022-09-06,ACC20657
+CUST10658,Geeta Bhatt,individual,Consultant,74054.14,Low,0,2022-03-07,IN,,Geeta Bhatt,Low,Consultant,Noida,0,Verified,2022-03-07,ACC20658
+CUST10659,Apex Trading Co,business,Jewellery Merchant,14044987.65,High,0,2021-02-11,IN,BO_Nikhil_Kohli,Apex Trading Co,High,Jewellery Merchant,Surat,1,Verified,2021-02-11,ACC20659
+CUST10660,Global Industries,business,Jewellery Merchant,5235737.46,Low,0,2023-06-17,IN,BO_Geeta_Bhatt,Global Industries,Low,Jewellery Merchant,Kochi,0,Verified,2023-06-17,ACC20660
+CUST10661,Sachin Gupta,individual,Student,268233.3,Low,0,2022-10-25,IN,,Sachin Gupta,Low,Student,Delhi,0,Verified,2022-10-25,ACC20661
+CUST10662,Asha Menon,individual,Freelancer,78498.22,Low,0,2022-09-29,IN,,Asha Menon,Low,Freelancer,Hyderabad,0,Verified,2022-09-29,ACC20662
+CUST10663,Manisha Khatri,individual,Retired,186635.71,Med,0,2022-01-31,IN,,Manisha Khatri,Med,Retired,Jaipur,0,Verified,2022-01-31,ACC20663
+CUST10664,Renu Khatri,individual,Chartered Accountant,238114.75,Low,0,2021-08-12,IN,,Renu Khatri,Low,Chartered Accountant,Bhubaneswar,0,Verified,2021-08-12,ACC20664
+CUST10665,Sonia Verma,individual,Civil Servant,125432.98,Low,0,2022-12-03,IN,,Sonia Verma,Low,Civil Servant,Delhi,0,Verified,2022-12-03,ACC20665
+CUST10666,Mohit Menon,individual,Retail Trader,57509.56,Med,0,2024-04-13,IN,,Mohit Menon,Med,Retail Trader,Mumbai,0,Verified,2024-04-13,ACC20666
+CUST10667,Matrix Exports,business,Logistics & Transport,1877442.05,Low,0,2022-10-22,IN,BO_Vivaan_Desai,Matrix Exports,Low,Logistics & Transport,Lucknow,0,Verified,2022-10-22,ACC20667
+CUST10668,Kabir Khatri,individual,Teacher,124031.38,Low,0,2023-01-08,IN,,Kabir Khatri,Low,Teacher,Surat,0,Verified,2023-01-08,ACC20668
+CUST10669,Geeta Garg,individual,Software Engineer,257700.83,Low,0,2024-08-28,IN,,Geeta Garg,Low,Software Engineer,Coimbatore,0,Verified,2024-08-28,ACC20669
+CUST10670,Kunal Patel,individual,Freelancer,258709.52,Low,0,2024-07-19,IN,,Kunal Patel,Low,Freelancer,Visakhapatnam,0,Verified,2024-07-19,ACC20670
+CUST10671,Lakshmi Kumar,individual,Civil Servant,253290.82,Low,0,2021-03-16,IN,,Lakshmi Kumar,Low,Civil Servant,Pune,0,Verified,2021-03-16,ACC20671
+CUST10672,Anjali Srivastava,individual,Civil Servant,237312.19,Low,0,2020-12-24,IN,,Anjali Srivastava,Low,Civil Servant,Kolkata,0,Verified,2020-12-24,ACC20672
+CUST10673,Sarita Srivastava,individual,Consultant,283348.18,Low,0,2020-08-11,IN,,Sarita Srivastava,Low,Consultant,Coimbatore,0,Verified,2020-08-11,ACC20673
+CUST10674,Royal Holdings,business,Jewellery Merchant,4233258.24,Low,0,2022-06-26,IN,BO_Gaurav_Menon,Royal Holdings,Low,Jewellery Merchant,Bhubaneswar,0,Verified,2022-06-26,ACC20674
+CUST10675,Kamla Mishra,individual,Consultant,253283.34,Low,0,2021-07-21,IN,,Kamla Mishra,Low,Consultant,Ahmedabad,0,Verified,2021-07-21,ACC20675
+CUST10676,Riya Menon,individual,Clerk,163626.32,Low,0,2024-09-19,IN,,Riya Menon,Low,Clerk,Jaipur,0,Verified,2024-09-19,ACC20676
+CUST10677,Parvati Rao,individual,Civil Servant,180937.12,Low,0,2020-11-15,IN,,Parvati Rao,Low,Civil Servant,Mumbai,0,Verified,2020-11-15,ACC20677
+CUST10678,Vikram Kohli,individual,Consultant,264800.52,Low,0,2022-11-20,IN,,Vikram Kohli,Low,Consultant,Bengaluru,0,Verified,2022-11-20,ACC20678
+CUST10679,Usha Agarwal,individual,Teacher,64662.08,Med,0,2021-12-31,IN,,Usha Agarwal,Med,Teacher,Coimbatore,0,Verified,2021-12-31,ACC20679
+CUST10680,Kavya Yadav,individual,Software Engineer,98090.37,Med,0,2023-01-29,IN,,Kavya Yadav,Med,Software Engineer,Patna,0,Verified,2023-01-29,ACC20680
+CUST10681,Riya Dubey,individual,Teacher,73233.65,Med,0,2022-06-17,IN,,Riya Dubey,Med,Teacher,Coimbatore,0,Verified,2022-06-17,ACC20681
+CUST10682,Tushar Joshi,individual,Chartered Accountant,179622.43,Low,0,2023-05-15,IN,,Tushar Joshi,Low,Chartered Accountant,Chennai,0,Verified,2023-05-15,ACC20682
+CUST10683,Sarita Menon,individual,Salaried Executive,206030.36,Low,0,2020-10-11,IN,,Sarita Menon,Low,Salaried Executive,Delhi,0,Verified,2020-10-11,ACC20683
+CUST10684,Riya Reddy,individual,Retired,136942.91,Low,0,2021-01-30,IN,,Riya Reddy,Low,Retired,Ahmedabad,0,Verified,2021-01-30,ACC20684
+CUST10685,Kiran Reddy,individual,Consultant,58916.34,Low,0,2023-09-30,IN,,Kiran Reddy,Low,Consultant,Kolkata,0,Verified,2023-09-30,ACC20685
+CUST10686,Parvati Mittal,individual,Student,244169.11,Low,0,2020-07-21,IN,,Parvati Mittal,Low,Student,Bhopal,0,Verified,2020-07-21,ACC20686
+CUST10687,Rahul Dubey,individual,Software Engineer,253466.23,Low,0,2022-12-14,IN,,Rahul Dubey,Low,Software Engineer,Patna,0,Verified,2022-12-14,ACC20687
+CUST10688,Sanjay Verma,individual,Salaried Executive,204963.79,Low,0,2021-05-01,IN,,Sanjay Verma,Low,Salaried Executive,Nagpur,0,Verified,2021-05-01,ACC20688
+CUST10689,Preeti Patel,individual,Software Engineer,76822.95,Med,0,2021-04-14,IN,,Preeti Patel,Med,Software Engineer,Agra,0,Verified,2021-04-14,ACC20689
+CUST10690,Vikram Tiwari,individual,Clerk,266479.05,Low,0,2021-08-07,IN,,Vikram Tiwari,Low,Clerk,Kochi,0,Verified,2021-08-07,ACC20690
+CUST10691,Nexus Solutions Pvt Ltd,business,Consulting Firm,17713215.24,Med,0,2024-10-22,IN,BO_Preeti_Iyer,Nexus Solutions Pvt Ltd,Med,Consulting Firm,Vadodara,0,Verified,2024-10-22,ACC20691
+CUST10692,Reyansh Srivastava,individual,Teacher,104372.54,Low,0,2021-06-17,IN,,Reyansh Srivastava,Low,Teacher,Jaipur,0,Verified,2021-06-17,ACC20692
+CUST10693,Priya Sethi,individual,Software Engineer,38740.45,Low,0,2022-05-19,IN,,Priya Sethi,Low,Software Engineer,Bhopal,0,Verified,2022-05-19,ACC20693
+CUST10694,Divya Rao,individual,Consultant,232807.4,Low,0,2023-10-07,IN,,Divya Rao,Low,Consultant,Bhubaneswar,0,Verified,2023-10-07,ACC20694
+CUST10695,Deepak Chopra,individual,Student,245002.84,High,0,2023-08-09,IN,,Deepak Chopra,High,Student,Ahmedabad,1,Verified,2023-08-09,ACC20695
+CUST10696,Sanjay Patel,individual,Salaried Executive,159253.63,High,0,2022-09-11,IN,,Sanjay Patel,High,Salaried Executive,Chandigarh,1,Verified,2022-09-11,ACC20696
+CUST10697,Neha Reddy,individual,Software Engineer,60249.05,Low,0,2023-08-11,IN,,Neha Reddy,Low,Software Engineer,Kanpur,0,Pending,2023-08-11,ACC20697
+CUST10698,Parvati Kohli,individual,Freelancer,233284.09,Low,0,2021-06-13,IN,,Parvati Kohli,Low,Freelancer,Nagpur,0,Verified,2021-06-13,ACC20698
+CUST10699,Pinnacle Enterprises,business,Financial Advisory,4818386.13,Low,0,2022-04-20,IN,BO_Geeta_Jain,Pinnacle Enterprises,Low,Financial Advisory,Lucknow,0,Verified,2022-04-20,ACC20699
+CUST10700,Kavya Joshi,individual,Chartered Accountant,46702.97,Med,0,2023-05-08,IN,,Kavya Joshi,Med,Chartered Accountant,Indore,0,Verified,2023-05-08,ACC20700
+CUST10701,Renu Reddy,individual,Retired,117947.73,Low,0,2022-03-03,IN,,Renu Reddy,Low,Retired,Chennai,0,Verified,2022-03-03,ACC20701
+CUST10702,Harshit Tiwari,individual,Salaried Executive,85063.79,Low,0,2022-04-15,IN,,Harshit Tiwari,Low,Salaried Executive,Chandigarh,0,Verified,2022-04-15,ACC20702
+CUST10703,Vanguard Enterprises,business,Jewellery Merchant,8095622.15,Low,0,2022-02-28,IN,BO_Geeta_Srivastava,Vanguard Enterprises,Low,Jewellery Merchant,Patna,0,Verified,2022-02-28,ACC20703
+CUST10704,Global Logistics,business,Logistics & Transport,4842116.84,Low,0,2021-10-07,IN,BO_Anjali_Rao,Global Logistics,Low,Logistics & Transport,Coimbatore,0,Verified,2021-10-07,ACC20704
+CUST10705,Aarav Chauhan,individual,Retail Trader,82850.74,Low,0,2022-02-17,IN,,Aarav Chauhan,Low,Retail Trader,Lucknow,0,Verified,2022-02-17,ACC20705
+CUST10706,Gaurav Joshi,individual,Student,133992.95,Low,0,2023-02-10,IN,,Gaurav Joshi,Low,Student,Bengaluru,0,Verified,2023-02-10,ACC20706
+CUST10707,Sunita Srivastava,individual,Civil Servant,288128.41,Low,0,2024-09-05,IN,,Sunita Srivastava,Low,Civil Servant,Thane,0,Verified,2024-09-05,ACC20707
+CUST10708,Pranav Sethi,individual,Doctor,91012.22,Low,0,2023-02-11,IN,,Pranav Sethi,Low,Doctor,Patna,0,Verified,2023-02-11,ACC20708
+CUST10709,Nikhil Patel,individual,Student,102618.43,Low,0,2022-09-09,IN,,Nikhil Patel,Low,Student,Pune,0,Verified,2022-09-09,ACC20709
+CUST10710,Shreya Mittal,individual,Civil Servant,75845.69,Med,0,2020-10-18,IN,,Shreya Mittal,Med,Civil Servant,Surat,0,Verified,2020-10-18,ACC20710
+CUST10711,Suresh Bajaj,individual,Software Engineer,255494.01,Low,0,2022-10-01,IN,,Suresh Bajaj,Low,Software Engineer,Coimbatore,0,Verified,2022-10-01,ACC20711
+CUST10712,Matrix Holdings,business,Financial Advisory,4947582.9,Low,0,2022-01-17,IN,BO_Reyansh_Gupta,Matrix Holdings,Low,Financial Advisory,Thane,0,Verified,2022-01-17,ACC20712
+CUST10713,Yash Mehta,individual,Clerk,174728.86,Low,0,2022-04-20,IN,,Yash Mehta,Low,Clerk,Kochi,0,Verified,2022-04-20,ACC20713
+CUST10714,Zenith Ventures,business,Real Estate,11177203.05,Low,0,2024-06-30,IN,BO_Arjun_Rathore,Zenith Ventures,Low,Real Estate,Visakhapatnam,0,Verified,2024-06-30,ACC20714
+CUST10715,Kabir Srivastava,individual,Civil Servant,225882.15,Low,0,2021-08-22,IN,,Kabir Srivastava,Low,Civil Servant,Visakhapatnam,0,Verified,2021-08-22,ACC20715
+CUST10716,Sanjay Chopra,individual,Doctor,258371.1,Low,0,2020-12-22,IN,,Sanjay Chopra,Low,Doctor,Coimbatore,0,Verified,2020-12-22,ACC20716
+CUST10717,Amit Arora,individual,Consultant,125453.61,Med,0,2023-09-28,IN,,Amit Arora,Med,Consultant,Patna,0,Pending,2023-09-28,ACC20717
+CUST10718,Gaurav Shah,individual,Student,176609.64,High,1,2024-04-09,IN,,Gaurav Shah,High,Student,Noida,1,Verified,2024-04-09,ACC20718
+CUST10719,Asha Bajaj,individual,Freelancer,194500.17,Low,0,2021-06-19,IN,,Asha Bajaj,Low,Freelancer,Gurgaon,0,Pending,2021-06-19,ACC20719
+CUST10720,Parvati Menon,individual,Software Engineer,68148.71,High,1,2024-04-18,IN,,Parvati Menon,High,Software Engineer,Chandigarh,1,Pending,2024-04-18,ACC20720
+CUST10721,Pooja Choudhary,individual,Civil Servant,73465.86,Med,0,2020-06-30,IN,,Pooja Choudhary,Med,Civil Servant,Bengaluru,0,Verified,2020-06-30,ACC20721
+CUST10722,Sunita Dubey,individual,Salaried Executive,65861.59,Low,0,2022-06-06,AU,,Sunita Dubey,Low,Salaried Executive,Mumbai,0,Verified,2022-06-06,ACC20722
+CUST10723,Divya Pillai,individual,Retail Trader,254804.45,Low,0,2024-05-07,IN,,Divya Pillai,Low,Retail Trader,Chandigarh,0,Verified,2024-05-07,ACC20723
+CUST10724,Geeta Bhatia,individual,Retail Trader,228735.81,Low,0,2022-09-07,IN,,Geeta Bhatia,Low,Retail Trader,Coimbatore,0,Verified,2022-09-07,ACC20724
+CUST10725,Sarita Yadav,individual,Teacher,224286.94,Low,0,2023-02-26,IN,,Sarita Yadav,Low,Teacher,Jaipur,0,Verified,2023-02-26,ACC20725
+CUST10726,Sunita Joshi,individual,Clerk,200014.62,Low,0,2022-06-24,IN,,Sunita Joshi,Low,Clerk,Surat,0,Verified,2022-06-24,ACC20726
+CUST10727,Amit Iyer,individual,Retired,93221.12,Low,0,2021-07-19,IN,,Amit Iyer,Low,Retired,Chandigarh,0,Verified,2021-07-19,ACC20727
+CUST10728,Sterling Exports,business,Consulting Firm,16911993.8,Low,0,2022-04-11,IN,BO_Kunal_Saxena,Sterling Exports,Low,Consulting Firm,Kolkata,0,Verified,2022-04-11,ACC20728
+CUST10729,Kunal Patel,individual,Civil Servant,162965.79,Low,0,2022-03-02,IN,,Kunal Patel,Low,Civil Servant,Indore,0,Verified,2022-03-02,ACC20729
+CUST10730,Riya Kapoor,individual,Retired,47468.07,Med,0,2022-12-03,IN,,Riya Kapoor,Med,Retired,Kolkata,0,Verified,2022-12-03,ACC20730
+CUST10731,Aditya Kumar,individual,Chartered Accountant,149114.42,Low,0,2023-09-02,IN,,Aditya Kumar,Low,Chartered Accountant,Lucknow,0,Verified,2023-09-02,ACC20731
+CUST10732,Hemant Rathore,individual,Consultant,272524.19,Med,0,2021-07-15,IN,,Hemant Rathore,Med,Consultant,Chandigarh,0,Verified,2021-07-15,ACC20732
+CUST10733,Parvati Srivastava,individual,Software Engineer,293284.84,Low,0,2024-05-09,IN,,Parvati Srivastava,Low,Software Engineer,Delhi,0,Verified,2024-05-09,ACC20733
+CUST10734,Rohan Kapoor,individual,Chartered Accountant,76613.63,Low,0,2022-02-01,IN,,Rohan Kapoor,Low,Chartered Accountant,Hyderabad,0,Verified,2022-02-01,ACC20734
+CUST10735,Sarita Agarwal,individual,Software Engineer,259877.7,Low,0,2020-08-12,IN,,Sarita Agarwal,Low,Software Engineer,Bhubaneswar,0,Verified,2020-08-12,ACC20735
+CUST10736,Anjali Bose,individual,Software Engineer,105494.14,Low,0,2021-05-24,IN,,Anjali Bose,Low,Software Engineer,Chennai,0,Verified,2021-05-24,ACC20736
+CUST10737,Lakshmi Iyer,individual,Doctor,247468.7,Low,0,2022-05-09,IN,,Lakshmi Iyer,Low,Doctor,Visakhapatnam,0,Verified,2022-05-09,ACC20737
+CUST10738,Vivaan Tiwari,individual,Doctor,239090.24,Low,0,2024-07-14,IN,,Vivaan Tiwari,Low,Doctor,Lucknow,0,Verified,2024-07-14,ACC20738
+CUST10739,Rajesh Singh,individual,Student,236185.98,Low,0,2021-09-14,IN,,Rajesh Singh,Low,Student,Noida,0,Pending,2021-09-14,ACC20739
+CUST10740,Nisha Pillai,individual,Student,141530.75,Low,0,2023-03-21,IN,,Nisha Pillai,Low,Student,Lucknow,0,Verified,2023-03-21,ACC20740
+CUST10741,Sterling Solutions Pvt Ltd,business,Consulting Firm,9754497.44,Low,0,2020-07-03,IN,BO_Rekha_Arora,Sterling Solutions Pvt Ltd,Low,Consulting Firm,Thane,0,Verified,2020-07-03,ACC20741
+CUST10742,Lakshmi Mittal,individual,Student,240481.09,Low,0,2021-11-29,IN,,Lakshmi Mittal,Low,Student,Patna,0,Verified,2021-11-29,ACC20742
+CUST10743,Nisha Thakur,individual,Consultant,91639.65,Low,0,2023-01-06,IN,,Nisha Thakur,Low,Consultant,Kolkata,0,Verified,2023-01-06,ACC20743
+CUST10744,Rekha Bhatia,individual,Consultant,98955.04,Low,0,2022-02-03,IN,,Rekha Bhatia,Low,Consultant,Delhi,0,Verified,2022-02-03,ACC20744
+CUST10745,Anjali Bansal,individual,Software Engineer,47649.21,Low,0,2023-04-03,IN,,Anjali Bansal,Low,Software Engineer,Mumbai,0,Verified,2023-04-03,ACC20745
+CUST10746,Parvati Bhatia,individual,Retail Trader,224381.49,Low,0,2021-08-02,IN,,Parvati Bhatia,Low,Retail Trader,Surat,0,Verified,2021-08-02,ACC20746
+CUST10747,Yash Sethi,individual,Civil Servant,72092.45,Low,0,2024-05-02,IN,,Yash Sethi,Low,Civil Servant,Coimbatore,0,Verified,2024-05-02,ACC20747
+CUST10748,Sanjay Shah,individual,Doctor,223584.71,Low,0,2024-07-29,IN,,Sanjay Shah,Low,Doctor,Chennai,0,Verified,2024-07-29,ACC20748
+CUST10749,Manoj Khatri,individual,Retired,141729.73,Low,0,2023-06-12,IN,,Manoj Khatri,Low,Retired,Noida,0,Verified,2023-06-12,ACC20749
+CUST10750,Geeta Mishra,individual,Doctor,73251.74,Low,0,2024-03-14,SG,,Geeta Mishra,Low,Doctor,Visakhapatnam,0,Verified,2024-03-14,ACC20750
+CUST10751,Sunita Gupta,individual,Freelancer,76562.52,Med,0,2024-04-04,IN,,Sunita Gupta,Med,Freelancer,Indore,0,Verified,2024-04-04,ACC20751
+CUST10752,Shreya Gupta,individual,Retired,75625.7,High,0,2023-03-23,IN,,Shreya Gupta,High,Retired,Mumbai,1,Verified,2023-03-23,ACC20752
+CUST10753,Titan Exports,business,Retail Store,18831182.12,Low,0,2023-11-25,IN,BO_Shreya_Kapoor,Titan Exports,Low,Retail Store,Bhopal,0,Verified,2023-11-25,ACC20753
+CUST10754,Sai Gupta,individual,Student,162511.75,Low,0,2023-01-12,IN,,Sai Gupta,Low,Student,Bhopal,0,Verified,2023-01-12,ACC20754
+CUST10755,Ishaan Agarwal,individual,Retired,203661.97,Low,0,2024-02-02,IN,,Ishaan Agarwal,Low,Retired,Lucknow,0,Verified,2024-02-02,ACC20755
+CUST10756,Renu Mishra,individual,Student,96697.91,Low,0,2021-03-01,IN,,Renu Mishra,Low,Student,Patna,0,Verified,2021-03-01,ACC20756
+CUST10757,Zenith Enterprises,business,Financial Advisory,13157020.42,Med,0,2021-04-22,IN,BO_Aditi_Rathore,Zenith Enterprises,Med,Financial Advisory,Vadodara,0,Verified,2021-04-22,ACC20757
+CUST10758,Rekha Sethi,individual,Salaried Executive,288682.59,Low,0,2022-02-08,IN,,Rekha Sethi,Low,Salaried Executive,Hyderabad,0,Verified,2022-02-08,ACC20758
+CUST10759,Vivaan Rao,individual,Teacher,100000.97,Med,0,2022-06-08,IN,,Vivaan Rao,Med,Teacher,Vadodara,0,Verified,2022-06-08,ACC20759
+CUST10760,Aditya Yadav,individual,Salaried Executive,125088.49,Low,0,2021-12-18,IN,,Aditya Yadav,Low,Salaried Executive,Jaipur,0,Verified,2021-12-18,ACC20760
+CUST10761,Rekha Bose,individual,Consultant,73169.08,Low,0,2023-03-16,IN,,Rekha Bose,Low,Consultant,Gurgaon,0,Verified,2023-03-16,ACC20761
+CUST10762,Vikram Chopra,individual,Salaried Executive,224024.67,Low,0,2024-02-16,IN,,Vikram Chopra,Low,Salaried Executive,Lucknow,0,Verified,2024-02-16,ACC20762
+CUST10763,Rohan Singh,individual,Teacher,98500.09,Low,0,2022-01-27,IN,,Rohan Singh,Low,Teacher,Nagpur,0,Verified,2022-01-27,ACC20763
+CUST10764,Vikram Srivastava,individual,Retired,142875.26,Low,0,2023-08-13,IN,,Vikram Srivastava,Low,Retired,Mumbai,0,Verified,2023-08-13,ACC20764
+CUST10765,Gaurav Shah,individual,Teacher,237189.25,Low,0,2021-09-27,IN,,Gaurav Shah,Low,Teacher,Bengaluru,0,Verified,2021-09-27,ACC20765
+CUST10766,Lakshmi Mehta,individual,Chartered Accountant,178216.53,Low,0,2022-07-20,SG,,Lakshmi Mehta,Low,Chartered Accountant,Thane,0,Verified,2022-07-20,ACC20766
+CUST10767,Usha Arora,individual,Consultant,208060.6,Low,0,2022-03-22,IN,,Usha Arora,Low,Consultant,Jaipur,0,Verified,2022-03-22,ACC20767
+CUST10768,Suresh Garg,individual,Teacher,190067.18,Low,0,2020-10-12,IN,,Suresh Garg,Low,Teacher,Bengaluru,0,Verified,2020-10-12,ACC20768
+CUST10769,Rohan Agarwal,individual,Freelancer,182466.96,Low,0,2021-07-02,IN,,Rohan Agarwal,Low,Freelancer,Kochi,0,Verified,2021-07-02,ACC20769
+CUST10770,Rahul Garg,individual,Consultant,294604.69,Low,0,2021-03-18,FR,,Rahul Garg,Low,Consultant,Pune,0,Verified,2021-03-18,ACC20770
+CUST10771,Vivaan Agarwal,individual,Civil Servant,279398.31,Low,0,2024-11-14,IN,,Vivaan Agarwal,Low,Civil Servant,Indore,0,Verified,2024-11-14,ACC20771
+CUST10772,Geeta Pandey,individual,Retired,56504.43,Low,0,2021-11-26,IN,,Geeta Pandey,Low,Retired,Bhubaneswar,0,Verified,2021-11-26,ACC20772
+CUST10773,Rohan Bansal,individual,Student,254278.71,Low,0,2020-08-14,IN,,Rohan Bansal,Low,Student,Mumbai,0,Verified,2020-08-14,ACC20773
+CUST10774,Divya Tiwari,individual,Salaried Executive,93703.0,Low,0,2020-12-12,IN,,Divya Tiwari,Low,Salaried Executive,Bengaluru,0,Verified,2020-12-12,ACC20774
+CUST10775,Parvati Iyer,individual,Teacher,294731.57,Low,0,2022-02-28,IN,,Parvati Iyer,Low,Teacher,Chandigarh,0,Verified,2022-02-28,ACC20775
+CUST10776,Matrix Trading Co,business,Logistics & Transport,12028391.28,Low,0,2021-03-23,IN,BO_Manisha_Malhotra,Matrix Trading Co,Low,Logistics & Transport,Gurgaon,0,Verified,2021-03-23,ACC20776
+CUST10777,Sai Bhatia,individual,Doctor,232682.96,Med,0,2023-08-25,IN,,Sai Bhatia,Med,Doctor,Patna,0,Verified,2023-08-25,ACC20777
+CUST10778,Gaurav Verma,individual,Freelancer,214599.63,Low,0,2022-05-19,IN,,Gaurav Verma,Low,Freelancer,Indore,0,Verified,2022-05-19,ACC20778
+CUST10779,Arjun Desai,individual,Student,258750.51,Low,0,2022-01-07,IN,,Arjun Desai,Low,Student,Kanpur,0,Verified,2022-01-07,ACC20779
+CUST10780,Royal Enterprises,business,Logistics & Transport,18490242.6,Low,0,2022-09-23,IN,BO_Vikram_Sharma,Royal Enterprises,Low,Logistics & Transport,Bengaluru,0,Verified,2022-09-23,ACC20780
+CUST10781,Kunal Iyer,individual,Freelancer,147312.37,Low,0,2024-01-02,IN,,Kunal Iyer,Low,Freelancer,Bengaluru,0,Verified,2024-01-02,ACC20781
+CUST10782,Vanguard Exports,business,Retail Store,12461819.26,Low,0,2023-07-16,IN,BO_Rahul_Reddy,Vanguard Exports,Low,Retail Store,Ahmedabad,0,Verified,2023-07-16,ACC20782
+CUST10783,Sarita Jain,individual,Retired,245439.45,Low,0,2021-06-14,IN,,Sarita Jain,Low,Retired,Hyderabad,0,Verified,2021-06-14,ACC20783
+CUST10784,Reyansh Singh,individual,Salaried Executive,135009.71,Low,0,2020-07-15,IN,,Reyansh Singh,Low,Salaried Executive,Kochi,0,Verified,2020-07-15,ACC20784
+CUST10785,Harshit Dubey,individual,Software Engineer,61984.31,Low,0,2022-10-14,IN,,Harshit Dubey,Low,Software Engineer,Agra,0,Verified,2022-10-14,ACC20785
+CUST10786,Neha Bajaj,individual,Retail Trader,37810.73,Low,0,2021-06-12,IN,,Neha Bajaj,Low,Retail Trader,Lucknow,0,Verified,2021-06-12,ACC20786
+CUST10787,Vivaan Srivastava,individual,Retired,121971.32,Low,0,2021-08-03,IN,,Vivaan Srivastava,Low,Retired,Coimbatore,0,Verified,2021-08-03,ACC20787
+CUST10788,Preeti Agarwal,individual,Civil Servant,169857.97,Low,0,2021-06-11,IN,,Preeti Agarwal,Low,Civil Servant,Ahmedabad,0,Verified,2021-06-11,ACC20788
+CUST10789,Zenith Ventures,business,Financial Advisory,9563190.37,High,0,2023-03-07,IN,BO_Sachin_Bansal,Zenith Ventures,High,Financial Advisory,Vadodara,1,Verified,2023-03-07,ACC20789
+CUST10790,Sterling Holdings,business,Logistics & Transport,8323354.91,Low,0,2021-02-13,IN,BO_Sonia_Bajaj,Sterling Holdings,Low,Logistics & Transport,Ahmedabad,0,Verified,2021-02-13,ACC20790
+CUST10791,Kamla Singh,individual,Student,126111.27,Low,0,2023-10-18,IN,,Kamla Singh,Low,Student,Lucknow,0,Verified,2023-10-18,ACC20791
+CUST10792,Tushar Srivastava,individual,Retail Trader,218489.67,Low,0,2023-01-16,IN,,Tushar Srivastava,Low,Retail Trader,Indore,0,Verified,2023-01-16,ACC20792
+CUST10793,Apex Industries,business,Real Estate,18519141.45,Low,0,2022-04-23,IN,BO_Tushar_Iyer,Apex Industries,Low,Real Estate,Ahmedabad,0,Verified,2022-04-23,ACC20793
+CUST10794,Sarita Jain,individual,Freelancer,134616.63,Med,0,2024-11-20,IN,,Sarita Jain,Med,Freelancer,Bengaluru,0,Verified,2024-11-20,ACC20794
+CUST10795,Neel Pillai,individual,Clerk,86516.91,Low,0,2024-09-05,CA,,Neel Pillai,Low,Clerk,Pune,0,Verified,2024-09-05,ACC20795
+CUST10796,Kavya Chopra,individual,Chartered Accountant,259596.56,Low,0,2023-12-09,IN,,Kavya Chopra,Low,Chartered Accountant,Hyderabad,0,Verified,2023-12-09,ACC20796
+CUST10797,Nikhil Mittal,individual,Software Engineer,124671.57,Low,0,2022-11-07,IN,,Nikhil Mittal,Low,Software Engineer,Gurgaon,0,Verified,2022-11-07,ACC20797
+CUST10798,Parvati Arora,individual,Student,267772.78,Low,0,2024-03-11,IN,,Parvati Arora,Low,Student,Pune,0,Verified,2024-03-11,ACC20798
+CUST10799,Vikram Kohli,individual,Student,293900.11,Low,0,2021-06-21,IN,,Vikram Kohli,Low,Student,Vadodara,0,Verified,2021-06-21,ACC20799

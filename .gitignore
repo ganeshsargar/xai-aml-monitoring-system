@@ -50,6 +50,7 @@ backend/uploads/*
 # ML Model checkpoints & generated data files
 *.csv
 !dataset/dataset.csv
+!dataset/customers.csv
 *.xlsx
 # ml-service/models/*.pkl allowed for deployment
 !ml-service/models/*.pkl
@@ -66,3 +67,9 @@ backend/uploads/*
 .DS_Store
 Thumbs.db
 desktop.ini
+*.log
+
+# Build tool timestamps & scratch files
+*.timestamp-*.mjs
+scratch/
+

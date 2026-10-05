@@ -1,0 +1,50 @@
+{
+  "_regulatory_comment": "verify against regulator's current schema (FIU-IND XML schema v2.0 / FINnet 2.0 / PMLA Rules 2005)",
+  "reporting_entity": {
+    "entity_id": "RE-IN-BAN-00941",
+    "entity_name": "FundTraceAI Scheduled Commercial Bank",
+    "entity_category": "BA",
+    "principal_officer": {
+      "name": "Chief Compliance Officer",
+      "designation": "Principal Officer (PMLA)",
+      "email": "compliance.officer@fundtrace.ai",
+      "phone": "+91-22-49100200"
+    }
+  },
+  "str_schema": {
+    "report_type": "STR",
+    "filing_window_days": 7,
+    "xml_root_tag": "SuspiciousTransactionReport",
+    "required_sections": [
+      "ReportDetails",
+      "SubjectDetails",
+      "AccountDetails",
+      "TransactionList",
+      "SuspicionNarrative",
+      "GroundsForSuspicion"
+    ],
+    "ground_of_suspicion_codes": {
+      "G01": "Identity of client does not appear genuine",
+      "G02": "Transactions not consistent with client's declared profile",
+      "G03": "Structuring of transactions below CTR threshold",
+      "G04": "Rapid movement of funds through pass-through account",
+      "G05": "Multiple accounts operated by single beneficial owner",
+      "G06": "Sudden activity in dormant account",
+      "G07": "High-risk jurisdiction transfers / Sanctions hit",
+      "G08": "Hawala / Round amount repetitive transfers"
+    }
+  },
+  "ctr_schema": {
+    "report_type": "CTR",
+    "threshold_inr": 1000000.0,
+    "xml_root_tag": "CashTransactionReport",
+    "filing_due_day_of_month": 15,
+    "required_sections": [
+      "ReportDetails",
+      "BranchDetails",
+      "IndividualOrEntityDetails",
+      "CashTransactionsSummary",
+      "MonthlyAggregatedVolume"
+    ]
+  }
+}

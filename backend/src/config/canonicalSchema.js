@@ -202,6 +202,81 @@ const CANONICAL_SCHEMA = {
       'status', 'txn_status', 'state', 'execution_status',
       'result', 'clearing_status', 'settlement_status'
     ]
+  },
+
+  // ==========================================
+  // OPTIONAL CUSTOMER LAYER FIELDS
+  // ==========================================
+  customer_id: {
+    field: 'customer_id',
+    display_label: 'Customer ID',
+    description: 'Unique identifier for customer/client entity',
+    expected_type: 'string',
+    required: false,
+    synonyms: [
+      'customer_id', 'cust_id', 'client_id', 'cif', 'customer_no', 'cust_no'
+    ]
+  },
+  customer_name: {
+    field: 'customer_name',
+    display_label: 'Customer Name',
+    description: 'Full legal name of customer or registered business',
+    expected_type: 'string',
+    required: false,
+    synonyms: [
+      'customer_name', 'client_name', 'account_holder_name', 'full_name', 'cust_name'
+    ]
+  },
+  customer_type: {
+    field: 'customer_type',
+    display_label: 'Customer Type',
+    description: 'Entity classification (individual or business)',
+    expected_type: 'string',
+    required: false,
+    synonyms: [
+      'customer_type', 'cust_type', 'client_type', 'entity_type', 'account_type'
+    ]
+  },
+  declared_income: {
+    field: 'declared_income',
+    display_label: 'Declared Monthly Income / Turnover',
+    description: 'Declared monthly income for individuals or turnover for businesses',
+    expected_type: 'number',
+    required: false,
+    synonyms: [
+      'declared_income', 'declared_monthly_income', 'monthly_income', 'turnover',
+      'annual_income', 'income', 'declared_turnover', 'revenue'
+    ]
+  },
+  occupation: {
+    field: 'occupation',
+    display_label: 'Occupation / Line of Business',
+    description: 'Customer profession or commercial industry type',
+    expected_type: 'string',
+    required: false,
+    synonyms: [
+      'occupation', 'profession', 'business_type', 'job_title', 'line_of_business', 'industry'
+    ]
+  },
+  kyc_risk_rating: {
+    field: 'kyc_risk_rating',
+    display_label: 'KYC Risk Rating',
+    description: 'Customer onboarding KYC risk rating (Low, Med, High)',
+    expected_type: 'string',
+    required: false,
+    synonyms: [
+      'kyc_risk_rating', 'kyc_rating', 'risk_tier', 'kyc_tier', 'kyc_risk', 'customer_risk_rating'
+    ]
+  },
+  is_pep: {
+    field: 'is_pep',
+    display_label: 'PEP Flag',
+    description: 'Politically Exposed Person binary indicator (0 or 1)',
+    expected_type: 'number',
+    required: false,
+    synonyms: [
+      'is_pep', 'pep', 'politically_exposed', 'pep_status', 'pep_flag'
+    ]
   }
 };
 

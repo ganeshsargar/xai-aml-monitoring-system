@@ -432,7 +432,7 @@ const RiskMap = () => {
                   <span className="text-xs font-extrabold uppercase">FATF Blacklist (High Risk)</span>
                 </div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Transactions routed through Cayman Islands (KY), Panama (PA), or Russia (RU) are automatically penalized with geographic threat offsets in Argus scoring.
+                  Transactions routed through Cayman Islands (KY), Panama (PA), or Russia (RU) are automatically penalized with geographic threat offsets in FundTrace AI scoring.
                 </p>
               </div>
 

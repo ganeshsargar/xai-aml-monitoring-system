@@ -9,10 +9,12 @@ import {
   LayoutDashboard, 
   Coins, 
   AlertOctagon, 
+  Users,
   Briefcase, 
   History, 
   LogOut,
-  Globe
+  Globe,
+  FileText
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -23,8 +25,10 @@ const Sidebar = () => {
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Admin', 'Investigator', 'Auditor'] },
       { path: '/transactions', label: 'Transactions', icon: Coins, roles: ['Admin', 'Investigator', 'Auditor'] },
       { path: '/alerts', label: 'Alerts Queue', icon: AlertOctagon, roles: ['Admin', 'Investigator', 'Auditor'] },
+      { path: '/customers', label: 'Customer 360', icon: Users, roles: ['Admin', 'Investigator', 'Auditor'] },
       { path: '/risk-map', label: 'World Risk Map', icon: Globe, roles: ['Admin', 'Investigator', 'Auditor'] },
       { path: '/cases', label: 'Case Manager', icon: Briefcase, roles: ['Admin', 'Investigator'] },
+      { path: '/reports', label: 'Regulatory Reports', icon: FileText, roles: ['Admin', 'Investigator', 'Auditor'] },
       { path: '/admin', label: 'Audit & System', icon: History, roles: ['Admin', 'Auditor'] }
     ];
     return links.filter(link => link.roles.includes(user?.role));

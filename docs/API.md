@@ -1,4 +1,4 @@
-# Argus AML Platform - API Documentation
+# FundTraceAI AML Platform - API Documentation
 
 The Express Backend Gateway exposes REST API endpoints under `/api`. All endpoints (except public authentication routes) require a JWT token passed in the `Authorization` header: `Bearer <token>`.
 

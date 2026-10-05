@@ -1,0 +1,103 @@
+{
+  "_comment": "verify against current rules (e.g. RBI Master Directions / FIU-IND Guidelines / PMLA 2002 / FATF Recommendations)",
+  "version": "1.0.0",
+  "last_updated": "2026-10-05T10:00:00.000Z",
+  "updated_by": "system",
+  "ctr_threshold": 1000000.0,
+  "structuring_band": {
+    "min_percent": 82.0,
+    "max_percent": 99.9
+  },
+  "large_amount_threshold": 500000.0,
+  "high_risk_jurisdictions": {
+    "KY": {
+      "name": "Cayman Islands",
+      "label": "Offshore Tax Haven",
+      "source": "FATF Monitored Jurisdictions",
+      "last_reviewed": "2026-01-15"
+    },
+    "PA": {
+      "name": "Panama",
+      "label": "High-Risk Jurisdiction (Monitored)",
+      "source": "FATF Monitored Jurisdictions",
+      "last_reviewed": "2026-01-15"
+    },
+    "AE": {
+      "name": "UAE / Dubai",
+      "label": "High Cash-Intensity Financial Hub",
+      "source": "FATF Plenary Assessment",
+      "last_reviewed": "2026-01-15"
+    },
+    "RU": {
+      "name": "Russia",
+      "label": "High-Risk Jurisdiction Subject to Financial Sanctions",
+      "source": "International Sanctions & AML Guidance",
+      "last_reviewed": "2026-01-15"
+    },
+    "BS": {
+      "name": "Bahamas",
+      "label": "Offshore Financial Centre",
+      "source": "FATF Mutual Evaluation",
+      "last_reviewed": "2026-01-15"
+    },
+    "LU": {
+      "name": "Luxembourg",
+      "label": "Opaque Holding Jurisdiction",
+      "source": "EU AML Watchlist Evaluation",
+      "last_reviewed": "2026-01-15"
+    }
+  },
+  "night_hours": [22, 23, 0, 1, 2, 3, 4, 5],
+  "high_risk_payment_methods": [
+    "Crypto Transfer",
+    "Cash Deposit",
+    "RTGS"
+  ],
+  "alert_level_cutoffs": {
+    "critical": 80,
+    "high": 60,
+    "medium": 35,
+    "low": 20
+  },
+  "alert_workflow": {
+    "aggregation_window_hours": 24,
+    "sla_hours_by_level": {
+      "Critical": 24,
+      "High": 48,
+      "Medium": 120,
+      "Low": 336
+    },
+    "disposition_codes": [
+      "False Positive",
+      "True Positive - STR Filed",
+      "True Positive - No Filing",
+      "Insufficient Information"
+    ],
+    "statuses": [
+      "New",
+      "In Review L1",
+      "Escalated L2",
+      "Closed"
+    ]
+  },
+  "regulatory_reporting": {
+    "regulator_name": "Financial Intelligence Unit - India (FIU-IND)",
+    "statutory_authority": "Prevention of Money Laundering Act (PMLA), 2002 / PML Rules 2005",
+    "str_filing_window_days": 7,
+    "ctr_filing_day_of_month": 15,
+    "reporting_entity_id": "RE-IN-BAN-00941",
+    "reporting_entity_name": "FundTraceAI Scheduled Commercial Bank",
+    "principal_officer_name": "Chief Compliance Officer"
+  },
+  "active_learning": {
+    "decision_threshold": 50,
+    "uncertainty_band_width": 20,
+    "max_queue_size": 50
+  },
+  "retraining": {
+    "min_new_labels": 5,
+    "analyst_label_weight": 3.0,
+    "test_split_ratio": 0.2,
+    "test_split_days": 30
+  }
+}

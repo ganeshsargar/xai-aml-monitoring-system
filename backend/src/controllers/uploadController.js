@@ -4,11 +4,23 @@ const csv = require('csv-parser');
 const axios = require('axios');
 const { models } = require('../config/db');
 const { logAction } = require('../config/auditLogger');
+const { convertToINR } = require('../config/fxConfig');
+const { generateUploadId, generateTemplateId, generateTxId, generatePrefixedId } = require('../utils/idGenerator');
 const { CANONICAL_SCHEMA, REQUIRED_FIELDS } = require('../config/canonicalSchema');
+const { 
+  getStructuringBounds,
+  getHighRiskJurisdictions,
+  getHighRiskPaymentMethods,
+  getAlertLevel
+} = require('../config/riskConfig');
 const {
   computeSourceSignature,
   suggestMapping
 } = require('../services/columnMappingService');
+const scenarioEngine = require('../services/scenarioEngine');
+const screeningService = require('../services/screeningService');
+const { processTransactionAlert } = require('../services/alertService');
+const { ingestionQueue } = require('../services/ingestionQueue');
 
 // Staging directory for pending uploads
 const stagingDir = path.join(__dirname, '..', '..', 'uploads', 'staging');
@@ -35,6 +47,8 @@ async function scoreTransactionsBatch(transactions) {
   try {
     const batchPayload = transactions.map(t => ({
       transaction_id: t.transaction_id,
+      sender_account: t.sender_account,
+      receiver_account: t.receiver_account,
       amount: t.amount,
       country: t.country,
       payment_method: t.payment_method,
@@ -64,14 +78,10 @@ async function scoreTransactionsBatch(transactions) {
   }
 
   // Fallback Heuristics
-  const COUNTRY_NAMES = {
-    KY: 'Cayman Islands (offshore tax haven)',
-    PA: 'Panama (FATF grey-listed jurisdiction)',
-    AE: 'UAE / Dubai (high cash-intensity hub)',
-    RU: 'Russia (sanctions-listed jurisdiction)',
-    BS: 'Bahamas (offshore financial centre)',
-    LU: 'Luxembourg (opaque holding jurisdiction)'
-  };
+  const bounds = getStructuringBounds();
+  const highRiskJurisdictions = getHighRiskJurisdictions();
+  const highRiskCountries = Object.keys(highRiskJurisdictions);
+  const highRiskMethods = getHighRiskPaymentMethods();
 
   for (const t of transactions) {
     let score = 5;
@@ -81,23 +91,25 @@ async function scoreTransactionsBatch(transactions) {
     const country = t.country || 'IN';
     const payMethod = t.payment_method || 'UPI';
 
-    if (amount >= 820000 && amount <= 999000) {
+    if (amount >= bounds.lower && amount <= bounds.upper) {
       score += 40;
-      reasons.push(`₹${amount.toLocaleString('en-IN')} structured near ₹10L CTR threshold`);
+      reasons.push(`₹${amount.toLocaleString('en-IN')} structured near ₹${(bounds.ctr / 100000).toFixed(0)}L CTR threshold`);
       shap.push({ feature: 'amount_near_threshold', shap_value: 0.40, actual_value: 1 });
-    } else if (amount >= 1000000) {
+    } else if (amount >= bounds.ctr) {
       score += 30;
-      reasons.push(`High-value transfer of ₹${amount.toLocaleString('en-IN')} exceeds ₹10L threshold`);
+      reasons.push(`High-value transfer of ₹${amount.toLocaleString('en-IN')} exceeds ₹${(bounds.ctr / 100000).toFixed(0)}L threshold`);
       shap.push({ feature: 'is_large_amount', shap_value: 0.30, actual_value: 1 });
     }
 
-    if (['KY', 'PA', 'AE', 'RU', 'BS', 'LU'].includes(country)) {
+    if (highRiskCountries.includes(country)) {
       score += 30;
-      reasons.push(`Routed through ${COUNTRY_NAMES[country] || country}`);
+      const jur = highRiskJurisdictions[country] || { name: country, label: 'High-Risk Jurisdiction' };
+      const labelSnippet = jur.label ? ` (${jur.label})` : '';
+      reasons.push(`Routed through ${jur.name || country}${labelSnippet}`);
       shap.push({ feature: 'is_high_risk_country', shap_value: 0.30, actual_value: 1 });
     }
 
-    if (['Crypto Transfer', 'Cash Deposit', 'RTGS'].includes(payMethod)) {
+    if (highRiskMethods.includes(payMethod)) {
       score += 20;
       reasons.push(`High-risk payment channel: ${payMethod}`);
       shap.push({ feature: 'is_wire_or_crypto', shap_value: 0.20, actual_value: 1 });
@@ -130,7 +142,7 @@ const detectHeaders = async (req, res) => {
   }
 
   const tempPath = req.file.path;
-  const uploadId = 'upl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+  const uploadId = generateUploadId();
   const stagingPath = path.join(stagingDir, `${uploadId}.csv`);
 
   try {
@@ -385,7 +397,7 @@ const confirmMapping = async (req, res) => {
           );
         }
       } else {
-        const templateId = 'tmpl_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+        const templateId = generateTemplateId();
         savedTemplate = await models.UploadMappingTemplate.create({
           template_id: templateId,
           template_name: templateName,
@@ -400,196 +412,50 @@ const confirmMapping = async (req, res) => {
       }
     }
 
-    // 4. Update Job Status & Mapping
-    await updateUploadJob(job.upload_id, {
+    // 4. Register Ingestion Job in Queue
+    const isAsync = req.query.async === 'true' || req.body.async === true;
+    const jobData = {
+      upload_id: job.upload_id,
+      file_path: job.file_path,
       mapping: cleanedMapping,
-      status: 'processing'
-    });
+      row_count_estimate: job.row_count_estimate || 0,
+      user: req.user
+    };
 
-    // 5. Full Streaming Parse using Confirmed Mapping
-    if (!fs.existsSync(job.file_path)) {
-      return res.status(404).json({
-        success: false,
-        error: 'Staged file was removed or is inaccessible. Please upload again.'
-      });
-    }
-
-    const startTime = Date.now();
-    const parsedTransactions = [];
-
-    await new Promise((resolve, reject) => {
-      fs.createReadStream(job.file_path)
-        .pipe(csv())
-        .on('data', (rawRow) => {
-          // Translate raw row headers to canonical fields
-          const canonicalRow = {};
-          for (const [canonField, rawHeader] of Object.entries(cleanedMapping)) {
-            if (rawHeader && rawRow[rawHeader] !== undefined) {
-              canonicalRow[canonField] = rawRow[rawHeader];
-            }
-          }
-
-          // Build standardized transaction object
-          parsedTransactions.push({
-            transaction_id:   canonicalRow.transaction_id || ('TX' + Math.floor(200000 + Math.random() * 800000)),
-            sender_account:   canonicalRow.sender_account || `ACC${Math.floor(20000 + Math.random() * 80000)}`,
-            sender_name:      canonicalRow.sender_name    || `Customer ${Math.floor(10000 + Math.random() * 90000)}`,
-            receiver_account: canonicalRow.receiver_account || `ACC${Math.floor(20000 + Math.random() * 80000)}`,
-            receiver_name:    canonicalRow.receiver_name  || `Customer ${Math.floor(10000 + Math.random() * 90000)}`,
-            amount:           parseFloat(canonicalRow.amount || 0),
-            currency:         canonicalRow.currency       || 'INR',
-            timestamp:        canonicalRow.timestamp      || new Date().toISOString(),
-            country:          canonicalRow.country        || 'IN',
-            city:             canonicalRow.city           || 'Mumbai',
-            device_id:        canonicalRow.device_id      || null,
-            ip_address:       canonicalRow.ip_address     || null,
-            payment_method:   canonicalRow.payment_method || 'UPI',
-            category:         canonicalRow.category       || 'Transfer',
-            merchant:         canonicalRow.merchant       || 'General',
-            status:           canonicalRow.status         || 'Approved',
-            is_laundering:    parseInt(canonicalRow.is_laundering || 0)
-          });
-        })
-        .on('end', resolve)
-        .on('error', reject);
-    });
-
-    // Deduplicate against existing transactions in DB
-    const allIds = parsedTransactions.map(t => t.transaction_id);
-    const existingDocs = await models.Transaction.find({ transaction_id: { $in: allIds } });
-    const existingSet = new Set(existingDocs.map(d => d.transaction_id));
-    const newTxs = parsedTransactions.filter(t => !existingSet.has(t.transaction_id));
-
-    // Deduplicate internally within file batch
-    const seenNewIds = new Set();
-    const uniqueNewTxs = [];
-    for (const t of newTxs) {
-      if (!seenNewIds.has(t.transaction_id)) {
-        seenNewIds.add(t.transaction_id);
-        uniqueNewTxs.push(t);
-      }
-    }
-
-    if (uniqueNewTxs.length === 0) {
-      if (fs.existsSync(job.file_path)) fs.unlinkSync(job.file_path);
-      await updateUploadJob(job.upload_id, {
-        status: 'completed',
-        processed_count: 0,
-        flagged_count: 0,
-        completed_at: new Date()
-      });
-
-      return res.json({
+    if (isAsync) {
+      const queuedJob = await ingestionQueue.add(job.upload_id, jobData);
+      return res.status(202).json({
         success: true,
-        message: 'All transactions in this file already exist in the database.',
-        processed: 0,
-        flagged: 0,
-        mapping: cleanedMapping
+        message: 'Upload job enqueued for background ingestion.',
+        upload_id: job.upload_id,
+        status: 'queued',
+        job: queuedJob
       });
     }
 
-    // 6. Batch Score & Insert
-    const BATCH_SIZE = 1000;
-    let totalProcessed = 0;
-    let totalAlerts = 0;
-
-    for (let i = 0; i < uniqueNewTxs.length; i += BATCH_SIZE) {
-      const chunk = uniqueNewTxs.slice(i, i + BATCH_SIZE);
-      const scoredMap = await scoreTransactionsBatch(chunk);
-
-      const txDocs = [];
-      const alertDocs = [];
-
-      for (const t of chunk) {
-        const scored = scoredMap[t.transaction_id] || {
-          risk_score: 5,
-          is_laundering: 0,
-          reasons: [],
-          shap_explanation: []
-        };
-
-        let riskScore = scored.risk_score;
-        if (t.is_laundering === 1 && riskScore < 65) {
-          riskScore = 65 + Math.floor(Math.random() * 25);
-        }
-
-        txDocs.push({
-          ...t,
-          risk_score: riskScore,
-          reasons: scored.reasons,
-          shap_explanation: scored.shap_explanation
-        });
-
-        let alertLevel = null;
-        if (riskScore >= 80) alertLevel = 'Critical';
-        else if (riskScore >= 60) alertLevel = 'High';
-        else if (riskScore >= 35) alertLevel = 'Medium';
-        else if (riskScore >= 20) alertLevel = 'Low';
-
-        if (alertLevel) {
-          alertDocs.push({
-            alert_id: 'ALT' + Math.floor(100000 + Math.random() * 900000),
-            transaction_id: t.transaction_id,
-            risk_score: riskScore,
-            level: alertLevel,
-            status: 'New',
-            createdAt: t.timestamp
-          });
-        }
+    // Synchronous execution with queue progress reporting
+    const result = await processIngestionPipeline(jobData, {
+      reportProgress: async (p) => {
+        await ingestionQueue.setProgress(job.upload_id, p);
       }
-
-      if (models.Transaction.insertMany) {
-        try {
-          await models.Transaction.insertMany(txDocs, { ordered: false });
-        } catch (insertErr) {
-          console.warn('[Column Mapping Pipeline] Partial batch insert warning:', insertErr.message);
-        }
-        if (alertDocs.length > 0) {
-          try {
-            await models.Alert.insertMany(alertDocs, { ordered: false });
-          } catch (alertErr) {
-            console.warn('[Column Mapping Pipeline] Partial alerts insert warning:', alertErr.message);
-          }
-        }
-      } else {
-        for (const doc of txDocs) await models.Transaction.create(doc);
-        for (const doc of alertDocs) await models.Alert.create(doc);
-      }
-
-      totalProcessed += txDocs.length;
-      totalAlerts += alertDocs.length;
-    }
-
-    // Clean up staging file
-    if (fs.existsSync(job.file_path)) {
-      fs.unlinkSync(job.file_path);
-    }
-
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-    // Update Ingestion Job Record
-    await updateUploadJob(job.upload_id, {
-      status: 'completed',
-      processed_count: totalProcessed,
-      flagged_count: totalAlerts,
-      completed_at: new Date()
     });
+    await ingestionQueue.setCompleted(job.upload_id, result);
 
     await logAction(
       req.user ? req.user.username : 'API',
       req.user ? req.user.role : 'Guest',
       'BULK_TRANSACTION_IMPORT_MAPPED',
       req.ip,
-      `Imported ${totalProcessed} transactions with confirmed column mapping in ${elapsed}s. Raised ${totalAlerts} alerts.`
+      `Imported ${result.processed} transactions with confirmed column mapping in ${result.elapsed_seconds}s. Raised ${result.flagged} alerts.`
     );
 
     return res.json({
       success: true,
-      message: `Import completed successfully. Processed ${totalProcessed} transactions and raised ${totalAlerts} alerts in ${elapsed}s.`,
+      message: `Import completed successfully. Processed ${result.processed} transactions and raised ${result.flagged} alerts in ${result.elapsed_seconds}s.`,
       upload_id,
-      processed: totalProcessed,
-      flagged: totalAlerts,
-      elapsed_seconds: parseFloat(elapsed),
+      processed: result.processed,
+      flagged: result.flagged,
+      elapsed_seconds: result.elapsed_seconds,
       mapping: cleanedMapping,
       template_saved: Boolean(savedTemplate)
     });
@@ -608,7 +474,305 @@ const confirmMapping = async (req, res) => {
 };
 
 /**
- * 4. GET /api/uploads/mapping-templates
+ * Core Ingestion Worker Function
+ * Executed by IngestionQueue with incremental progress updates.
+ */
+async function processIngestionPipeline(jobData, progressReporter = { reportProgress: async () => {} }) {
+  const { upload_id, file_path, mapping } = jobData;
+  const startTime = Date.now();
+
+  if (!fs.existsSync(file_path)) {
+    throw new Error('Staged file is inaccessible or was removed.');
+  }
+
+  const parsedTransactions = [];
+
+  await new Promise((resolve, reject) => {
+    fs.createReadStream(file_path)
+      .pipe(csv())
+      .on('data', (rawRow) => {
+        const canonicalRow = {};
+        for (const [canonField, rawHeader] of Object.entries(mapping)) {
+          if (rawHeader && rawRow[rawHeader] !== undefined) {
+            canonicalRow[canonField] = rawRow[rawHeader];
+          }
+        }
+
+        const origAmount = parseFloat(canonicalRow.amount || 0);
+        const origCurr = canonicalRow.currency || 'INR';
+        const origDate = canonicalRow.timestamp || new Date().toISOString();
+        const fxInfo = convertToINR(origAmount, origCurr, origDate);
+
+        parsedTransactions.push({
+          transaction_id:   canonicalRow.transaction_id || generateTxId(),
+          sender_account:   canonicalRow.sender_account || generatePrefixedId('ACC'),
+          sender_name:      canonicalRow.sender_name    || `Customer ${generatePrefixedId('CUST')}`,
+          receiver_account: canonicalRow.receiver_account || generatePrefixedId('ACC'),
+          receiver_name:    canonicalRow.receiver_name  || `Customer ${generatePrefixedId('CUST')}`,
+          amount:           fxInfo.amount,
+          currency:         fxInfo.currency,
+          amount_inr:       fxInfo.amount_inr,
+          fx_rate:          fxInfo.fx_rate,
+          fx_date:          fxInfo.fx_date,
+          timestamp:        origDate,
+          country:          canonicalRow.country        || 'IN',
+          city:             canonicalRow.city           || 'Mumbai',
+          device_id:        canonicalRow.device_id      || null,
+          ip_address:       canonicalRow.ip_address     || null,
+          payment_method:   canonicalRow.payment_method || 'UPI',
+          category:         canonicalRow.category       || 'Transfer',
+          merchant:         canonicalRow.merchant       || 'General',
+          status:           canonicalRow.status         || 'Approved',
+          is_laundering:    parseInt(canonicalRow.is_laundering || 0),
+          _customer_meta:   (canonicalRow.customer_id || canonicalRow.customer_name || canonicalRow.declared_income || canonicalRow.customer_type || canonicalRow.occupation) ? {
+            customer_id: canonicalRow.customer_id,
+            customer_name: canonicalRow.customer_name,
+            customer_type: canonicalRow.customer_type,
+            declared_income: canonicalRow.declared_income,
+            occupation: canonicalRow.occupation,
+            kyc_risk_rating: canonicalRow.kyc_risk_rating,
+            is_pep: canonicalRow.is_pep
+          } : null
+        });
+      })
+      .on('end', resolve)
+      .on('error', reject);
+  });
+
+  const totalRaw = parsedTransactions.length;
+  await progressReporter.reportProgress({ progress_pct: 15, total_count: totalRaw, processed_count: 0 });
+
+  // Deduplicate against existing transactions in DB
+  const allIds = parsedTransactions.map(t => t.transaction_id);
+  const existingDocs = await models.Transaction.find({ transaction_id: { $in: allIds } });
+  const existingSet = new Set(existingDocs.map(d => d.transaction_id));
+  const newTxs = parsedTransactions.filter(t => !existingSet.has(t.transaction_id));
+
+  // Deduplicate internally within file batch
+  const seenNewIds = new Set();
+  const uniqueNewTxs = [];
+  for (const t of newTxs) {
+    if (!seenNewIds.has(t.transaction_id)) {
+      seenNewIds.add(t.transaction_id);
+      uniqueNewTxs.push(t);
+    }
+  }
+
+  if (uniqueNewTxs.length === 0) {
+    if (fs.existsSync(file_path)) fs.unlinkSync(file_path);
+    await updateUploadJob(upload_id, {
+      status: 'completed',
+      processed_count: 0,
+      flagged_count: 0,
+      completed_at: new Date()
+    });
+    return {
+      success: true,
+      processed: 0,
+      flagged: 0,
+      elapsed_seconds: parseFloat(((Date.now() - startTime) / 1000).toFixed(1))
+    };
+  }
+
+  const BATCH_SIZE = 1000;
+  let totalProcessed = 0;
+  let totalAlerts = 0;
+
+  for (let i = 0; i < uniqueNewTxs.length; i += BATCH_SIZE) {
+    const chunk = uniqueNewTxs.slice(i, i + BATCH_SIZE);
+    const scoredMap = await scoreTransactionsBatch(chunk);
+    const evaluatedBatch = await scenarioEngine.evaluateBatch(chunk);
+    const evalMap = {};
+    for (const et of evaluatedBatch) {
+      evalMap[et.transaction_id] = et;
+    }
+
+    const txDocs = [];
+    for (const t of chunk) {
+      const scored = scoredMap[t.transaction_id] || {
+        risk_score: 5,
+        is_laundering: 0,
+        reasons: [],
+        shap_explanation: []
+      };
+
+      const screeningResult = await screeningService.screenTransaction(t);
+      const activeScreeningHits = screeningResult.active_hits || [];
+      const screeningRuleHits = activeScreeningHits.map(hit => ({
+        scenario_id: `SCREEN_${hit.list_type.toUpperCase()}`,
+        name: `${hit.list_type} Watchlist Match (${hit.subject})`,
+        category: 'WatchlistScreening',
+        severity: hit.severity,
+        weight: hit.list_type === 'Sanctions' ? 50 : (hit.list_type === 'PEP' ? 30 : 20),
+        reason: hit.reason,
+        score: hit.match_score
+      }));
+
+      const evalItem = evalMap[t.transaction_id] || {};
+      const ruleHits = [...(evalItem.rule_hits || []), ...screeningRuleHits];
+      const rawMlScore = scored.risk_score;
+
+      const fusion = scenarioEngine.calculateFusedRiskScore(rawMlScore, ruleHits);
+      let finalRiskScore = fusion.final_risk_score;
+
+      if (t.is_laundering === 1 && finalRiskScore < 65) {
+        finalRiskScore = 75;
+      }
+
+      const screeningReasons = activeScreeningHits.map(h => h.reason);
+      const combinedReasons = [...new Set([...screeningReasons, ...(evalItem.rule_hits || []).map(h => h.reason), ...(scored.reasons || [])])].slice(0, 5);
+
+      txDocs.push({
+        ...t,
+        risk_score: finalRiskScore,
+        ml_score: fusion.ml_score,
+        rule_score: fusion.rule_score,
+        rule_hits: ruleHits,
+        screening_hits: screeningResult.all_hits || [],
+        score_breakdown: fusion.score_breakdown,
+        reasons: combinedReasons,
+        shap_explanation: scored.shap_explanation
+      });
+    }
+
+    if (models.Transaction.insertMany) {
+      try {
+        await models.Transaction.insertMany(txDocs, { ordered: false });
+      } catch (insertErr) {
+        console.warn('[Column Mapping Pipeline] Partial batch insert warning:', insertErr.message);
+      }
+    } else {
+      for (const doc of txDocs) await models.Transaction.create(doc);
+    }
+
+    for (const doc of txDocs) {
+      if (getAlertLevel(doc.risk_score)) {
+        try {
+          await processTransactionAlert(doc);
+          totalAlerts++;
+        } catch (alErr) {
+          console.warn('[Column Mapping Pipeline] Alert processing error:', alErr.message);
+        }
+      }
+    }
+
+    totalProcessed += txDocs.length;
+
+    // Sync Customers and Accounts
+    if (models.Customer && models.Account) {
+      for (const t of chunk) {
+        if (t._customer_meta) {
+          try {
+            const cm = t._customer_meta;
+            const cid = cm.customer_id || `CUST_${t.sender_account}`;
+            const existingCust = await models.Customer.findOne({ customer_id: cid });
+            if (!existingCust) {
+              await models.Customer.create({
+                customer_id: cid,
+                name: cm.customer_name || t.sender_name || `Customer ${t.sender_account}`,
+                type: (cm.customer_type && cm.customer_type.toLowerCase().includes('biz')) ? 'business' : 'individual',
+                occupation_or_business_type: cm.occupation || 'General',
+                declared_monthly_income_or_turnover: parseFloat(cm.declared_income || 0) || 75000,
+                kyc_risk_rating: cm.kyc_risk_rating || 'Low',
+                is_pep: cm.is_pep === 1 || cm.is_pep === '1' || cm.is_pep === true,
+                onboarding_date: t.timestamp,
+                country_of_residence: t.country || 'IN',
+                beneficial_owner_ids: []
+              });
+            }
+            const existingAcc = await models.Account.findOne({ account_id: t.sender_account });
+            if (!existingAcc) {
+              await models.Account.create({
+                account_id: t.sender_account,
+                customer_id: cid,
+                open_date: t.timestamp,
+                product_type: (cm.customer_type && cm.customer_type.toLowerCase().includes('biz')) ? 'business_current' : 'savings'
+              });
+            }
+          } catch (custErr) {}
+        }
+      }
+    }
+
+    const currentPct = 15 + Math.round((totalProcessed / uniqueNewTxs.length) * 80);
+    await progressReporter.reportProgress({
+      progress_pct: currentPct,
+      processed_count: totalProcessed,
+      total_count: uniqueNewTxs.length,
+      flagged_count: totalAlerts
+    });
+  }
+
+  if (fs.existsSync(file_path)) {
+    fs.unlinkSync(file_path);
+  }
+
+  const elapsed = parseFloat(((Date.now() - startTime) / 1000).toFixed(1));
+
+  await updateUploadJob(upload_id, {
+    status: 'completed',
+    processed_count: totalProcessed,
+    flagged_count: totalAlerts,
+    completed_at: new Date()
+  });
+
+  return {
+    success: true,
+    processed: totalProcessed,
+    flagged: totalAlerts,
+    elapsed_seconds: elapsed
+  };
+}
+
+// Attach pipeline handler to queue
+ingestionQueue.process(processIngestionPipeline);
+
+/**
+ * 4. GET /api/uploads/status/:id
+ * Returns real-time status and progress percentage of background ingestion job.
+ */
+const getJobStatus = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const queueJob = await ingestionQueue.getStatus(id);
+    const dbJob = await models.UploadJob.findOne({ upload_id: id });
+
+    if (!queueJob && !dbJob) {
+      return res.status(404).json({ success: false, error: 'Ingestion job not found.' });
+    }
+
+    const statusData = {
+      upload_id: id,
+      status: queueJob ? queueJob.status : (dbJob ? dbJob.status : 'unknown'),
+      progress_pct: queueJob ? queueJob.progress_pct : (dbJob && dbJob.status === 'completed' ? 100 : 0),
+      processed_count: queueJob ? queueJob.processed_count : (dbJob ? dbJob.processed_count : 0),
+      flagged_count: queueJob ? queueJob.flagged_count : (dbJob ? dbJob.flagged_count : 0),
+      total_count: queueJob ? queueJob.total_count : (dbJob ? dbJob.row_count_estimate : 0),
+      error: queueJob ? queueJob.error : (dbJob ? dbJob.error : null),
+      completed_at: queueJob ? queueJob.completed_at : (dbJob ? dbJob.completed_at : null)
+    };
+
+    return res.json({ success: true, data: statusData });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * 5. GET /api/uploads/queue
+ * Returns list of recent queue jobs.
+ */
+const listQueueJobs = async (req, res) => {
+  try {
+    const jobs = await ingestionQueue.listJobs();
+    return res.json({ success: true, jobs });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * 6. GET /api/uploads/mapping-templates
  * Lists all saved column mapping templates.
  */
 const getMappingTemplates = async (req, res) => {
@@ -640,7 +804,7 @@ const getMappingTemplates = async (req, res) => {
 };
 
 /**
- * 4. DELETE /api/uploads/mapping-templates/:id
+ * 7. DELETE /api/uploads/mapping-templates/:id
  * Removes a saved template.
  */
 const deleteMappingTemplate = async (req, res) => {
@@ -677,6 +841,9 @@ module.exports = {
   detectHeaders,
   getSuggestedMapping,
   confirmMapping,
+  getJobStatus,
+  listQueueJobs,
   getMappingTemplates,
-  deleteMappingTemplate
+  deleteMappingTemplate,
+  processIngestionPipeline
 };

@@ -1,160 +1,247 @@
-# FundTrace AI: Explainable AI-Based AML Monitoring Platform
+# FundTrace AI: Explainable AI & Topological Graph AML Monitoring Platform
 
-FundTrace AI is an enterprise-grade Banking Anti-Money Laundering (AML) Compliance, Transaction Monitoring, & Network Intelligence platform. engineered for public and private financial institutions in India. 
+[![CI Pipeline](https://github.com/ganeshsargar/FundTraceAI/actions/workflows/ci.yml/badge.svg)](https://github.com/ganeshsargar/FundTraceAI/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-brightgreen.svg)](https://www.python.org/)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
+[![React 18](https://img.shields.io/badge/React-18-cyan.svg)](https://react.dev/)
 
-The system leverages Machine Learning classification models to calculate transaction risk probabilities, SHAP (Explainable AI) to construct local feature-attribution explanations for compliance officers, and NetworkX (Graph Theory) to map account links, detecting Louvain communities and circular money-routing schemes (wash trading).
-
----
-
-## 📁 System Architecture & Port Mapping
-
-FundTrace AI is built on a decoupled, three-tier service architecture:
-
-```
-                  ┌──────────────────────────────┐
-                  │   React Frontend Client      │
-                  │   (Vite Server - Port 3000)  │
-                  └──────────────┬───────────────┘
-                                 │
-                                 │ REST API Calls (Port 5050)
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │   Express API Gateway        │
-                  │   (Node Server - Port 5050)  │
-                  └──────────────┬───────────────┘
-                                 │
-                                 │ REST API / JSON Payloads (Port 5000)
-                                 ▼
-                  ┌──────────────────────────────┐
-                  │   Python Flask ML Engine     │
-                  │   (Model & Network Graph)    │
-                  └──────────────────────────────┘
-```
-
-1. **Frontend Portal (Port `3000`)**: React, Vite, and Tailwind CSS client featuring Cytoscape.js for interactive directed money-routing networks and Recharts for statistical compliance telemetry.
-2. **Backend API Gateway (Port `5050`)**: Node.js and Express server with JWT authentication and Role-Based Access Control (RBAC). Integrates with MongoDB (or falls back to automated local JSON file storage).
-3. **Machine Learning Service (Port `5000`)**: Python Flask API executing Scikit-learn, XGBoost, SHAP explainer trees, and NetworkX graph cycle algorithms.
+FundTrace AI is an enterprise-grade Anti-Money Laundering (AML) Transaction Monitoring, Explainable AI (XAI), and Topological Network Intelligence Platform. Engineered to solve the acute limitations of legacy, rule-only compliance systems (which suffer from 90%+ false-positive rates and opaque alert triage), FundTrace AI fuses deterministic regulatory scenario rules with calibrated machine learning classifiers, local TreeSHAP attribution, and NetworkX topological graph diagnostics.
 
 ---
 
-## 📁 Repository Structure
+## 🏛️ System Architecture
 
-```
-explainable-aml-monitoring/
-├── .gitignore             # Global workspace gitignore (virtual envs, node_modules, local data)
-├── dataset/               # Data Simulation Module
-│   └── generate_dataset.py # Generates 10k transaction records with AML typologies
-├── ml-service/            # Python Flask ML & Graph Service
-│   ├── app.py             # Flask application entrypoint serving predictions & Graph metrics
-│   ├── train.py           # Model comparative training & evaluation pipeline
-│   ├── graph_module.py    # NetworkX cycle, PageRank, & community detection algorithms
-│   └── requirements.txt   # Python dependency list
-├── backend/               # Express.js Server
-│   ├── src/
-│   │   ├── config/        # Database setup (Mongo/JSON fallback) and compliance report generator
-│   │   ├── middleware/    # auth.js JWT validation & Role-Based Access Control
-│   │   ├── controllers/   # Route handler actions for transactions, cases, and admin settings
-│   │   └── routes/        # Express API endpoints
-│   ├── server.js          # Express server entrypoint
-│   ├── .env.example       # Example configuration files for backend environments
-│   └── package.json
-└── frontend/              # React + Vite Client
-    ├── src/
-    │   ├── components/    # Reusable navigation elements, SHAP explainer graphs, and NetworkX visualizers
-    │   ├── pages/         # Login, Dashboard, Ledger, Alerts, Case Management, and Auditor Console
-    │   ├── context/       # AuthContext and ThemeContext (Light/Dark mode)
-    │   └── main.jsx
-    ├── .env.example       # Example configuration files for client environments
-    └── package.json
+```mermaid
+flowchart TB
+    subgraph UI ["Presentation Layer (React 18 + Vite - Port 3000)"]
+        DASH["Operational KPI Dashboard"]
+        TRIAGE["Alert Triage & Investigation"]
+        CYTO["Cytoscape.js Entity Graph 360"]
+        SHAP_UI["SHAP Attribution & Counterfactuals"]
+        REG_UI["Regulatory STR/CTR Console"]
+        AUDIT_UI["Tamper-Evident Auditor View"]
+    end
+
+    subgraph GATEWAY ["API Gateway & Core Logic (Node.js/Express - Port 5050)"]
+        INGEST["Ingestion Queue & Adapter Engine"]
+        MAPPER["Column Mapping & Normalizer"]
+        SCENARIO["Deterministic Scenario Engine (7 Typologies)"]
+        SCREENING["Sanctions & PEP Screening (Jaro-Winkler/Levenshtein)"]
+        FUSION["Transparent Score Fusion Matrix"]
+        CASE_MGR["Case Management & Workflow"]
+        REG_SRV["Deterministic STR/CTR Engine (XML/PDF)"]
+        AUDIT_CHAIN["SHA-256 Hash-Chained Audit Ledger"]
+        CACHE["In-Memory Analytics TTL Cache"]
+    end
+
+    subgraph ML_TIER ["Machine Learning & Topological Engine (Python/Flask - Port 5000)"]
+        REGISTRY["Model Registry & Shadow Mode Governance"]
+        CHAMPION["Champion Classifier (XGBoost / LightGBM / RF / LogReg)"]
+        CALIBRATION["Probability Calibration (Platt / Isotonic)"]
+        SHAP_CORE["Real TreeSHAP Explainer & Group Attribution"]
+        CF_ENGINE["Actionable Counterfactual Generator"]
+        GRAPH_ENGINE["NetworkX Graph Diagnostics (Cycles, PageRank, Centrality)"]
+    end
+
+    subgraph DATA_TIER ["Storage & Persistence"]
+        DB[(MongoDB Database / Local JSON Fallback)]
+        DATASETS[(Multi-Source Datasets: Synthetic, IBM AML, SAML-D)]
+    end
+
+    UI <--> |REST API / JWT Auth| GATEWAY
+    GATEWAY <--> |Internal REST / Feature Payloads| ML_TIER
+    GATEWAY <--> DB
+    INGEST <--> DATASETS
 ```
 
 ---
 
-## ⚙️ Environment Configurations
+## 🔄 End-to-End Compliance Lifecycle
 
-### Backend Setup (`/backend/.env`)
-Create a `.env` file in the `/backend` directory based on the `.env.example`:
-```env
-PORT=5050
-MONGODB_URI=mongodb://127.0.0.1:27017/aml_db
-JWT_SECRET=your_jwt_secret_key_here
-ML_SERVICE_URL=http://127.0.0.1:5000
-NODE_ENV=production
-```
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Feed as Transaction Feed / CSV
+    participant Gateway as Express Gateway (Port 5050)
+    participant ML as ML Service (Port 5000)
+    participant DB as Persistence Layer
+    participant Officer as Compliance Officer (UI)
+    participant FIU as Regulatory Authority (FIU-IND)
 
-### Frontend Setup (`/frontend/.env`)
-Create a `.env` file in the `/frontend` directory based on the `.env.example`:
-```env
-VITE_API_URL=http://localhost:5050
-VITE_ML_SERVICE_URL=http://localhost:5000
+    Feed->>Gateway: POST /api/transactions/upload (CSV/JSON Batch)
+    Gateway->>Gateway: Column Mapping & Canonical Normalization
+    Gateway->>Gateway: Sanctions & PEP Fuzzy Screening
+    Gateway->>Gateway: Scenario Rule Engine (Structuring, Velocity, Rapid Flow)
+    Gateway->>ML: POST /predict (Vectorized Features & Graph Context)
+    ML->>ML: Execute Champion Scoring + TreeSHAP Attributions
+    ML-->>Gateway: ML Probability, SHAP Drivers, Counterfactuals
+    Gateway->>Gateway: Fused Score Calculation (Rules + ML)
+    Gateway->>DB: Persist Immutable Records & Hash-Chained Audit Log
+    
+    alt High Risk Score >= Threshold
+        Gateway->>DB: Generate Alert & Assign SLA Due Date
+        Gateway->>Officer: Dispatch to Active Backlog Queue
+        Officer->>Gateway: Open Case & Review 360 Graph Visualizer
+        Officer->>Gateway: Generate Deterministic STR Report
+        Gateway->>FIU: Export Official XML & Signed PDF Dossier
+    end
 ```
 
 ---
 
-## 🚀 Step-by-Step Installation & Launch
+## ✨ Key Features & Research Contributions
 
-### Step 1: Initialize Python ML Service
-1. Navigate to the project root directory.
-2. Create and activate a Python virtual environment:
-   ```bash
-   python -m venv .venv
-   # Windows:
-   .venv\Scripts\activate
-   # macOS/Linux:
-   source .venv/bin/activate
-   ```
-3. Install required packages:
-   ```bash
-   pip install -r ml-service/requirements.txt
-   ```
-4. Generate the synthetic transaction dataset:
-   ```bash
-   python dataset/generate_dataset.py
-   ```
-5. Run the comparative model training script to select the best-performing model:
-   ```bash
-   python ml-service/train.py
-   ```
-6. Launch the Python Flask service:
-   ```bash
-   python ml-service/app.py
-   ```
+### 1. Hybrid Score Fusion & Scenario Engine
+- **Deterministic Regulatory Rules**: 7 configurable AML typologies (Structuring across accounts, rapid pass-through transit, round-amount smurfing, dormant account reactivation, cash intensity, high-risk jurisdiction routing, and many-to-one deposit aggregation).
+- **Mathematical Score Fusion**: Fuses calibrated machine learning probabilities with deterministic rule hits into an auditable 0–100 composite risk score.
 
-### Step 2: Launch Backend API Gateway
-1. Open a new terminal and navigate to the `/backend` directory.
-2. Install node dependencies:
-   ```bash
-   npm install
-   ```
-3. Seed the local default roles and users (if starting fresh):
-   ```bash
-   node seed_users.js
-   ```
-4. Start the Express server:
-   ```bash
-   npm start
-   ```
+### 2. High-Fidelity Explainable AI (XAI)
+- **Real SHAP Attribution**: Computes genuine Shapley additive feature importance values using TreeSHAP on tree ensembles (no fake heuristic values).
+- **Correlated Feature Grouping**: Aggregates collinear features (e.g., amount, log_amount, is_large_amount) into business-meaningful risk domains (Amount & Structuring, Graph Topology, Velocity, Jurisdiction, Profile).
+- **Actionable Counterfactuals**: Evaluates the minimal parameter shift (e.g., amount reduction, domestic clearing rails) required to lower a flagged transaction below the decision boundary.
 
-### Step 3: Launch React Frontend Client
-1. Open a new terminal and navigate to the `/frontend` directory.
-2. Install node dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser and navigate to the development URL (default is `http://localhost:3000`).
+### 3. Topological Graph Intelligence
+- Directed multi-hop money flow graph modeling using NetworkX.
+- Real-time cycle extraction (round-trip wash loops / layering schemes).
+- PageRank centrality, in/out degree ratios, pass-through transit metrics, and shared-device / IP syndicate clustering.
+
+### 4. Enterprise Compliance & Regulatory Integrity
+- **Tamper-Evident Audit Chain**: Append-only audit log where every event block stores `SHA-256(sequence + previous_hash + timestamp + actor + action + details)`, verifiable via cryptographic chain audits.
+- **Deterministic STR & CTR Drafting**: Automatically synthesizes FIU-IND compliant Suspicious Transaction Reports (STR) and Cash Transaction Reports (CTR) into structured XML and official PDF format without hallucinations.
+- **Strict Data Immutability**: Enforces append-only transaction ledgers with explicit debit/credit adjustment entries.
 
 ---
 
-## 🔐 Credentials for Demonstration Roles
+## 🚀 Quickstart & Setup
 
-The platform defines three authorization profiles aligned with banking compliance hierarchies:
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **Python**: v3.10 or v3.11 with `pip`
+- **MongoDB** (Optional): Defaults automatically to a built-in JSON file database if MongoDB is not running locally.
 
-| Username | Password | Role | Panel Permissions |
+### 1. Automated One-Click Launch (Windows)
+Double-click `run_all.bat` or run in terminal:
+```cmd
+run_all.bat
+```
+This automatically boots:
+- Python ML Service on `http://localhost:5000`
+- Express Gateway API on `http://localhost:5050`
+- React Frontend Portal on `http://localhost:3000`
+
+---
+
+### 2. Manual Step-by-Step Installation
+
+#### Step A: Python ML Engine Setup
+```bash
+# From workspace root
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+# source .venv/bin/activate
+
+pip install -r ml-service/requirements.txt
+python ml-service/app.py
+```
+
+#### Step B: Express Gateway Backend Setup
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+#### Step C: React Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 📊 Dataset Options & Adapters
+
+FundTrace AI supports flexible multi-source financial transaction datasets:
+
+| Dataset | Description | Transactions | Default Location |
 | :--- | :--- | :--- | :--- |
-| **admin** | `admin123` | **Admin** | Full access to user management, database re-indexing, and ML training pipelines. |
-| **investigator** | `investigator123` | **Investigator** | Full access to ledger, case assignments, timeline annotations, evidence file uploads, and PDF reports. |
-| **auditor** | `auditor123` | **Auditor** | Read-only access to transaction history, system audit logs, and CSV logs export. |
+| **Synthetic Banking Feed** | Realistic multi-channel banking feed with 7 AML typologies | 10,000+ records | `dataset/dataset.csv` |
+| **IBM AML / AMLSim** | Complex synthetic laundering networks with wash cycles | User-configurable | `dataset/adapters/ibm_aml_adapter.py` |
+| **SAML-D Benchmark** | Multi-jurisdiction financial crime evaluation dataset | User-configurable | `dataset/adapters/saml_d_adapter.py` |
+| **Custom CSV Imports** | Any banking CSV with dynamic fuzzy column auto-mapping | Arbitrary | Uploaded via UI |
+
+To generate or regenerate the primary dataset:
+```bash
+python dataset/generate_dataset.py --rows 10000 --output dataset/dataset.csv
+```
+
+---
+
+## 🧪 Running Automated Tests & Benchmark Suites
+
+### Backend Unit, Controller & Integration Tests
+```bash
+cd backend
+npm test
+```
+*Executes all 14 test suites covering Scenario Engine, Ingestion Queue, Fuzzy Screening, Regulatory STR Reporting, Immutability & Audit Hash Chain, Dashboard Analytics, and End-to-End Compliance Pipeline.*
+
+### Python ML & XAI Test Suite (Pytest)
+```bash
+# Run all 40 pytest unit and integration tests
+.venv\Scripts\pytest ml-service/tests -v
+```
+
+### End-to-End Compliance Integration Pipeline
+```bash
+cd backend
+node --test test/e2eIntegration.test.js
+```
+
+### XAI Scientific Fidelity & Stability Evaluations
+```bash
+python ml-service/xai_eval/evaluate_xai.py
+```
+*Computes explanation fidelity (deletion/insertion curves), perturbation stability, and explanation complexity across champion model architectures.*
+
+---
+
+## 📈 Operational Dashboard & Research Analytics
+
+The platform includes an enterprise operational analytics dashboard with server-side aggregation and in-memory TTL caching:
+- **Operational Backlog & Velocity**: Real-time triage queues by status, 24h SLA urgency, on-time resolution percentage, and Mean Time to Close (MTTC).
+- **Attribution & Detection Mode Breakdown**: Empirical comparative analysis of ML-only vs Rule-only vs Hybrid score fusion precision and STR conversion rates.
+- **AML Typology Treemap**: Volume and critical alert distribution across structuring, layering, circular wash cycles, velocity bursts, and high-risk jurisdictions.
+- **Geographic & Channel Risk Matrix**: 5x5 matrix evaluating risk intensity across payment rails (UPI, IMPS, RTGS, NEFT, CRYPTO) and amount brackets.
+- **1-Click CSV Export**: Instant dataset download on every chart and leaderboard widget.
+
+---
+
+## ⚠️ Limitations & Future Work
+
+1. **Synthetic vs. Production Domain Shift**:
+   - Synthetic datasets (e.g. generated banking feeds, PaySim) simulate structured typologies well, but production bank environments feature unstructured merchant descriptors and irregular seasonality.
+2. **Cold-Start in Dynamic Graph Topologies**:
+   - Graph features (PageRank, cycle count, pass-through ratio) require sufficient historical transaction depth. Brand-new accounts lack graph edges until multiple counterparties interact.
+3. **Cross-Border Regulatory Jurisdiction Nuances**:
+   - Threshold parameters (e.g., CTR at ₹10,00,000 for FIU-IND vs $10,000 for FinCEN) require localized risk configuration across international deployments.
+4. **Sub-Second Real-Time Streaming**:
+   - While the Node.js scenario engine operates at sub-millisecond speeds, full KernelSHAP attribution on arbitrary non-tree neural networks introduces latency; TreeSHAP is optimized for tree ensembles.
+
+---
+
+## 📜 Research & Academic Reference
+
+For full architectural derivations, mathematical formulations, feature equations, probability calibration curves, and ablation tables, see:
+- [Methodology & Research Paper Reference](docs/METHODOLOGY.md)
+- [REST API Specifications](docs/API.md)
+- [Architecture Decision Records](docs/DECISIONS.md)
+
+---
+
+## 📄 License
+This project is licensed under the MIT License.

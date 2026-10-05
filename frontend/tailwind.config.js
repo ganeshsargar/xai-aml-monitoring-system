@@ -9,9 +9,10 @@ export default {
     extend: {
       colors: {
         darkBg: '#060d1a',
-        darkPanel: '#0d1525',
-        darkBorder: '#1a2740',
-        darkCard: '#111e35',
+        darkPanel: '#0f172a',
+        darkSurface: '#0f172a',
+        darkBorder: '#1e293b',
+        darkCard: '#1e293b',
         brand: {
           50: '#fff7ed',
           100: '#ffedd5',
