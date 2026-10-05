@@ -211,7 +211,7 @@ FundTrace AI demonstrates that explainable gradient-boosted ensembles fused with
 ```bibtex
 @article{fundtraceai2026,
   title={FundTrace AI: Explainable AI and Topological Graph Analytics for Anti-Money Laundering Transaction Monitoring},
-  author={Sargar, Ganesh and DeepMind Pair Programming Group},
+  author={Sargar, Ganesh},
   journal={MCA Master's Thesis & Technical Research Dossier},
   year={2026},
   month={October}

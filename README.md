@@ -243,5 +243,18 @@ For full architectural derivations, mathematical formulations, feature equations
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License.
+## 🎓 Academic Attribution & Authorship
+
+- **Author**: Ganesh Sargar
+- **Degree**: Master of Computer Applications (MCA)
+- **Domain**: Explainable AI (XAI) in Financial Crime & Anti-Money Laundering (AML) Surveillance
+- **Repository**: [ganeshsargar/xai-aml-monitoring-system](https://github.com/ganeshsargar/xai-aml-monitoring-system)
+
+---
+
+## 📄 License & Rights
+
+**Copyright © 2026 Ganesh Sargar. All Rights Reserved.**
+
+This software, methodology, mathematical formulations, and documentation are developed solely for **academic evaluation, university research, and educational demonstration** as part of the MCA degree curriculum. Commercial redistribution without prior authorization is strictly prohibited.
+
