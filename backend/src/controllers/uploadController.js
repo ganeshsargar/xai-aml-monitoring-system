@@ -587,8 +587,11 @@ async function processIngestionPipeline(jobData, progressReporter = { reportProg
       evalMap[et.transaction_id] = et;
     }
 
+    const screeningResults = await screeningService.screenTransactionsBatch(chunk);
+
     const txDocs = [];
-    for (const t of chunk) {
+    for (let j = 0; j < chunk.length; j++) {
+      const t = chunk[j];
       const scored = scoredMap[t.transaction_id] || {
         risk_score: 5,
         is_laundering: 0,
@@ -596,7 +599,7 @@ async function processIngestionPipeline(jobData, progressReporter = { reportProg
         shap_explanation: []
       };
 
-      const screeningResult = await screeningService.screenTransaction(t);
+      const screeningResult = screeningResults[j] || { active_hits: [], all_hits: [] };
       const activeScreeningHits = screeningResult.active_hits || [];
       const screeningRuleHits = activeScreeningHits.map(hit => ({
         scenario_id: `SCREEN_${hit.list_type.toUpperCase()}`,
@@ -658,16 +661,31 @@ async function processIngestionPipeline(jobData, progressReporter = { reportProg
 
     totalProcessed += txDocs.length;
 
-    // Sync Customers and Accounts
+    // Bulk Sync Customers and Accounts
     if (models.Customer && models.Account) {
-      for (const t of chunk) {
-        if (t._customer_meta) {
-          try {
+      const customerMetaList = chunk.filter(t => t._customer_meta);
+      if (customerMetaList.length > 0) {
+        try {
+          const custIds = [...new Set(customerMetaList.map(t => t._customer_meta.customer_id || `CUST_${t.sender_account}`))];
+          const accIds = [...new Set(customerMetaList.map(t => t.sender_account))];
+
+          const existingCustDocs = await models.Customer.find({ customer_id: { $in: custIds } });
+          const existingCustSet = new Set(existingCustDocs.map(c => c.customer_id));
+
+          const existingAccDocs = await models.Account.find({ account_id: { $in: accIds } });
+          const existingAccSet = new Set(existingAccDocs.map(a => a.account_id));
+
+          const newCustToCreate = [];
+          const newAccToCreate = [];
+          const seenNewCust = new Set();
+          const seenNewAcc = new Set();
+
+          for (const t of customerMetaList) {
             const cm = t._customer_meta;
             const cid = cm.customer_id || `CUST_${t.sender_account}`;
-            const existingCust = await models.Customer.findOne({ customer_id: cid });
-            if (!existingCust) {
-              await models.Customer.create({
+            if (!existingCustSet.has(cid) && !seenNewCust.has(cid)) {
+              seenNewCust.add(cid);
+              newCustToCreate.push({
                 customer_id: cid,
                 name: cm.customer_name || t.sender_name || `Customer ${t.sender_account}`,
                 type: (cm.customer_type && cm.customer_type.toLowerCase().includes('biz')) ? 'business' : 'individual',
@@ -680,16 +698,34 @@ async function processIngestionPipeline(jobData, progressReporter = { reportProg
                 beneficial_owner_ids: []
               });
             }
-            const existingAcc = await models.Account.findOne({ account_id: t.sender_account });
-            if (!existingAcc) {
-              await models.Account.create({
+
+            if (!existingAccSet.has(t.sender_account) && !seenNewAcc.has(t.sender_account)) {
+              seenNewAcc.add(t.sender_account);
+              newAccToCreate.push({
                 account_id: t.sender_account,
                 customer_id: cid,
                 open_date: t.timestamp,
                 product_type: (cm.customer_type && cm.customer_type.toLowerCase().includes('biz')) ? 'business_current' : 'savings'
               });
             }
-          } catch (custErr) {}
+          }
+
+          if (newCustToCreate.length > 0) {
+            if (models.Customer.insertMany) {
+              await models.Customer.insertMany(newCustToCreate, { ordered: false });
+            } else {
+              for (const c of newCustToCreate) await models.Customer.create(c);
+            }
+          }
+          if (newAccToCreate.length > 0) {
+            if (models.Account.insertMany) {
+              await models.Account.insertMany(newAccToCreate, { ordered: false });
+            } else {
+              for (const a of newAccToCreate) await models.Account.create(a);
+            }
+          }
+        } catch (custErr) {
+          console.warn('[Column Mapping Pipeline] Bulk Customer/Account Sync Warning:', custErr.message);
         }
       }
     }

@@ -67,6 +67,15 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
   // Execution result state
   const [importResult, setImportResult] = useState(null);
 
+  // Ingestion queue real-time progress state
+  const [importProgress, setImportProgress] = useState({
+    progress_pct: 0,
+    processed_count: 0,
+    total_count: 0,
+    flagged_count: 0,
+    status: 'queued'
+  });
+
   // Reset all states
   const handleReset = () => {
     setStep('select');
@@ -82,6 +91,13 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
     setSaveAsTemplate(false);
     setTemplateName('');
     setImportResult(null);
+    setImportProgress({
+      progress_pct: 0,
+      processed_count: 0,
+      total_count: 0,
+      flagged_count: 0,
+      status: 'queued'
+    });
   };
 
   // Step 1: Detect Headers
@@ -214,32 +230,89 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
 
     setErrorMessage('');
     setStep('importing');
+    setImportProgress({
+      progress_pct: 10,
+      processed_count: 0,
+      total_count: rowCountEstimate || 0,
+      flagged_count: 0,
+      status: 'starting'
+    });
 
     try {
       const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
       const payload = {
         mapping,
         save_as_template: saveAsTemplate,
-        template_name: templateName
+        template_name: templateName,
+        async: true
       };
 
-      const res = await axios.post(`${targetApiUrl}/api/uploads/${uploadId}/mapping`, payload, {
+      const res = await axios.post(`${targetApiUrl}/api/uploads/${uploadId}/mapping?async=true`, payload, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       });
 
-      if (res.data.success) {
+      if (!res.data.success) {
+        setErrorMessage(res.data.error || 'Failed to initialize import.');
+        setStep('mapping');
+        return;
+      }
+
+      // If backend executed synchronously anyway or returned instant completed
+      if (res.data.processed !== undefined && res.data.status !== 'queued' && res.data.status !== 'processing') {
         setImportResult(res.data);
         setStep('success');
-        if (onImportComplete) {
-          onImportComplete(res.data);
-        }
-      } else {
-        setErrorMessage(res.data.error || 'Failed to complete import.');
-        setStep('mapping');
+        if (onImportComplete) onImportComplete(res.data);
+        return;
       }
+
+      // Start live polling loop for background job status
+      const pollStartTime = Date.now();
+      const pollInterval = setInterval(async () => {
+        try {
+          const pollRes = await axios.get(`${targetApiUrl}/api/uploads/status/${uploadId}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+
+          if (pollRes.data && pollRes.data.success) {
+            const jobData = pollRes.data.data;
+            setImportProgress({
+              progress_pct: jobData.progress_pct || 0,
+              processed_count: jobData.processed_count || 0,
+              total_count: jobData.total_count || rowCountEstimate || 0,
+              flagged_count: jobData.flagged_count || 0,
+              status: jobData.status || 'processing'
+            });
+
+            if (jobData.status === 'completed') {
+              clearInterval(pollInterval);
+              const finalElapsed = parseFloat(((Date.now() - pollStartTime) / 1000).toFixed(1));
+              const finalResult = {
+                success: true,
+                message: `Import completed successfully. Processed ${jobData.processed_count} transactions and raised ${jobData.flagged_count} alerts in ${finalElapsed}s.`,
+                upload_id: uploadId,
+                processed: jobData.processed_count,
+                flagged: jobData.flagged_count,
+                elapsed_seconds: finalElapsed,
+                mapping,
+                template_saved: saveAsTemplate
+              };
+              setImportResult(finalResult);
+              setStep('success');
+              if (onImportComplete) onImportComplete(finalResult);
+            } else if (jobData.status === 'failed') {
+              clearInterval(pollInterval);
+              setErrorMessage(jobData.error || 'Background import execution failed.');
+              setStep('mapping');
+            }
+          }
+        } catch (pollErr) {
+          console.warn('Progress poll issue:', pollErr.message);
+        }
+      }, 400);
+
     } catch (err) {
       setErrorMessage(err.response?.data?.error || err.message || 'Import execution failed');
       setStep('mapping');
@@ -639,15 +712,67 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
 
       {/* ── STEP 5: Ingestion Progress ── */}
       {step === 'importing' && (
-        <div className="p-12 border border-gray-100 dark:border-darkBorder rounded-2xl flex flex-col items-center justify-center space-y-4 bg-gray-50/50 dark:bg-darkBg/20 animate-fade-in">
-          <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
-          <div className="text-center space-y-1">
-            <h5 className="text-sm font-bold text-gray-800 dark:text-gray-200">
-              Transforming CSV & Running AML Inference...
-            </h5>
-            <p className="text-xs text-gray-400">
-              Translating raw rows using confirmed schema • Computing feature vectors • Generating batch ML risk scores
-            </p>
+        <div className="p-8 border border-gray-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkBg/50 space-y-6 animate-fade-in shadow-xl shadow-blue-500/5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-darkBorder">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                <RefreshCw className="w-5 h-5 animate-spin" />
+              </div>
+              <div>
+                <h5 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span>Fast Batch Ingestion & AML Surveillance</span>
+                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-500/10 text-blue-500 rounded-full animate-pulse uppercase">
+                    {importProgress.status}
+                  </span>
+                </h5>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Streaming normalized rows • XGBoost & Isolation Forest inference • Watchlist screening • Scenario fusion
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                {Math.min(100, Math.max(0, importProgress.progress_pct || 0))}%
+              </span>
+            </div>
+          </div>
+
+          {/* Animated Progress Bar */}
+          <div className="space-y-2">
+            <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden p-0.5 relative shadow-inner">
+              <div
+                className="bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-300 ease-out shadow-lg shadow-blue-500/30"
+                style={{ width: `${Math.min(100, Math.max(5, importProgress.progress_pct || 5))}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-gray-400">
+              <span>{importProgress.processed_count > 0 ? `Processing chunk ${importProgress.processed_count} of ${importProgress.total_count || rowCountEstimate}...` : 'Preparing batch scoring pipeline...'}</span>
+              <span>{importProgress.processed_count} / {importProgress.total_count || rowCountEstimate} Rows</span>
+            </div>
+          </div>
+
+          {/* Real-time stats cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="p-3.5 bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder">
+              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Processed Records</span>
+              <div className="text-lg font-bold text-gray-800 dark:text-gray-100 mt-0.5">
+                {importProgress.processed_count.toLocaleString()} <span className="text-xs text-gray-400 font-normal">/ {(importProgress.total_count || rowCountEstimate).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder">
+              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Flagged AML Alerts</span>
+              <div className="text-lg font-bold text-amber-500 mt-0.5">
+                {importProgress.flagged_count.toLocaleString()}
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-gray-50 dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder">
+              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Screening Memoization</span>
+              <div className="text-xs font-semibold text-emerald-500 mt-1 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" /> In-Memory Cached
+              </div>
+            </div>
           </div>
         </div>
       )}

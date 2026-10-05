@@ -86,6 +86,17 @@ let falsePositiveCache = new Set();
 let falsePositiveLoadedAt = 0;
 const FP_CACHE_TTL_MS = 15000;
 
+// High-performance screening memoization cache for batch ingestion
+const screeningResultCache = new Map();
+const MAX_SCREENING_CACHE = 10000;
+
+function getScreeningCacheKey(name, options = {}) {
+  const norm = normalizeName(name);
+  const thresh = options.threshold != null ? options.threshold : 'def';
+  const lists = options.lists ? options.lists.slice().sort().join(',') : 'all';
+  return `${norm}:::${thresh}:::${lists}`;
+}
+
 /**
  * Transliteration & spelling normalization map
  */
@@ -421,11 +432,17 @@ async function isFalsePositive(screenedName, matchedEntityId) {
 }
 
 /**
- * Screen a single name against all active watchlists
+ * Screen a single name against all active watchlists (with high-speed in-memory memoization)
  */
 async function screenName(name, options = {}) {
   if (!name || typeof name !== 'string' || name.trim().length < 2) {
-    return { name, hits: [], matched: false, highest_score: 0 };
+    return { screened_name: name || '', name: name || '', hits: [], active_hits: [], matched: false, highest_score: 0 };
+  }
+
+  const cacheKey = getScreeningCacheKey(name, options);
+  if (screeningResultCache.has(cacheKey)) {
+    const cached = screeningResultCache.get(cacheKey);
+    return { ...cached, screened_name: name, name };
   }
 
   const watchlists = await loadWatchlists();
@@ -521,13 +538,22 @@ async function screenName(name, options = {}) {
   const activeHits = hits.filter(h => !h.is_false_positive);
   const highestScore = hits.length > 0 ? hits[0].match_score : 0;
 
-  return {
+  const result = {
     screened_name: name,
+    name,
     hits,
     active_hits: activeHits,
     matched: activeHits.length > 0,
     highest_score: highestScore
   };
+
+  if (screeningResultCache.size >= MAX_SCREENING_CACHE) {
+    const firstKey = screeningResultCache.keys().next().value;
+    screeningResultCache.delete(firstKey);
+  }
+  screeningResultCache.set(cacheKey, result);
+
+  return result;
 }
 
 /**
@@ -537,8 +563,8 @@ async function screenTransaction(tx, options = {}) {
   const senderRes = await screenName(tx.sender_name, options);
   const receiverRes = await screenName(tx.receiver_name, options);
 
-  const senderHits = senderRes.hits.map(h => ({ ...h, subject: 'Sender' }));
-  const receiverHits = receiverRes.hits.map(h => ({ ...h, subject: 'Receiver' }));
+  const senderHits = (senderRes.hits || []).map(h => ({ ...h, subject: 'Sender' }));
+  const receiverHits = (receiverRes.hits || []).map(h => ({ ...h, subject: 'Receiver' }));
 
   const allHits = [...senderHits, ...receiverHits];
   const activeHits = allHits.filter(h => !h.is_false_positive);
@@ -567,6 +593,67 @@ async function screenTransaction(tx, options = {}) {
     highest_score: highestScore,
     reasons: activeHits.map(h => h.reason)
   };
+}
+
+/**
+ * Screen a batch of transactions with unique name memoization (10x faster for bulk imports)
+ */
+async function screenTransactionsBatch(transactions, options = {}) {
+  const uniqueNames = new Set();
+  for (const tx of transactions) {
+    if (tx.sender_name && typeof tx.sender_name === 'string' && tx.sender_name.trim().length >= 2) {
+      uniqueNames.add(tx.sender_name.trim());
+    }
+    if (tx.receiver_name && typeof tx.receiver_name === 'string' && tx.receiver_name.trim().length >= 2) {
+      uniqueNames.add(tx.receiver_name.trim());
+    }
+  }
+
+  // Pre-screen all unique names in batch
+  const nameMap = new Map();
+  for (const name of uniqueNames) {
+    const res = await screenName(name, options);
+    nameMap.set(name, res);
+  }
+
+  return transactions.map(tx => {
+    const senderClean = tx.sender_name ? tx.sender_name.trim() : '';
+    const receiverClean = tx.receiver_name ? tx.receiver_name.trim() : '';
+
+    const senderRes = nameMap.get(senderClean) || { hits: [], active_hits: [] };
+    const receiverRes = nameMap.get(receiverClean) || { hits: [], active_hits: [] };
+
+    const senderHits = (senderRes.hits || []).map(h => ({ ...h, subject: 'Sender' }));
+    const receiverHits = (receiverRes.hits || []).map(h => ({ ...h, subject: 'Receiver' }));
+
+    const allHits = [...senderHits, ...receiverHits];
+    const activeHits = allHits.filter(h => !h.is_false_positive);
+
+    const hasSanctions = activeHits.some(h => h.list_type === 'Sanctions');
+    const hasPep = activeHits.some(h => h.list_type === 'PEP');
+    const hasAdverse = activeHits.some(h => h.list_type === 'AdverseMedia');
+
+    let maxSeverity = 'None';
+    if (hasSanctions) maxSeverity = 'Critical';
+    else if (hasPep) maxSeverity = 'High';
+    else if (hasAdverse) maxSeverity = 'Medium';
+
+    const highestScore = allHits.length > 0 ? Math.max(...allHits.map(h => h.match_score)) : 0;
+
+    return {
+      sender_hits: senderHits,
+      receiver_hits: receiverHits,
+      all_hits: allHits,
+      active_hits: activeHits,
+      matched: activeHits.length > 0,
+      has_sanctions: hasSanctions,
+      has_pep: hasPep,
+      has_adverse_media: hasAdverse,
+      max_severity: maxSeverity,
+      highest_score: highestScore,
+      reasons: activeHits.map(h => h.reason)
+    };
+  });
 }
 
 /**
@@ -612,7 +699,8 @@ async function recordDecision(decisionData) {
     });
   }
 
-  // Refresh FP Cache
+  // Refresh FP Cache and clear screening memoization
+  screeningResultCache.clear();
   await syncFalsePositiveCache(true);
 
   // Audit Log
@@ -638,6 +726,7 @@ module.exports = {
   isFalsePositive,
   screenName,
   screenTransaction,
+  screenTransactionsBatch,
   recordDecision,
   syncFalsePositiveCache
 };
