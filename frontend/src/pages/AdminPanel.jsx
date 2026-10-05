@@ -115,11 +115,11 @@ const AdminPanel = () => {
     try {
       setTrainingLoading(true);
       const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
-      const res = await axios.post(`${API_URL}/api/admin/train`, {}, {
+      const res = await axios.post(`${API_URL}/api/admin/train`, { force: true }, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (res.data.success) {
-        alert(res.data.message || `Training Completed! Selected Best Classifier: ${res.data.metrics.best_model}`);
+        alert(res.data.message || `Training Completed! Selected Best Classifier: ${res.data.metrics?.best_model || 'Random Forest'}`);
         fetchSystemStats();
       }
     } catch (err) {
