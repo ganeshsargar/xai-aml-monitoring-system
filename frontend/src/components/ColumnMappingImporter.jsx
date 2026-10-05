@@ -98,7 +98,39 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
       flagged_count: 0,
       status: 'queued'
     });
+    localStorage.removeItem('fundtrace_active_upload_id');
   };
+
+  // Check on mount if an active upload is already processing in the background
+  useEffect(() => {
+    const activeUploadId = localStorage.getItem('fundtrace_active_upload_id');
+    if (activeUploadId) {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      axios.get(`${targetApiUrl}/api/uploads/status/${activeUploadId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      }).then(res => {
+        if (res.data?.success) {
+          const job = res.data.data;
+          if (job.status === 'queued' || job.status === 'processing') {
+            setUploadId(activeUploadId);
+            setStep('importing');
+            setImportProgress({
+              progress_pct: job.progress_pct || 10,
+              processed_count: job.processed_count || 0,
+              total_count: job.total_count || 0,
+              flagged_count: job.flagged_count || 0,
+              status: job.status
+            });
+            startPollingStatus(activeUploadId);
+          } else {
+            localStorage.removeItem('fundtrace_active_upload_id');
+          }
+        }
+      }).catch(() => {
+        localStorage.removeItem('fundtrace_active_upload_id');
+      });
+    }
+  }, []);
 
   // Step 1: Detect Headers
   const handleFileChange = async (file) => {
@@ -216,6 +248,60 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
     }
   });
 
+  // Polling helper function for tracking background ingestion
+  const startPollingStatus = (targetUploadId) => {
+    localStorage.setItem('fundtrace_active_upload_id', targetUploadId);
+    const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+    const pollStartTime = Date.now();
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const pollRes = await axios.get(`${targetApiUrl}/api/uploads/status/${targetUploadId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+
+        if (pollRes.data && pollRes.data.success) {
+          const jobData = pollRes.data.data;
+          setImportProgress({
+            progress_pct: jobData.progress_pct || 0,
+            processed_count: jobData.processed_count || 0,
+            total_count: jobData.total_count || rowCountEstimate || 0,
+            flagged_count: jobData.flagged_count || 0,
+            status: jobData.status || 'processing'
+          });
+
+          if (jobData.status === 'completed') {
+            clearInterval(pollInterval);
+            localStorage.removeItem('fundtrace_active_upload_id');
+            const finalElapsed = parseFloat(((Date.now() - pollStartTime) / 1000).toFixed(1));
+            const finalResult = {
+              success: true,
+              message: `Import completed successfully. Processed ${jobData.processed_count} transactions and raised ${jobData.flagged_count} alerts in ${finalElapsed}s.`,
+              upload_id: targetUploadId,
+              processed: jobData.processed_count,
+              flagged: jobData.flagged_count,
+              elapsed_seconds: finalElapsed,
+              mapping,
+              template_saved: saveAsTemplate
+            };
+            setImportResult(finalResult);
+            setStep('success');
+            if (onImportComplete) onImportComplete(finalResult);
+          } else if (jobData.status === 'failed') {
+            clearInterval(pollInterval);
+            localStorage.removeItem('fundtrace_active_upload_id');
+            setErrorMessage(jobData.error || 'Background import execution failed.');
+            setStep('mapping');
+          }
+        }
+      } catch (pollErr) {
+        console.warn('Progress poll issue:', pollErr.message);
+      }
+    }, 400);
+
+    return pollInterval;
+  };
+
   // Step 4: Confirm and execute streaming parse + ML scoring pipeline
   const handleConfirmMapping = async () => {
     if (missingRequired.length > 0) {
@@ -262,58 +348,18 @@ export default function ColumnMappingImporter({ API_URL, onImportComplete, onClo
 
       // If backend executed synchronously anyway or returned instant completed
       if (res.data.processed !== undefined && res.data.status !== 'queued' && res.data.status !== 'processing') {
+        localStorage.removeItem('fundtrace_active_upload_id');
         setImportResult(res.data);
         setStep('success');
         if (onImportComplete) onImportComplete(res.data);
         return;
       }
 
-      // Start live polling loop for background job status
-      const pollStartTime = Date.now();
-      const pollInterval = setInterval(async () => {
-        try {
-          const pollRes = await axios.get(`${targetApiUrl}/api/uploads/status/${uploadId}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {}
-          });
-
-          if (pollRes.data && pollRes.data.success) {
-            const jobData = pollRes.data.data;
-            setImportProgress({
-              progress_pct: jobData.progress_pct || 0,
-              processed_count: jobData.processed_count || 0,
-              total_count: jobData.total_count || rowCountEstimate || 0,
-              flagged_count: jobData.flagged_count || 0,
-              status: jobData.status || 'processing'
-            });
-
-            if (jobData.status === 'completed') {
-              clearInterval(pollInterval);
-              const finalElapsed = parseFloat(((Date.now() - pollStartTime) / 1000).toFixed(1));
-              const finalResult = {
-                success: true,
-                message: `Import completed successfully. Processed ${jobData.processed_count} transactions and raised ${jobData.flagged_count} alerts in ${finalElapsed}s.`,
-                upload_id: uploadId,
-                processed: jobData.processed_count,
-                flagged: jobData.flagged_count,
-                elapsed_seconds: finalElapsed,
-                mapping,
-                template_saved: saveAsTemplate
-              };
-              setImportResult(finalResult);
-              setStep('success');
-              if (onImportComplete) onImportComplete(finalResult);
-            } else if (jobData.status === 'failed') {
-              clearInterval(pollInterval);
-              setErrorMessage(jobData.error || 'Background import execution failed.');
-              setStep('mapping');
-            }
-          }
-        } catch (pollErr) {
-          console.warn('Progress poll issue:', pollErr.message);
-        }
-      }, 400);
+      // Start background polling loop
+      startPollingStatus(uploadId);
 
     } catch (err) {
+      localStorage.removeItem('fundtrace_active_upload_id');
       setErrorMessage(err.response?.data?.error || err.message || 'Import execution failed');
       setStep('mapping');
     }
