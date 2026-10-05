@@ -1,7 +1,6 @@
 # FundTrace AI: Explainable AI & Topological Graph AML Monitoring Platform
 
 [![CI Pipeline](https://github.com/ganeshsargar/FundTraceAI/actions/workflows/ci.yml/badge.svg)](https://github.com/ganeshsargar/FundTraceAI/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-brightgreen.svg)](https://www.python.org/)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
 [![React 18](https://img.shields.io/badge/React-18-cyan.svg)](https://react.dev/)
