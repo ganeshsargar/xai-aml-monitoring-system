@@ -751,13 +751,13 @@ To prevent look-ahead bias and simulate real-world production deployment, models
 
 | Metric | Champion Value | Benchmark Target | Compliance Interpretation |
 |---|---|---|---|
-| **PR-AUC** | **{champ_m.get('pr_auc', 0.0):.4f}** | $\ge 0.8500$ | Primary selection metric for severe AML class imbalance |
-| **ROC-AUC** | **{champ_m.get('roc_auc', 0.0):.4f}** | $\ge 0.9500$ | Overall discrimination capability across all thresholds |
-| **Recall @ 1% FPR** | **{champ_m.get('recall_at_1pct_fpr', 0.0):.4f}** | $\ge 0.8500$ | True Positive detection under tight 1% operational false alarm budget |
-| **Recall @ 5% FPR** | **{champ_m.get('recall_at_5pct_fpr', 0.0):.4f}** | $\ge 0.9000$ | High-sensitivity supervisory surveillance threshold |
-| **Precision @ 100 Alerts** | **{champ_m.get('precision_at_100', 0.0):.4f}** | $\ge 0.9200$ | Daily top-priority triage precision for investigator capacity |
-| **F1-Score** | **{champ_m.get('f1_score', 0.0):.4f}** | $\ge 0.8200$ | Harmonic mean of precision and recall at optimal threshold |
-| **Brier Score Loss** | **{champ_m.get('brier_score', 0.0):.4f}** | $\le 0.0200$ | Probability calibration accuracy (lower is better) |
+| **PR-AUC** | **{champ_m.get('pr_auc', 0.0):.4f}** | >= 0.8500 | Primary selection metric for severe AML class imbalance |
+| **ROC-AUC** | **{champ_m.get('roc_auc', 0.0):.4f}** | >= 0.9500 | Overall discrimination capability across all thresholds |
+| **Recall @ 1% FPR** | **{champ_m.get('recall_at_1pct_fpr', 0.0):.4f}** | >= 0.8500 | True Positive detection under tight 1% operational false alarm budget |
+| **Recall @ 5% FPR** | **{champ_m.get('recall_at_5pct_fpr', 0.0):.4f}** | >= 0.9000 | High-sensitivity supervisory surveillance threshold |
+| **Precision @ 100 Alerts** | **{champ_m.get('precision_at_100', 0.0):.4f}** | >= 0.9200 | Daily top-priority triage precision for investigator capacity |
+| **F1-Score** | **{champ_m.get('f1_score', 0.0):.4f}** | >= 0.8200 | Harmonic mean of precision and recall at optimal threshold |
+| **Brier Score Loss** | **{champ_m.get('brier_score', 0.0):.4f}** | <= 0.0200 | Probability calibration accuracy (lower is better) |
 
 ---
 

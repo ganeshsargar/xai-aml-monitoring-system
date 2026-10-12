@@ -16,9 +16,17 @@ import json
 import time
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    # Publication chart styling
+    plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
+    plt.rcParams['axes.edgecolor'] = '#cbd5e1'
+    plt.rcParams['axes.linewidth'] = 0.8
+except ImportError:
+    matplotlib = None
+    plt = None
 
 # Add parent directory to python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -33,10 +41,6 @@ from comparison import evaluate_comparison
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), 'results')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# Publication chart styling
-plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
-plt.rcParams['axes.edgecolor'] = '#cbd5e1'
-plt.rcParams['axes.linewidth'] = 0.8
 
 
 def evaluate_status(value: float, target_str: str) -> str:
