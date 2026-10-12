@@ -31,7 +31,7 @@ from features import (
 class TestCustomerFeatures(unittest.TestCase):
 
     def test_feature_list_structure(self):
-        """Test that CUSTOMER_FEATURE_COLS contains all required 7 features and total is 28."""
+        """Test that CUSTOMER_FEATURE_COLS contains all required 7 features and total is 27 (8 graph features after removing neighbor_max_risk)."""
         expected_customer_features = [
             'amount_zscore_vs_own_history',
             'volume_vs_declared_income',
@@ -45,9 +45,9 @@ class TestCustomerFeatures(unittest.TestCase):
         for feat in expected_customer_features:
             self.assertIn(feat, CUSTOMER_FEATURE_COLS)
 
-        self.assertEqual(len(FEATURE_COLS), 28)
+        self.assertEqual(len(FEATURE_COLS), 27)
         self.assertEqual(len(BASE_FEATURE_COLS), 12)
-        self.assertEqual(len(GRAPH_FEATURE_COLS), 9)
+        self.assertEqual(len(GRAPH_FEATURE_COLS), 8)
 
     def test_customer_features_calculation(self):
         """Test computation of customer features on a controlled transaction sequence."""

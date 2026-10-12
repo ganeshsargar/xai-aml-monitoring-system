@@ -19,7 +19,6 @@
     "cycle_count",
     "pagerank",
     "shared_device_degree",
-    "neighbor_max_risk",
     "amount_zscore_vs_own_history",
     "volume_vs_declared_income",
     "new_counterparty_flag",

@@ -12,6 +12,9 @@ import {
   TrendingUp, 
   Database,
   ShieldAlert,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
   Download,
   X,
   Layers,
@@ -59,10 +62,13 @@ const AdminPanel = () => {
   };
 
   const fetchUsers = async () => {
-    if (user.role !== 'Admin') return;
+    if (user?.role !== 'Admin') return;
     try {
       setUsersLoading(true);
-      const res = await axios.get(`${API_URL}/api/admin/users`);
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/admin/users`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data.success) {
         setUsersList(res.data.data);
       }
@@ -76,7 +82,10 @@ const AdminPanel = () => {
   const fetchAuditLogs = async () => {
     try {
       setAuditLoading(true);
-      const res = await axios.get(`${API_URL}/api/admin/audit-logs`);
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/admin/audit-logs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data.success) {
         setAuditLogs(res.data.data);
       }
@@ -90,7 +99,10 @@ const AdminPanel = () => {
   const handleVerifyAuditChain = async () => {
     try {
       setVerificationLoading(true);
-      const res = await axios.get(`${API_URL}/api/admin/audit-logs/verify`);
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/admin/audit-logs/verify`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data) {
         setVerificationResult(res.data);
       }
@@ -159,11 +171,14 @@ const AdminPanel = () => {
     if (!newUsername || !newPassword || !newName) return;
 
     try {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
       const res = await axios.post(`${API_URL}/api/auth/register`, {
         username: newUsername,
         password: newPassword,
         name: newName,
         role: newRole
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
       if (res.data.success) {
@@ -187,7 +202,10 @@ const AdminPanel = () => {
     if (!window.confirm(`Are you sure you want to delete user ${username}?`)) return;
 
     try {
-      const res = await axios.delete(`${API_URL}/api/admin/users/${username}`);
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.delete(`${API_URL}/api/admin/users/${username}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (res.data.success) {
         alert("User account removed successfully.");
         fetchUsers();
@@ -639,9 +657,9 @@ const AdminPanel = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            log.action.includes('FAILED') || log.action.includes('DELETED') ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
-                            log.action.includes('ADJUSTED') ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
-                            log.action.includes('SUCCESS') || log.action.includes('CREATED') ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' :
+                            (log.action || '').includes('FAILED') || (log.action || '').includes('DELETED') ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' :
+                            (log.action || '').includes('ADJUSTED') ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' :
+                            (log.action || '').includes('SUCCESS') || (log.action || '').includes('CREATED') ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' :
                             'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400'
                           }`}>
                             {log.action}

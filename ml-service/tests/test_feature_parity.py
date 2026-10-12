@@ -221,6 +221,85 @@ class TestFeatureParity(unittest.TestCase):
             single_v = float(single_res[col])
             self.assertAlmostEqual(batch_v, single_v, places=5, msg=f"Parity mismatch for graph feature '{col}'")
 
+    def test_three_leg_cycle_point_in_time_parity(self):
+        """
+        Tests point-in-time graph feature parity for a 3-leg cycle A -> B -> C -> A.
+        Leg 1: A -> B at 10:00. Graph has only A -> B. in_cycle must be 0 in both batch and single mode.
+        Leg 2: B -> C at 11:00. Graph has A -> B and B -> C. in_cycle must be 0 in both batch and single mode.
+        Leg 3: C -> A at 12:00. Closes the cycle A -> B -> C -> A. in_cycle must be 1 in both batch and single mode.
+        Batch features must equal single features for identical historical context.
+        """
+        tx1 = {
+            'transaction_id': 'TX_CYC_1',
+            'sender_account': 'ACC_CYC_A',
+            'receiver_account': 'ACC_CYC_B',
+            'amount': 50000.0,
+            'country': 'IN',
+            'payment_method': 'UPI',
+            'category': 'Transfer',
+            'timestamp': '2026-06-01 10:00:00'
+        }
+        tx2 = {
+            'transaction_id': 'TX_CYC_2',
+            'sender_account': 'ACC_CYC_B',
+            'receiver_account': 'ACC_CYC_C',
+            'amount': 50000.0,
+            'country': 'IN',
+            'payment_method': 'UPI',
+            'category': 'Transfer',
+            'timestamp': '2026-06-01 11:00:00'
+        }
+        tx3 = {
+            'transaction_id': 'TX_CYC_3',
+            'sender_account': 'ACC_CYC_C',
+            'receiver_account': 'ACC_CYC_A',
+            'amount': 50000.0,
+            'country': 'IN',
+            'payment_method': 'UPI',
+            'category': 'Transfer',
+            'timestamp': '2026-06-01 12:00:00'
+        }
+
+        # 1. Batch mode evaluation across the 3 legs
+        cycle_df = pd.DataFrame([tx1, tx2, tx3])
+        batch_res = compute_features_batch(cycle_df)
+
+        # 2. Single mode evaluation with point-in-time historical context
+        # Leg 1 has no prior history
+        single_res_1 = compute_features_single(tx1, graph_history=[])
+        # Leg 2 has Leg 1 as prior history
+        single_res_2 = compute_features_single(tx2, graph_history=[tx1])
+        # Leg 3 has Leg 1 and Leg 2 as prior history
+        single_res_3 = compute_features_single(tx3, graph_history=[tx1, tx2])
+
+        # Assertions on in_cycle
+        # First leg MUST get in_cycle=0 in both batch and single mode
+        self.assertEqual(float(batch_res.loc[0, 'in_cycle']), 0.0, "Batch Leg 1 must have in_cycle=0")
+        self.assertEqual(float(single_res_1['in_cycle']), 0.0, "Single Leg 1 must have in_cycle=0")
+
+        # Second leg must also have in_cycle=0 in both batch and single mode
+        self.assertEqual(float(batch_res.loc[1, 'in_cycle']), 0.0, "Batch Leg 2 must have in_cycle=0")
+        self.assertEqual(float(single_res_2['in_cycle']), 0.0, "Single Leg 2 must have in_cycle=0")
+
+        # Third leg closes cycle, must get in_cycle=1 in both batch and single mode
+        self.assertEqual(float(batch_res.loc[2, 'in_cycle']), 1.0, "Batch Leg 3 must have in_cycle=1")
+        self.assertEqual(float(single_res_3['in_cycle']), 1.0, "Single Leg 3 must have in_cycle=1")
+
+        # Feature parity across all graph features for all 3 legs
+        for col in GRAPH_FEATURE_COLS:
+            self.assertAlmostEqual(
+                float(batch_res.loc[0, col]), float(single_res_1[col]), places=5,
+                msg=f"Parity mismatch for Leg 1 feature '{col}'"
+            )
+            self.assertAlmostEqual(
+                float(batch_res.loc[1, col]), float(single_res_2[col]), places=5,
+                msg=f"Parity mismatch for Leg 2 feature '{col}'"
+            )
+            self.assertAlmostEqual(
+                float(batch_res.loc[2, col]), float(single_res_3[col]), places=5,
+                msg=f"Parity mismatch for Leg 3 feature '{col}'"
+            )
+
 
 if __name__ == '__main__':
     unittest.main()

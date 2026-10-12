@@ -85,8 +85,11 @@ def evaluate_fidelity(
     # Calculate Normalized Area Under Curve (AUDC and AUIC)
     # Lower AUDC indicates faster removal of true risk signal (higher faithfulness)
     # Higher AUIC indicates faster recovery of true prediction (higher faithfulness)
-    audc = float(np.trapz(mean_deletion, dx=1.0) / len(k_steps))
-    auic = float(np.trapz(mean_insertion, dx=1.0) / len(k_steps))
+    trapz_fn = getattr(np, 'trapezoid', getattr(np, 'trapz', None))
+    if trapz_fn is None:
+        from scipy.integrate import trapezoid as trapz_fn
+    audc = float(trapz_fn(mean_deletion, dx=1.0) / len(k_steps))
+    auic = float(trapz_fn(mean_insertion, dx=1.0) / len(k_steps))
 
     return {
         'k_steps': k_steps,

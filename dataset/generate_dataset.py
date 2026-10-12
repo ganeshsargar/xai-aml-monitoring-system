@@ -172,7 +172,7 @@ def validate_laundering_rate(val):
 
 # ─── Main Generator ───────────────────────────────────────────────────────────
 
-def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False, output_dir=None, seed=42):
+def generate_aml_data(num_records=35000, laundering_rate=0.008, label_noise=True, output_dir=None, seed=42):
     """
     Generates synthetic AML dataset scaled to target laundering rate and outputs
     both transactions (dataset.csv) and customer profiles (customers.csv).
@@ -180,11 +180,11 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
     Parameters:
     -----------
     num_records : int
-        Total number of transactions to generate (default 15,000).
+        Total number of transactions to generate (default 35,000).
     laundering_rate : float
-        Proportion of transactions that belong to AML typologies (0.003 to 0.08, default 0.01).
+        Proportion of transactions that belong to AML typologies (0.003 to 0.08, default 0.008 = 0.8%).
     label_noise : bool
-        If True, injects historical miss-rate (~4%) and false positive flags (~0.5%).
+        If True, injects realistic 5% label noise (missed SARs and defensive false flags).
     output_dir : str, optional
         Target directory to save generated CSV files. Defaults to dataset/ directory.
     seed : int
@@ -355,7 +355,6 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
             'is_laundering': int(is_laundering),
             'sender_customer_id': s_cust['customer_id'],
             'sender_customer_type': s_cust['type'],
-            'sender_declared_income': s_cust['declared_monthly_income_or_turnover'],
             'sender_onboarding_date': s_cust['onboarding_date'],
             'sender_account_open_date': s_acc['open_date'],
             'receiver_customer_id': r_cust['customer_id'],
@@ -369,74 +368,84 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
     high_risk_countries = get_high_risk_countries()
     struct_lower, struct_upper = get_structuring_bounds()
 
-    # Baseline typology expected volume for 15,000 transactions is ~1,157.5 (~7.72%).
+    # Target laundering count
     target_laundering = max(1, int(round(num_records * laundering_rate)))
     baseline_laundering_expected = 1157.5 * (num_records / 15000.0)
-    scale = target_laundering / max(1.0, baseline_laundering_expected)
+    # Generate 1.3x baseline volume before trimming so target_laundering is always satisfied
+    scale = (target_laundering * 1.35) / max(1.0, baseline_laundering_expected)
 
-    num_structuring_groups = max(1, int(round(60 * scale * (num_records / 15000.0))))
-    num_chains = max(1, int(round(55 * scale * (num_records / 15000.0))))
-    num_loops = max(1, int(round(40 * scale * (num_records / 15000.0))))
+    num_structuring_groups = max(1, int(round(65 * scale * (num_records / 15000.0))))
+    num_chains = max(1, int(round(60 * scale * (num_records / 15000.0))))
+    num_loops = max(1, int(round(45 * scale * (num_records / 15000.0))))
     num_high_risk = max(1, int(round(180 * scale * (num_records / 15000.0))))
-    num_bursts = max(1, int(round(30 * scale * (num_records / 15000.0))))
+    num_bursts = max(1, int(round(35 * scale * (num_records / 15000.0))))
+
+    def rand_laundering_day():
+        # Models laundering burst campaigns with realistic late-period concentration (~28% in last 15% timeframe)
+        if random.random() < 0.28:
+            return random.uniform(153.0, 178.0)
+        return random.uniform(0.0, 152.0)
 
     laundering_data = []
 
     # ── Typology 1: Structuring / Smurfing — multiple splits below CTR limit ──
     for g in range(num_structuring_groups):
-        # Receiver is a deviating mule/smurf account with low declared income
         receiver = random.choice(deviating_accounts)
         sender = random.choice(acc_numbers)
         while receiver == sender:
             sender = random.choice(acc_numbers)
 
-        num_splits = random.randint(3, 7)
-        base_time = start_time + timedelta(days=random.randint(0, 180),
-                                           hours=random.randint(0, 23))
+        num_splits = random.randint(3, 6)
+        base_day = rand_laundering_day()
+        base_time = start_time + timedelta(days=base_day, hours=random.randint(0, 23))
         band_low = random.uniform(struct_lower, struct_lower + (struct_upper - struct_lower) * 0.7)
-        band_high = min(band_low + random.uniform(10000, 30000), struct_upper)
+        band_high = min(band_low + random.uniform(8000, 25000), struct_upper)
 
         for s in range(num_splits):
             amount = round(random.uniform(band_low, band_high), 2)
             timestamp = base_time + timedelta(minutes=random.randint(10, 90) * s)
-            pay_method = random.choice(['UPI', 'IMPS', 'Cash Deposit', 'NEFT'])
+            pay_method = random.choice(['UPI', 'IMPS', 'Cash Deposit', 'NEFT', 'Net Banking'])
+            # 70% domestic 'IN', 30% international/high-risk overlap
+            country = 'IN' if random.random() < 0.70 else (random.choice(high_risk_countries) if random.random() < 0.5 else random.choice(NORMAL_COUNTRIES))
             laundering_data.append(make_tx_record(
                 sender=sender,
                 receiver=receiver,
                 amount=amount,
                 timestamp=timestamp,
-                country='IN' if random.random() < 0.6 else random.choice(NORMAL_COUNTRIES),
-                city=random.choice(INDIAN_CITIES),
+                country=country,
+                city=rand_city(country),
                 dev=random.choice(devices),
                 ip=random.choice(ips),
                 method=pay_method,
                 merchant='Internal Transfer',
-                cat=random.choice(['Transfer', 'Services']),
+                cat=random.choice(['Transfer', 'Services', 'Retail']),
                 status='Approved',
                 is_laundering=1
             ))
 
     # ── Typology 2: Layering / Multi-Hop Chains ──────────────────────────────
     for c in range(num_chains):
-        chain_len = random.randint(3, 6)
+        chain_len = random.randint(3, 5)
         chain_accounts = []
         while len(chain_accounts) < chain_len + 1:
-            acc = random.choice(deviating_accounts if random.random() < 0.65 else acc_numbers)
+            acc = random.choice(deviating_accounts if random.random() < 0.55 else acc_numbers)
             if acc not in chain_accounts:
                 chain_accounts.append(acc)
 
-        base_amount = round(random.uniform(500000, 2500000), 2)  # ₹5L – ₹25L
-        base_time = start_time + timedelta(days=random.randint(0, 180),
-                                           hours=rand_hour_biased(0.45))
-        skim_rate = random.uniform(0.88, 0.97)
-        merchant = random.choice(SUSPICIOUS_MERCHANTS)
+        # Overlapping amounts: ₹2L - ₹15L (overlaps with genuine business supplier payments)
+        base_amount = round(random.uniform(200000, 1500000), 2)
+        base_day = rand_laundering_day()
+        base_time = start_time + timedelta(days=base_day, hours=rand_hour_biased(0.35))
+        skim_rate = random.uniform(0.88, 0.98)
+        merchant = random.choice(SUSPICIOUS_MERCHANTS + RETAIL_MERCHANTS[:10])
 
         for step in range(chain_len):
             sender = chain_accounts[step]
             receiver = chain_accounts[step + 1]
             amount = round(base_amount * (skim_rate ** step), 2)
             timestamp = base_time + timedelta(hours=random.randint(1, 8) * step)
-            country = random.choice(high_risk_countries) if random.random() < 0.45 else random.choice(NORMAL_COUNTRIES)
+            # 60% domestic 'IN', 40% foreign/high-risk
+            country = 'IN' if random.random() < 0.60 else (random.choice(high_risk_countries) if random.random() < 0.6 else random.choice(NORMAL_COUNTRIES))
 
             laundering_data.append(make_tx_record(
                 sender=sender,
@@ -447,7 +456,7 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
                 city=rand_city(country),
                 dev=random.choice(devices),
                 ip=random.choice(ips),
-                method=random.choice(['RTGS', 'IMPS', 'Crypto Transfer', 'Net Banking']),
+                method=random.choice(['RTGS', 'IMPS', 'Net Banking', 'Crypto Transfer']),
                 merchant=merchant,
                 cat=random.choice(['Transfer', 'Investment', 'Services']),
                 status='Approved',
@@ -456,25 +465,26 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
 
     # ── Typology 3: Circular Loops (A -> B -> C -> A) ────────────────────────
     for l in range(num_loops):
-        loop_size = random.randint(3, 5)
+        loop_size = random.randint(3, 4)
         loop_accounts = []
         while len(loop_accounts) < loop_size:
-            acc = random.choice(deviating_accounts if random.random() < 0.7 else acc_numbers)
+            acc = random.choice(deviating_accounts if random.random() < 0.60 else acc_numbers)
             if acc not in loop_accounts:
                 loop_accounts.append(acc)
 
-        base_amount = round(random.uniform(750000, 5000000), 2)  # ₹7.5L – ₹50L
-        base_time = start_time + timedelta(days=random.randint(0, 180),
-                                           hours=rand_hour_biased(0.35))
+        # ₹2.5L - ₹16L
+        base_amount = round(random.uniform(250000, 1600000), 2)
+        base_day = rand_laundering_day()
+        base_time = start_time + timedelta(days=base_day, hours=rand_hour_biased(0.30))
 
         for step in range(loop_size):
             sender = loop_accounts[step]
             receiver = loop_accounts[(step + 1) % loop_size]
-            decay = random.uniform(0.87, 0.97)
+            decay = random.uniform(0.88, 0.98)
             amount = round(base_amount * (decay ** step), 2)
-            timestamp = base_time + timedelta(days=step, hours=random.randint(0, 4))
-            country = random.choice(high_risk_countries) if random.random() < 0.5 else random.choice(NORMAL_COUNTRIES)
-            merchant = random.choice(SUSPICIOUS_MERCHANTS)
+            timestamp = base_time + timedelta(days=step, hours=random.randint(0, 3))
+            country = 'IN' if random.random() < 0.65 else (random.choice(high_risk_countries) if random.random() < 0.6 else random.choice(NORMAL_COUNTRIES))
+            merchant = random.choice(SUSPICIOUS_MERCHANTS + ['Corporate Treasury Settlement', 'Commercial Invoice Clearing'])
 
             laundering_data.append(make_tx_record(
                 sender=sender,
@@ -485,7 +495,7 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
                 city=rand_city(country),
                 dev=random.choice(devices),
                 ip=random.choice(ips),
-                method=random.choice(['RTGS', 'IMPS', 'Crypto Transfer']),
+                method=random.choice(['RTGS', 'IMPS', 'Net Banking', 'Crypto Transfer']),
                 merchant=merchant,
                 cat=random.choice(['Transfer', 'Investment', 'Services']),
                 status='Approved',
@@ -499,9 +509,9 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
         while receiver == sender:
             receiver = random.choice(acc_numbers)
 
-        amount = round(random.uniform(250000, 2500000), 2)  # ₹2.5L – ₹25L
-        ts = start_time + timedelta(days=random.randint(0, 180),
-                                    hours=rand_hour_biased(0.40))
+        amount = round(random.uniform(150000, 1200000), 2)  # ₹1.5L – ₹12L
+        base_day = rand_laundering_day()
+        ts = start_time + timedelta(days=base_day, hours=rand_hour_biased(0.35))
         country = random.choice(high_risk_countries)
 
         laundering_data.append(make_tx_record(
@@ -513,7 +523,7 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
             city=rand_city(country),
             dev=random.choice(devices),
             ip=random.choice(ips),
-            method=random.choice(['Crypto Transfer', 'RTGS', 'IMPS']),
+            method=random.choice(['Crypto Transfer', 'RTGS', 'IMPS', 'Net Banking']),
             merchant=random.choice(SUSPICIOUS_MERCHANTS),
             cat=random.choice(['Investment', 'Transfer', 'Services']),
             status='Approved',
@@ -523,15 +533,15 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
     # ── Typology 5: Rapid Velocity Bursts ─────────────────────────────────────
     for b in range(num_bursts):
         sender = random.choice(deviating_accounts)
-        burst_size = random.randint(6, 12)
-        base_time = start_time + timedelta(days=random.randint(0, 180),
-                                           hours=rand_hour_biased(0.50))
+        burst_size = random.randint(5, 9)
+        base_day = rand_laundering_day()
+        base_time = start_time + timedelta(days=base_day, hours=rand_hour_biased(0.40))
 
         for tx in range(burst_size):
             receiver = random.choice(acc_numbers)
             while receiver == sender:
                 receiver = random.choice(acc_numbers)
-            amount = round(random.uniform(50000, 500000), 2)  # ₹50K – ₹5L each
+            amount = round(random.uniform(15000, 150000), 2)  # ₹15K – ₹1.5L each
             timestamp = base_time + timedelta(minutes=random.randint(1, 8) * tx)
 
             laundering_data.append(make_tx_record(
@@ -539,58 +549,169 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
                 receiver=receiver,
                 amount=amount,
                 timestamp=timestamp,
-                country=random.choice(NORMAL_COUNTRIES + high_risk_countries),
+                country='IN' if random.random() < 0.70 else random.choice(NORMAL_COUNTRIES + high_risk_countries),
                 city=rand_city('IN'),
                 dev=random.choice(devices),
                 ip=random.choice(ips),
-                method=random.choice(['IMPS', 'UPI', 'RTGS']),
-                merchant=random.choice(SUSPICIOUS_MERCHANTS),
+                method=random.choice(['IMPS', 'UPI', 'RTGS', 'Net Banking']),
+                merchant=random.choice(SUSPICIOUS_MERCHANTS + RETAIL_MERCHANTS[:5]),
                 cat='Transfer',
                 status='Approved',
                 is_laundering=1
             ))
 
-    # If laundering generated exceeds or falls slightly short of target_laundering, trim or sample
-    if len(laundering_data) > target_laundering:
+    # Exact trimming to target_laundering
+    # Statistically ensure temporal test partition (last 15% of timeframe, ~day 152+) maintains >= 34 positives
+    test_horizon_start = start_time + timedelta(days=152.0)
+    target_test_positives = min(max(34, int(target_laundering * 0.22)), int(target_laundering * 0.35))
+    late_laundering = [tx for tx in laundering_data if pd.to_datetime(tx['timestamp']) >= test_horizon_start]
+    early_laundering = [tx for tx in laundering_data if pd.to_datetime(tx['timestamp']) < test_horizon_start]
+
+    if len(late_laundering) >= target_test_positives and len(early_laundering) >= (target_laundering - target_test_positives):
+        random.shuffle(late_laundering)
+        random.shuffle(early_laundering)
+        laundering_data = late_laundering[:target_test_positives] + early_laundering[:(target_laundering - target_test_positives)]
+    elif len(laundering_data) > target_laundering:
         random.shuffle(laundering_data)
         laundering_data = laundering_data[:target_laundering]
 
-    # ── 3. Legitimate Transactions ───────────────────────────────────────────
-    num_normal = max(0, num_records - len(laundering_data))
-    print(f"Generating {num_normal:,} legitimate transactions and {len(laundering_data):,} laundering transactions (target rate: {laundering_rate:.1%})...")
+    # ── 3. Legitimate Transactions & Benign Look-Alikes ───────────────────────
+    # Requirement: Add benign look-alikes (legit structuring-like, legit cycles, legit high-risk-country payments)
+    # with is_laundering = 0 to prevent trivial separation.
+    benign_lookalikes = []
+
+    # A) Benign Structuring Look-Alikes (Split payments below CTR for genuine purposes)
+    num_benign_struct_groups = max(5, int(round(35 * (num_records / 15000.0))))
+    for _ in range(num_benign_struct_groups):
+        sender = random.choice(normal_accounts)
+        receiver = random.choice(normal_accounts)
+        while receiver == sender:
+            receiver = random.choice(normal_accounts)
+        num_splits = random.randint(2, 4)
+        base_day = random.uniform(0, 178)
+        base_time = start_time + timedelta(days=base_day, hours=random.randint(8, 20))
+        for s in range(num_splits):
+            # Just below CTR (₹42,000 - ₹49,800), e.g., tuition installments, equipment, jewelry down payments
+            amt = round(random.uniform(42000.0, 49800.0), 2)
+            ts = base_time + timedelta(hours=random.randint(1, 14) * s)
+            benign_lookalikes.append(make_tx_record(
+                sender=sender,
+                receiver=receiver,
+                amount=amt,
+                timestamp=ts,
+                country='IN',
+                city=rand_city('IN'),
+                dev=random.choice(devices),
+                ip=random.choice(ips),
+                method=random.choice(['UPI', 'IMPS', 'Net Banking']),
+                merchant=random.choice(['Tanishq Jewellers', 'Apollo Hospitals', 'Coursera India', 'BYJU\'s', 'Internal Transfer']),
+                cat=random.choice(['Retail', 'Healthcare', 'Education', 'Transfer']),
+                status='Approved',
+                is_laundering=0
+            ))
+
+    # B) Benign Circular Cycles (Reimbursement chains, escrow refunds, partner pools)
+    num_benign_loops = max(4, int(round(25 * (num_records / 15000.0))))
+    for _ in range(num_benign_loops):
+        loop_size = random.randint(3, 4)
+        loop_accs = []
+        while len(loop_accs) < loop_size:
+            acc = random.choice(normal_accounts)
+            if acc not in loop_accs:
+                loop_accs.append(acc)
+        base_amount = round(random.uniform(80000.0, 600000.0), 2)
+        base_day = random.uniform(0, 178)
+        base_time = start_time + timedelta(days=base_day, hours=random.randint(9, 18))
+        for step in range(loop_size):
+            s = loop_accs[step]
+            r = loop_accs[(step + 1) % loop_size]
+            amt = round(base_amount * random.uniform(0.92, 1.05), 2)
+            ts = base_time + timedelta(days=step, hours=random.randint(1, 4))
+            benign_lookalikes.append(make_tx_record(
+                sender=s,
+                receiver=r,
+                amount=amt,
+                timestamp=ts,
+                country='IN' if random.random() < 0.75 else random.choice(NORMAL_COUNTRIES),
+                city=rand_city('IN'),
+                dev=random.choice(devices),
+                ip=random.choice(ips),
+                method=random.choice(['IMPS', 'RTGS', 'Net Banking']),
+                merchant='Vendor Settlement Reimbursement',
+                cat=random.choice(['Transfer', 'Services']),
+                status='Approved',
+                is_laundering=0
+            ))
+
+    # C) Benign High-Risk Country Payments (Legit consultancy, university, trade payments)
+    num_benign_high_risk = max(10, int(round(120 * (num_records / 15000.0))))
+    for _ in range(num_benign_high_risk):
+        sender = random.choice(normal_accounts)
+        receiver = random.choice(acc_numbers)
+        while receiver == sender:
+            receiver = random.choice(acc_numbers)
+        amt = round(random.uniform(50000.0, 850000.0), 2)
+        base_day = random.uniform(0, 178)
+        ts = start_time + timedelta(days=base_day, hours=random.randint(8, 22))
+        c_code = random.choice(high_risk_countries)
+        benign_lookalikes.append(make_tx_record(
+            sender=sender,
+            receiver=receiver,
+            amount=amt,
+            timestamp=ts,
+            country=c_code,
+            city=rand_city(c_code),
+            dev=random.choice(devices),
+            ip=random.choice(ips),
+            method=random.choice(['RTGS', 'Net Banking', 'Crypto Transfer', 'IMPS']),
+            merchant=random.choice(['Dubai Gold Exchange', 'Offshore Capital Corp', 'Global Asset Holdings Ltd', 'Consulting Services Intl']),
+            cat=random.choice(['Services', 'Investment', 'Transfer']),
+            status='Approved',
+            is_laundering=0
+        ))
+
+    # D) Regular Legitimate Transactions
+    num_remain = max(0, num_records - len(laundering_data) - len(benign_lookalikes))
+    print(f"Generating dataset ({num_records:,} target): {len(laundering_data):,} laundering, {len(benign_lookalikes):,} benign look-alikes, {num_remain:,} regular transactions (rate: {laundering_rate:.1%})...")
 
     legit_data = []
-    for i in range(num_normal):
+    for i in range(num_remain):
         sender = random.choice(normal_accounts)
         receiver = random.choice(acc_numbers)
         while receiver == sender:
             receiver = random.choice(acc_numbers)
 
         s_decl = account_lookup[sender]['customer']['declared_monthly_income_or_turnover']
-        # Conforming legitimate amounts: typical transactions scale nicely with declared profile
+        # Overlapping legitimate amount distributions:
+        # Business and affluent accounts routinely execute high-value transactions (₹1L - ₹25L)
         r = random.random()
-        if r < 0.50:
-            amount = round(float(np.random.exponential(scale=2500.0) + 500.0), 2)   # ₹500 – ₹15K typical
-            amount = min(amount, min(15000.0, s_decl * 0.4))
-            amount = max(amount, 250.0)
-        elif r < 0.80:
-            max_amt = min(45000.0, s_decl * 0.7)
-            amount = round(random.uniform(1000, max(2000, max_amt)), 2)
-        elif r < 0.93:
-            max_amt = min(180000.0, s_decl * 1.1)
-            amount = round(random.uniform(25000, max(30000, max_amt)), 2)
-        elif r < 0.985:
-            max_amt = min(800000.0, s_decl * 2.0)
-            amount = round(random.uniform(100000, max(120000, max_amt)), 2)
+        if r < 0.45:
+            amount = round(float(np.random.exponential(scale=3500.0) + 400.0), 2)
+            amount = min(amount, 35000.0)
+            amount = max(amount, 100.0)
+        elif r < 0.72:
+            amount = round(random.uniform(15000, 75000), 2)
+        elif r < 0.88:
+            # High retail / car / travel / jewelry
+            amount = round(random.uniform(75000, min(350000, s_decl * 1.5)), 2)
+        elif r < 0.96:
+            # Substantial business/investment transfer (₹3.5L - ₹15L, overlapping with layering/bursts)
+            amount = round(random.uniform(350000, min(1500000, s_decl * 3.0)), 2)
         else:
-            amount = round(random.uniform(8500, 9999), 2)
+            # Major B2B / property / trade transaction (₹15L - ₹25L)
+            amount = round(random.uniform(1500000, 2500000), 2)
 
-        country = 'IN' if random.random() < 0.72 else random.choice(NORMAL_COUNTRIES)
-        if random.random() < 0.05:  # 5% noise — legit tx to high-risk country
+        # Overlapping countries: 78% 'IN', 12% normal international, 10% high-risk
+        cr = random.random()
+        if cr < 0.78:
+            country = 'IN'
+        elif cr < 0.90:
+            country = random.choice(NORMAL_COUNTRIES)
+        else:
             country = random.choice(high_risk_countries)
 
-        day_offset = random.randint(0, 180)
-        hour = rand_hour_biased(night_prob=0.10)
+        day_offset = random.uniform(0, 178)
+        hour = rand_hour_biased(night_prob=0.15)
         timestamp = start_time + timedelta(days=day_offset, hours=hour,
                                            minutes=random.randint(0, 59))
 
@@ -614,7 +735,7 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
             is_laundering=0
         ))
 
-    all_data = legit_data + laundering_data
+    all_data = legit_data + benign_lookalikes + laundering_data
     random.shuffle(all_data)
 
     # Assign final transaction IDs
@@ -623,20 +744,28 @@ def generate_aml_data(num_records=15000, laundering_rate=0.01, label_noise=False
 
     df = pd.DataFrame(all_data)
 
-    # ── 4. Label Noise (Optional via flag) ────────────────────────────────────
+    # ── 4. 5% Label Noise ────────────────────────────────────────────────────
+    # Requirement: Add 5% label noise (flip 5% of fraud to 0, flip equal count of benign look-alikes to 1)
+    # Keeps the 0.3-1% laundering rate intact while preventing trivial separability.
     if label_noise:
-        print("[Label Noise] Injecting realistic historical miss-rate (~4%) and false flags (~0.5%)...")
+        noise_frac = 0.05
+        print(f"[Label Noise] Injecting realistic 5% label noise (missed SARs & defensive false flags)...")
         rng = np.random.default_rng(seed)
-        laundering_idx = df.index[df['is_laundering'] == 1].tolist()
-        clean_idx = df.index[df['is_laundering'] == 0].tolist()
 
-        if laundering_idx:
-            flip_clean = rng.choice(laundering_idx, size=max(1, int(0.04 * len(laundering_idx))), replace=False)
-            df.loc[flip_clean, 'is_laundering'] = 0
+        laundering_indices = df.index[df['is_laundering'] == 1].tolist()
+        clean_indices = df.index[df['is_laundering'] == 0].tolist()
 
-        if clean_idx:
-            flip_dirty = rng.choice(clean_idx, size=max(1, int(0.005 * len(clean_idx))), replace=False)
-            df.loc[flip_dirty, 'is_laundering'] = 1
+        if laundering_indices:
+            num_flip_to_clean = max(1, int(round(noise_frac * len(laundering_indices))))
+            flip_to_clean_idx = rng.choice(laundering_indices, size=num_flip_to_clean, replace=False)
+            df.loc[flip_to_clean_idx, 'is_laundering'] = 0
+
+            # Symmetric flip on clean candidates to preserve calibrated laundering rate
+            if clean_indices:
+                flip_to_fraud_idx = rng.choice(clean_indices, size=num_flip_to_clean, replace=False)
+                df.loc[flip_to_fraud_idx, 'is_laundering'] = 1
+
+            print(f"  [Label Noise] Flipped {num_flip_to_clean} laundering -> 0 and {num_flip_to_clean} clean -> 1.")
     else:
         print("[Label Noise] Disabled (ground truth labels preserved).")
 
@@ -686,13 +815,20 @@ if __name__ == '__main__':
         '--laundering-rate',
         type=validate_laundering_rate,
         default=0.01,
-        help="Proportion of laundering transactions (range 0.003 to 0.08, default: 0.01)"
+        help="Proportion of laundering transactions (range 0.003 to 0.08, default: 0.01 = 1.0%)"
     )
     parser.add_argument(
         '--label-noise',
+        dest='label_noise',
         action='store_true',
-        default=False,
-        help="Enable realistic label noise (~4%% historical misses, ~0.5%% false positives)"
+        default=True,
+        help="Enable realistic 5% label noise (default: True)"
+    )
+    parser.add_argument(
+        '--no-label-noise',
+        dest='label_noise',
+        action='store_false',
+        help="Disable label noise (clean ground truth labels)"
     )
     parser.add_argument(
         '--output-dir',

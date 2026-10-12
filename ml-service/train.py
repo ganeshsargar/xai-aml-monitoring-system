@@ -248,6 +248,46 @@ def run_time_series_cv(X_data: pd.DataFrame, y_data: pd.Series, model_builder, i
     return {'n_splits': n_splits, 'metrics': summary}
 
 
+# ── Multi-Seed Metrics Aggregation Helper ────────────────────────────────────
+
+RANDOM_SEEDS = [42, 123, 456, 789, 1011]
+
+
+def aggregate_seed_metrics(seed_metrics_list: list) -> dict:
+    """
+    Computes mean and std across repeated seed evaluation runs for all AML metrics.
+    Maintains base scalar keys as mean for full backwards compatibility.
+    """
+    if not seed_metrics_list:
+        return {}
+    res = {}
+    keys = [
+        'pr_auc', 'roc_auc', 'recall_at_1pct_fpr', 'recall_at_5pct_fpr',
+        'precision_at_100', 'precision_at_200', 'precision_at_500',
+        'f1_score', 'precision', 'recall', 'brier_score'
+    ]
+    for k in keys:
+        vals = [float(m[k]) for m in seed_metrics_list if k in m and m[k] is not None]
+        if vals:
+            mean_val = float(np.mean(vals))
+            std_val = float(np.std(vals))
+            res[k] = mean_val
+            res[f'{k}_mean'] = mean_val
+            res[f'{k}_std'] = std_val
+
+    val_pr_vals = [float(m['val_pr_auc']) for m in seed_metrics_list if 'val_pr_auc' in m and m['val_pr_auc'] is not None]
+    if val_pr_vals:
+        res['val_pr_auc'] = float(np.mean(val_pr_vals))
+        res['val_pr_auc_mean'] = float(np.mean(val_pr_vals))
+        res['val_pr_auc_std'] = float(np.std(val_pr_vals))
+
+    if 'confusion_matrix' in seed_metrics_list[0]:
+        res['confusion_matrix'] = seed_metrics_list[0]['confusion_matrix']
+
+    res['seed_count'] = len(seed_metrics_list)
+    return res
+
+
 # ── Graph Feature Ablation Study ──────────────────────────────────────────────
 
 def run_graph_ablation_study(
@@ -258,75 +298,95 @@ def run_graph_ablation_study(
     y_val: pd.Series,
     X_test_df: pd.DataFrame,
     y_test: pd.Series,
-    threshold: float = 0.5
+    threshold: float = 0.5,
+    seeds: list = None
 ) -> dict:
     """
-    Compares candidate model performance strictly with and without graph features.
-    Computes PR-AUC, ROC-AUC, Recall@1%FPR, Recall@5%FPR, Precision@100, F1-Score, and Brier score.
+    Compares candidate model performance strictly with and without graph features across 5 random seeds.
+    Computes mean and std for PR-AUC, ROC-AUC, Recall@1%FPR, Recall@5%FPR, Precision@100, F1-Score, and Brier score.
     Returns ablation report dictionary.
     """
+    if seeds is None:
+        seeds = RANDOM_SEEDS
+
     ablation_results = {}
     base_graph_cols = BASE_FEATURE_COLS + GRAPH_FEATURE_COLS
 
     for name, cfg in candidates.items():
         is_scaled = cfg['scaled']
+        builder_fn = cfg.get('factory') or cfg.get('builder')
 
         # 1. Base Features Only (12 features)
-        clf_base = cfg['builder']()
-        if is_scaled:
-            s_base = StandardScaler()
-            X_tr_base = s_base.fit_transform(X_train_df[BASE_FEATURE_COLS])
-            X_v_base = s_base.transform(X_val_df[BASE_FEATURE_COLS])
-            X_te_base = s_base.transform(X_test_df[BASE_FEATURE_COLS])
-        else:
-            X_tr_base = X_train_df[BASE_FEATURE_COLS]
-            X_v_base = X_val_df[BASE_FEATURE_COLS]
-            X_te_base = X_test_df[BASE_FEATURE_COLS]
+        m_base_seeds = []
+        for seed in seeds:
+            clf_base = builder_fn(seed) if callable(builder_fn) else cfg['builder']()
+            if is_scaled:
+                s_base = StandardScaler()
+                X_tr_base = s_base.fit_transform(X_train_df[BASE_FEATURE_COLS])
+                X_v_base = s_base.transform(X_val_df[BASE_FEATURE_COLS])
+                X_te_base = s_base.transform(X_test_df[BASE_FEATURE_COLS])
+            else:
+                X_tr_base = X_train_df[BASE_FEATURE_COLS]
+                X_v_base = X_val_df[BASE_FEATURE_COLS]
+                X_te_base = X_test_df[BASE_FEATURE_COLS]
 
-        clf_base.fit(X_tr_base, y_train)
-        val_probs_base = clf_base.predict_proba(X_v_base)[:, 1]
-        test_probs_base = clf_base.predict_proba(X_te_base)[:, 1]
+            clf_base.fit(X_tr_base, y_train)
+            val_probs_base = clf_base.predict_proba(X_v_base)[:, 1]
+            test_probs_base = clf_base.predict_proba(X_te_base)[:, 1]
 
-        m_base = compute_all_aml_metrics(y_test, test_probs_base, threshold=threshold)
-        m_base['val_pr_auc'] = float(average_precision_score(y_val, val_probs_base))
+            m_b = compute_all_aml_metrics(y_test, test_probs_base, threshold=threshold)
+            m_b['val_pr_auc'] = float(average_precision_score(y_val, val_probs_base))
+            m_base_seeds.append(m_b)
+
+        m_base = aggregate_seed_metrics(m_base_seeds)
 
         # 2. Base + Graph Features (21 features)
-        clf_graph = cfg['builder']()
-        if is_scaled:
-            s_graph = StandardScaler()
-            X_tr_graph = s_graph.fit_transform(X_train_df[base_graph_cols])
-            X_v_graph = s_graph.transform(X_val_df[base_graph_cols])
-            X_te_graph = s_graph.transform(X_test_df[base_graph_cols])
-        else:
-            X_tr_graph = X_train_df[base_graph_cols]
-            X_v_graph = X_val_df[base_graph_cols]
-            X_te_graph = X_test_df[base_graph_cols]
+        m_graph_seeds = []
+        for seed in seeds:
+            clf_graph = builder_fn(seed) if callable(builder_fn) else cfg['builder']()
+            if is_scaled:
+                s_graph = StandardScaler()
+                X_tr_graph = s_graph.fit_transform(X_train_df[base_graph_cols])
+                X_v_graph = s_graph.transform(X_val_df[base_graph_cols])
+                X_te_graph = s_graph.transform(X_test_df[base_graph_cols])
+            else:
+                X_tr_graph = X_train_df[base_graph_cols]
+                X_v_graph = X_val_df[base_graph_cols]
+                X_te_graph = X_test_df[base_graph_cols]
 
-        clf_graph.fit(X_tr_graph, y_train)
-        val_probs_graph = clf_graph.predict_proba(X_v_graph)[:, 1]
-        test_probs_graph = clf_graph.predict_proba(X_te_graph)[:, 1]
+            clf_graph.fit(X_tr_graph, y_train)
+            val_probs_graph = clf_graph.predict_proba(X_v_graph)[:, 1]
+            test_probs_graph = clf_graph.predict_proba(X_te_graph)[:, 1]
 
-        m_graph = compute_all_aml_metrics(y_test, test_probs_graph, threshold=threshold)
-        m_graph['val_pr_auc'] = float(average_precision_score(y_val, val_probs_graph))
+            m_g = compute_all_aml_metrics(y_test, test_probs_graph, threshold=threshold)
+            m_g['val_pr_auc'] = float(average_precision_score(y_val, val_probs_graph))
+            m_graph_seeds.append(m_g)
+
+        m_graph = aggregate_seed_metrics(m_graph_seeds)
 
         # 3. Full Feature Set (Base + Graph + Customer: 28 features)
-        clf_full = cfg['builder']()
-        if is_scaled:
-            s_full = StandardScaler()
-            X_tr_full = s_full.fit_transform(X_train_df[FEATURE_COLS])
-            X_v_full = s_full.transform(X_val_df[FEATURE_COLS])
-            X_te_full = s_full.transform(X_test_df[FEATURE_COLS])
-        else:
-            X_tr_full = X_train_df[FEATURE_COLS]
-            X_v_full = X_val_df[FEATURE_COLS]
-            X_te_full = X_test_df[FEATURE_COLS]
+        m_full_seeds = []
+        for seed in seeds:
+            clf_full = builder_fn(seed) if callable(builder_fn) else cfg['builder']()
+            if is_scaled:
+                s_full = StandardScaler()
+                X_tr_full = s_full.fit_transform(X_train_df[FEATURE_COLS])
+                X_v_full = s_full.transform(X_val_df[FEATURE_COLS])
+                X_te_full = s_full.transform(X_test_df[FEATURE_COLS])
+            else:
+                X_tr_full = X_train_df[FEATURE_COLS]
+                X_v_full = X_val_df[FEATURE_COLS]
+                X_te_full = X_test_df[FEATURE_COLS]
 
-        clf_full.fit(X_tr_full, y_train)
-        val_probs_full = clf_full.predict_proba(X_v_full)[:, 1]
-        test_probs_full = clf_full.predict_proba(X_te_full)[:, 1]
+            clf_full.fit(X_tr_full, y_train)
+            val_probs_full = clf_full.predict_proba(X_v_full)[:, 1]
+            test_probs_full = clf_full.predict_proba(X_te_full)[:, 1]
 
-        m_full = compute_all_aml_metrics(y_test, test_probs_full, threshold=threshold)
-        m_full['val_pr_auc'] = float(average_precision_score(y_val, val_probs_full))
+            m_f = compute_all_aml_metrics(y_test, test_probs_full, threshold=threshold)
+            m_f['val_pr_auc'] = float(average_precision_score(y_val, val_probs_full))
+            m_full_seeds.append(m_f)
+
+        m_full = aggregate_seed_metrics(m_full_seeds)
 
         delta_graph = {
             'pr_auc': round(m_graph['pr_auc'] - m_base['pr_auc'], 4),
@@ -345,7 +405,7 @@ def run_graph_ablation_study(
         delta_total = {
             'pr_auc': round(m_full['pr_auc'] - m_base['pr_auc'], 4),
             'roc_auc': round(m_full['roc_auc'] - m_base['roc_auc'], 4),
-            'val_pr_auc': round(m_full['val_pr_auc'] - m_base['val_pr_auc'], 4),
+            'val_pr_auc': round(m_full.get('val_pr_auc', 0.0) - m_base.get('val_pr_auc', 0.0), 4),
             'recall_at_1pct_fpr': round(m_full['recall_at_1pct_fpr'] - m_base['recall_at_1pct_fpr'], 4),
             'recall_at_5pct_fpr': round(m_full['recall_at_5pct_fpr'] - m_base['recall_at_5pct_fpr'], 4),
             'precision_at_100': round(m_full['precision_at_100'] - m_base['precision_at_100'], 4),
@@ -376,7 +436,8 @@ def train_and_evaluate(
     max_rows: int = None,
     analyst_labels: list = None,
     analyst_labels_path: str = None,
-    analyst_label_weight: float = 3.0
+    analyst_label_weight: float = 3.0,
+    save_artifacts: bool = True
 ):
     """
     Trains candidate AML classifiers, selects the best using validation PR-AUC,
@@ -408,6 +469,20 @@ def train_and_evaluate(
     print(f"  Train partition: {len(train_df):,} rows ({train_df['timestamp'].min()} to {train_df['timestamp'].max()})")
     print(f"  Val partition:   {len(val_df):,} rows ({val_df['timestamp'].min()} to {val_df['timestamp'].max()})")
     print(f"  Test partition:  {len(test_df):,} rows ({test_df['timestamp'].min()} to {test_df['timestamp'].max()})")
+
+    # ── Positive Count Enforcement ────────────────────────────────────────────
+    test_fraud_count = int(test_df['is_laundering'].sum())
+    train_fraud_count = int(train_df['is_laundering'].sum())
+    val_fraud_count = int(val_df['is_laundering'].sum())
+    print(f"  Train fraud count: {train_fraud_count:,} ({train_fraud_count / max(1, len(train_df)):.2%})")
+    print(f"  Val fraud count:   {val_fraud_count:,} ({val_fraud_count / max(1, len(val_df)):.2%})")
+    print(f"  Test fraud count:  {test_fraud_count:,} ({test_fraud_count / max(1, len(test_df)):.2%})")
+
+    if test_fraud_count < 30:
+        raise ValueError(
+            f"Test set contains only {test_fraud_count} positive fraud cases (minimum required is 30). "
+            f"Training aborted to ensure statistically valid AML model evaluation."
+        )
 
     # ── Analyst Feedback Integration & Temporal Split Preservation ───────────
     analyst_labels_list = []
@@ -462,83 +537,113 @@ def train_and_evaluate(
 
     candidates = {
         'Logistic Regression': {
-            'builder': lambda: LogisticRegression(
-                max_iter=1000, random_state=42, class_weight='balanced'
+            'factory': lambda seed=42: LogisticRegression(
+                max_iter=1000, random_state=seed, class_weight='balanced'
+            ),
+            'builder': lambda seed=42: LogisticRegression(
+                max_iter=1000, random_state=seed, class_weight='balanced'
             ),
             'scaled': True
         },
         'Decision Tree': {
-            'builder': lambda: DecisionTreeClassifier(
-                max_depth=7, random_state=42, class_weight='balanced'
+            'factory': lambda seed=42: DecisionTreeClassifier(
+                max_depth=7, random_state=seed, class_weight='balanced'
+            ),
+            'builder': lambda seed=42: DecisionTreeClassifier(
+                max_depth=7, random_state=seed, class_weight='balanced'
             ),
             'scaled': False
         },
         'Random Forest': {
-            'builder': lambda: RandomForestClassifier(
-                n_estimators=150, max_depth=10, random_state=42,
+            'factory': lambda seed=42: RandomForestClassifier(
+                n_estimators=150, max_depth=10, random_state=seed,
+                class_weight='balanced', n_jobs=-1
+            ),
+            'builder': lambda seed=42: RandomForestClassifier(
+                n_estimators=150, max_depth=10, random_state=seed,
                 class_weight='balanced', n_jobs=-1
             ),
             'scaled': False
         },
         'Gradient Boosting': {
-            'builder': lambda: GradientBoostingClassifier(
+            'factory': lambda seed=42: GradientBoostingClassifier(
                 n_estimators=150, max_depth=5, learning_rate=0.08,
-                subsample=0.8, random_state=42
+                subsample=0.8, random_state=seed
+            ),
+            'builder': lambda seed=42: GradientBoostingClassifier(
+                n_estimators=150, max_depth=5, learning_rate=0.08,
+                subsample=0.8, random_state=seed
             ),
             'scaled': False
         },
         'XGBoost': {
-            'builder': lambda: xgb.XGBClassifier(
+            'factory': lambda seed=42: xgb.XGBClassifier(
                 n_estimators=150, max_depth=6, learning_rate=0.08,
                 subsample=0.8, colsample_bytree=0.8,
                 scale_pos_weight=scale_pos_weight,
-                random_state=42, eval_metric='logloss'
+                random_state=seed, eval_metric='logloss'
+            ),
+            'builder': lambda seed=42: xgb.XGBClassifier(
+                n_estimators=150, max_depth=6, learning_rate=0.08,
+                subsample=0.8, colsample_bytree=0.8,
+                scale_pos_weight=scale_pos_weight,
+                random_state=seed, eval_metric='logloss'
             ),
             'scaled': False
         },
     }
 
-    # ── 2. Train on Train Set, Select Best Model on Validation PR-AUC ─────────
+    # ── 2. Train on Train Set, Select Best Model on Validation PR-AUC across 5 Seeds ───
     validation_results = {}
     fitted_models = {}
     best_val_prauc = -1.0
     best_model_name = ''
 
     print("\n" + "=" * 70)
-    print("Candidate Model Training & Validation Evaluation (Selection Metric: PR-AUC)")
+    print(f"Candidate Model Validation across {len(RANDOM_SEEDS)} Seeds {RANDOM_SEEDS} (Selection Metric: PR-AUC)")
     print("=" * 70)
 
     sample_weights_arr = train_weights.values
 
     for name, cfg in candidates.items():
-        clf = cfg['builder']()
         is_scaled = cfg['scaled']
+        builder_fn = cfg.get('factory') or cfg.get('builder')
 
         X_tr_in = X_train_scaled if is_scaled else X_train
         X_val_in = X_val_scaled if is_scaled else X_val
 
-        try:
-            clf.fit(X_tr_in, y_train, sample_weight=sample_weights_arr)
-        except TypeError:
-            clf.fit(X_tr_in, y_train)
+        val_seed_metrics = []
+        primary_clf = None
 
-        fitted_models[name] = clf
+        for seed in RANDOM_SEEDS:
+            clf = builder_fn(seed)
+            try:
+                clf.fit(X_tr_in, y_train, sample_weight=sample_weights_arr)
+            except TypeError:
+                clf.fit(X_tr_in, y_train)
 
-        val_probs = clf.predict_proba(X_val_in)[:, 1]
-        val_metrics = compute_all_aml_metrics(y_val, val_probs, threshold=0.5)
-        val_metrics['val_pr_auc'] = val_metrics['pr_auc']
-        validation_results[name] = val_metrics
+            if primary_clf is None or seed == 42:
+                primary_clf = clf
 
-        print(f"[{name}] Val PR-AUC={val_metrics['pr_auc']:.4f} | "
-              f"ROC-AUC={val_metrics['roc_auc']:.4f} | "
-              f"Recall@1%FPR={val_metrics['recall_at_1pct_fpr']:.4f} | "
-              f"Precision@100={val_metrics['precision_at_100']:.4f}")
+            val_probs = clf.predict_proba(X_val_in)[:, 1]
+            m_s = compute_all_aml_metrics(y_val, val_probs, threshold=0.5)
+            m_s['val_pr_auc'] = m_s['pr_auc']
+            val_seed_metrics.append(m_s)
 
-        if val_metrics['pr_auc'] > best_val_prauc:
-            best_val_prauc = val_metrics['pr_auc']
+        fitted_models[name] = primary_clf
+        val_summary = aggregate_seed_metrics(val_seed_metrics)
+        validation_results[name] = val_summary
+
+        print(f"[{name}] Val PR-AUC = {val_summary['pr_auc_mean']:.4f} ± {val_summary['pr_auc_std']:.4f} | "
+              f"ROC-AUC = {val_summary['roc_auc_mean']:.4f} ± {val_summary['roc_auc_std']:.4f} | "
+              f"Recall@1%FPR = {val_summary['recall_at_1pct_fpr_mean']:.4f} ± {val_summary['recall_at_1pct_fpr_std']:.4f} | "
+              f"Precision@100 = {val_summary['precision_at_100_mean']:.4f} ± {val_summary['precision_at_100_std']:.4f}")
+
+        if val_summary['pr_auc_mean'] > best_val_prauc:
+            best_val_prauc = val_summary['pr_auc_mean']
             best_model_name = name
 
-    print(f"\n[SELECTED CHAMPION] {best_model_name} (Validation PR-AUC = {best_val_prauc:.4f})")
+    print(f"\n[SELECTED CHAMPION] {best_model_name} (Mean Validation PR-AUC = {best_val_prauc:.4f})")
     champion_clf = fitted_models[best_model_name]
     champion_is_scaled = candidates[best_model_name]['scaled']
 
@@ -561,36 +666,53 @@ def train_and_evaluate(
     )
     print(f"  Selected Optimal Threshold: {optimal_threshold:.3f} (Val alert rate: {val_daily_alerts:.1f} alerts/day)")
 
-    # ── 5. Final Evaluation on TEST SET (Evaluated Once at End) ───────────────
+    # ── 5. Final Evaluation on TEST SET across 5 Seeds ─────────────────────────
     print("\n" + "=" * 70)
-    print("Final Model Evaluation on Test Set (Zero Data Leakage)")
+    print(f"Final Model Evaluation on Test Set ({len(RANDOM_SEEDS)} Seeds: {RANDOM_SEEDS})")
     print("=" * 70)
 
     test_days = max(1.0, (test_df['timestamp'].max() - test_df['timestamp'].min()).total_seconds() / 86400.0)
 
     comparison_results = {}
-    for name, clf in fitted_models.items():
-        is_scaled = candidates[name]['scaled']
+    for name, cfg in candidates.items():
+        is_scaled = cfg['scaled']
+        builder_fn = cfg.get('factory') or cfg.get('builder')
+        X_tr_in = X_train_scaled if is_scaled else X_train
+        X_val_in = X_val_scaled if is_scaled else X_val
         X_test_in = X_test_scaled if is_scaled else X_test
 
-        if name == best_model_name:
-            # Champion uses calibrated probabilities
-            raw_test_probs = clf.predict_proba(X_test_in)[:, 1]
-            test_probs = calibrated_champion.predict_proba(X_test_in)[:, 1]
-            brier_raw = float(brier_score_loss(y_test, raw_test_probs))
-        else:
-            test_probs = clf.predict_proba(X_test_in)[:, 1]
-            brier_raw = float(brier_score_loss(y_test, test_probs))
+        test_seed_metrics = []
+        for seed in RANDOM_SEEDS:
+            clf = builder_fn(seed)
+            try:
+                clf.fit(X_tr_in, y_train, sample_weight=sample_weights_arr)
+            except TypeError:
+                clf.fit(X_tr_in, y_train)
 
-        test_m = compute_all_aml_metrics(y_test, test_probs, threshold=optimal_threshold)
-        test_m['val_pr_auc'] = validation_results[name]['pr_auc']
-        comparison_results[name] = test_m
+            if name == best_model_name:
+                try:
+                    from sklearn.frozen import FrozenEstimator
+                    cal_m = CalibratedClassifierCV(FrozenEstimator(clf), method='isotonic')
+                except ImportError:
+                    cal_m = CalibratedClassifierCV(estimator=clf, method='isotonic', cv='prefit')
+                cal_m.fit(X_val_in, y_val)
+                test_probs = cal_m.predict_proba(X_test_in)[:, 1]
+            else:
+                test_probs = clf.predict_proba(X_test_in)[:, 1]
 
-        print(f"[{name}] Test PR-AUC={test_m['pr_auc']:.4f} | "
-              f"ROC-AUC={test_m['roc_auc']:.4f} | "
-              f"Recall@1%FPR={test_m['recall_at_1pct_fpr']:.4f} | "
-              f"F1(@{optimal_threshold:.2f})={test_m['f1_score']:.4f} | "
-              f"Brier={test_m['brier_score']:.4f}")
+            m = compute_all_aml_metrics(y_test, test_probs, threshold=optimal_threshold)
+            m['val_pr_auc'] = validation_results[name]['pr_auc']
+            test_seed_metrics.append(m)
+
+        test_summary = aggregate_seed_metrics(test_seed_metrics)
+        test_summary['val_pr_auc'] = validation_results[name]['pr_auc']
+        comparison_results[name] = test_summary
+
+        print(f"[{name}] Test PR-AUC={test_summary['pr_auc_mean']:.4f} ± {test_summary['pr_auc_std']:.4f} | "
+              f"ROC-AUC={test_summary['roc_auc_mean']:.4f} ± {test_summary['roc_auc_std']:.4f} | "
+              f"Recall@1%FPR={test_summary['recall_at_1pct_fpr_mean']:.4f} ± {test_summary['recall_at_1pct_fpr_std']:.4f} | "
+              f"F1(@{optimal_threshold:.2f})={test_summary['f1_score_mean']:.4f} ± {test_summary['f1_score_std']:.4f} | "
+              f"Brier={test_summary['brier_score_mean']:.4f} ± {test_summary['brier_score_std']:.4f}")
 
     champion_test_metrics = comparison_results[best_model_name]
     test_alerts_count = int((calibrated_champion.predict_proba(X_test_champion := (X_test_scaled if champion_is_scaled else X_test))[:, 1] >= optimal_threshold).sum())
@@ -647,17 +769,19 @@ def train_and_evaluate(
         train_df, y_train,
         val_df, y_val,
         test_df, y_test,
-        threshold=optimal_threshold
+        threshold=optimal_threshold,
+        seeds=RANDOM_SEEDS
     )
 
     for m_name, a_data in ablation_results.items():
-        base_pr = a_data['without_graph_features']['pr_auc']
-        graph_pr = a_data.get('with_graph_only', {}).get('pr_auc', base_pr)
-        full_pr = a_data['with_customer_features']['pr_auc']
-        d_graph = a_data.get('delta_graph', {}).get('pr_auc', 0.0)
-        d_cust = a_data.get('delta_customer', {}).get('pr_auc', 0.0)
+        base_pr_m = a_data['without_graph_features'].get('pr_auc_mean', a_data['without_graph_features']['pr_auc'])
+        base_pr_s = a_data['without_graph_features'].get('pr_auc_std', 0.0)
+        graph_pr_m = a_data.get('with_graph_only', {}).get('pr_auc_mean', a_data.get('with_graph_only', {}).get('pr_auc', base_pr_m))
+        graph_pr_s = a_data.get('with_graph_only', {}).get('pr_auc_std', 0.0)
+        full_pr_m = a_data['with_customer_features'].get('pr_auc_mean', a_data['with_customer_features']['pr_auc'])
+        full_pr_s = a_data['with_customer_features'].get('pr_auc_std', 0.0)
         d_tot = a_data['delta']['pr_auc']
-        print(f"  [{m_name}] PR-AUC: Base({base_pr:.4f}) -> +Graph({graph_pr:.4f}, diff={d_graph:+.4f}) -> +Customer({full_pr:.4f}, diff={d_cust:+.4f}) | Total Delta={d_tot:+.4f}")
+        print(f"  [{m_name}] PR-AUC: Base({base_pr_m:.4f}±{base_pr_s:.4f}) -> +Graph({graph_pr_m:.4f}±{graph_pr_s:.4f}) -> +Customer({full_pr_m:.4f}±{full_pr_s:.4f}) | Total Delta={d_tot:+.4f}")
 
     ablation_payload = {
         'timestamp': datetime.now().isoformat(),
@@ -669,20 +793,28 @@ def train_and_evaluate(
         'base_feature_cols': BASE_FEATURE_COLS,
         'graph_feature_cols': GRAPH_FEATURE_COLS,
         'customer_feature_cols': CUSTOMER_FEATURE_COLS,
+        'random_seeds': RANDOM_SEEDS,
+        'num_seeds': len(RANDOM_SEEDS),
         'models': ablation_results,
         'champion_model': best_model_name,
         'champion_ablation': ablation_results.get(best_model_name)
     }
 
-    with open(os.path.join(models_dir, 'ablation.json'), 'w') as f:
-        json.dump(ablation_payload, f, indent=4)
-    print(f"\n[OK] Ablation study successfully saved to {os.path.join(models_dir, 'ablation.json')}")
+    if save_artifacts:
+        with open(os.path.join(models_dir, 'ablation.json'), 'w') as f:
+            json.dump(ablation_payload, f, indent=4)
+        print(f"\n[OK] Ablation study successfully saved to {os.path.join(models_dir, 'ablation.json')}")
 
     metrics_output = {
         'comparison':             comparison_results,
         'best_model':             best_model_name,
         'features':               feature_cols,
         'fraud_rate':             fraud_rate,
+        'train_fraud_count':      train_fraud_count,
+        'val_fraud_count':        val_fraud_count,
+        'test_fraud_count':       test_fraud_count,
+        'random_seeds':           RANDOM_SEEDS,
+        'num_seeds':              len(RANDOM_SEEDS),
         'trained_at':             datetime.now().isoformat(),
         'dataset_name':           selected_name,
         'split_mode':             split_mode_normalized,
@@ -691,6 +823,9 @@ def train_and_evaluate(
             'train_rows':         len(train_df),
             'val_rows':           len(val_df),
             'test_rows':          len(test_df),
+            'train_fraud_count':  train_fraud_count,
+            'val_fraud_count':    val_fraud_count,
+            'test_fraud_count':   test_fraud_count,
             'train_date_range':   [str(train_df['timestamp'].min()), str(train_df['timestamp'].max())],
             'val_date_range':     [str(val_df['timestamp'].min()), str(val_df['timestamp'].max())],
             'test_date_range':    [str(test_df['timestamp'].min()), str(test_df['timestamp'].max())],
@@ -712,22 +847,23 @@ def train_and_evaluate(
     }
 
     # ── 9. Save to Versioned Model Registry (models/versions/<version_id>/) ────
-    from model_registry import save_model_version
-    version_meta = save_model_version(
-        model_obj=calibrated_champion,
-        scaler_obj=scaler,
-        metrics_dict=metrics_output,
-        feature_cols=feature_cols,
-        reliability_data=reliability_data,
-        ablation_data=ablation_payload,
-        train_df=train_df,
-        is_promoted=False
-    )
-    metrics_output['version_id'] = version_meta['version_id']
-    metrics_output['training_data_hash'] = version_meta['training_data_hash']
-    metrics_output['config_hash'] = version_meta['config_hash']
+    if save_artifacts:
+        from model_registry import save_model_version
+        version_meta = save_model_version(
+            model_obj=calibrated_champion,
+            scaler_obj=scaler,
+            metrics_dict=metrics_output,
+            feature_cols=feature_cols,
+            reliability_data=reliability_data,
+            ablation_data=ablation_payload,
+            train_df=train_df,
+            is_promoted=False
+        )
+        metrics_output['version_id'] = version_meta['version_id']
+        metrics_output['training_data_hash'] = version_meta['training_data_hash']
+        metrics_output['config_hash'] = version_meta['config_hash']
+        print(f"\n[OK] Model version '{version_meta['version_id']}' recorded in registry.json and saved to models/versions/{version_meta['version_id']}/")
 
-    print(f"\n[OK] Model version '{version_meta['version_id']}' recorded in registry.json and saved to models/versions/{version_meta['version_id']}/")
     return metrics_output
 
 

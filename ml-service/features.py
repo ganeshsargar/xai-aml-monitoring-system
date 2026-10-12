@@ -5,7 +5,7 @@ Computes 12 base behavioral/transactional features + 9 rolling network graph fea
 """
 
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import numpy as np
 import pandas as pd
 
@@ -45,8 +45,13 @@ GRAPH_FEATURE_COLS = [
     'cycle_count',              # count of temporal cycles involving the accounts
     'pagerank',                 # structural network centrality score in interaction graph
     'shared_device_degree',     # count of other accounts sharing device_id or ip_address
-    'neighbor_max_risk',        # maximum risk score among 1-hop counterparties
 ]
+# NOTE ON REMOVAL OF 'neighbor_max_risk':
+# neighbor_max_risk was removed from model feature columns because the underlying transaction
+# logs and training dataset lack point-in-time ground truth risk scores for counterparties.
+# Attempting to derive counterparty risk from static labels, uncalibrated post-hoc scores, or
+# future transactions introduces severe target leakage and lookahead bias into AML scoring.
+# It should only be reintroduced if upstream tables provide calibrated point-in-time risk scores.
 
 CUSTOMER_FEATURE_COLS = [
     'amount_zscore_vs_own_history', # z-score vs sender's historical amounts
@@ -73,8 +78,7 @@ DEFAULT_GRAPH_FEAT_DICT = {
     'in_cycle': 0.0,
     'cycle_count': 0.0,
     'pagerank': 0.0,
-    'shared_device_degree': 0.0,
-    'neighbor_max_risk': 0.0
+    'shared_device_degree': 0.0
 }
 
 DEFAULT_CUSTOMER_FEAT_DICT = {
@@ -140,13 +144,73 @@ def _load_customer_lookup() -> dict:
     return _CUSTOMER_LOOKUP
 
 
+from collections import deque
+
+
+def compute_point_in_time_velocity_and_diff(
+    df: pd.DataFrame,
+    acc_col: str,
+    window_hours: float = 2.0,
+    default_diff: float = DEFAULT_TIME_DIFF
+) -> Tuple[pd.Series, pd.Series]:
+    """
+    Computes strictly point-in-time velocity and time delta for account transactions.
+    Uses timestamp and original position as a stable tiebreak:
+    - Transactions with timestamp strictly earlier (or equal with tiebreak pos_j < pos_i)
+      are included in the preceding window.
+    - Future transactions (t_j > t_i or equal with pos_j >= pos_i) are strictly excluded.
+    """
+    if acc_col not in df.columns or not df[acc_col].notna().any() or df.empty:
+        return pd.Series(default_diff, index=df.index), pd.Series(0, index=df.index)
+
+    valid = df[df[acc_col].notna()].copy()
+    if '_orig_pos' not in valid.columns:
+        valid['_orig_pos'] = np.arange(len(valid))
+
+    valid['timestamp'] = pd.to_datetime(valid['timestamp'], utc=True)
+    sorted_df = valid.sort_values([acc_col, 'timestamp', '_orig_pos'], ascending=[True, True, True])
+
+    window_ns = np.int64(window_hours * 3600 * 1e9)
+    minute_ns = 60.0 * 1e9
+
+    diff_arr = np.full(len(sorted_df), default_diff, dtype=float)
+    vel_arr = np.zeros(len(sorted_df), dtype=int)
+
+    acc_vals = sorted_df[acc_col].astype(str).values
+    ts_vals = sorted_df['timestamp'].values.astype('datetime64[ns]').astype('int64')
+
+    change_mask = np.concatenate(([True], acc_vals[1:] != acc_vals[:-1], [True]))
+    split_indices = np.where(change_mask)[0]
+
+    for start, end in zip(split_indices[:-1], split_indices[1:]):
+        group_ts = ts_vals[start:end]
+        n_grp = end - start
+
+        # Strictly prior transactions in preceding window [t - window, t)
+        left_idx = np.searchsorted(group_ts, group_ts - window_ns, side='left')
+        vel_arr[start:end] = np.arange(n_grp) - left_idx
+
+        # Time diff: elapsed minutes since immediately preceding transaction in account group
+        if n_grp > 1:
+            diff_arr[start + 1:end] = (group_ts[1:] - group_ts[:-1]) / minute_ns
+
+    diff_s = pd.Series(diff_arr, index=sorted_df.index).reindex(df.index).fillna(default_diff)
+    vel_s = pd.Series(vel_arr, index=sorted_df.index).reindex(df.index).fillna(0).astype(int)
+    return diff_s, vel_s
+
+
 def compute_rolling_graph_features(
     combined_df: pd.DataFrame,
     rolling_days: int = DEFAULT_ROLLING_GRAPH_DAYS
 ) -> pd.DataFrame:
     """
-    Computes per-account graph features on a rolling graph built from the last N days of history.
-    Maps sender & receiver graph attributes to each transaction row.
+    Computes strictly point-in-time per-account graph features on a rolling graph.
+    Maintains incremental/expanding window state over the preceding rolling_days history.
+    For each transaction row:
+    - Only transactions with timestamp strictly earlier (or equal with stable tiebreak pos_j <= pos_i)
+      are visible in the active network graph.
+    - Future transactions are never included, eliminating all lookahead bias.
+    - Yields exact parity between batch evaluation and single/live transaction scoring for identical history.
     """
     n_rows = len(combined_df)
     if n_rows == 0:
@@ -154,74 +218,194 @@ def compute_rolling_graph_features(
 
     graph_res = {col: np.zeros(n_rows, dtype=float) for col in GRAPH_FEATURE_COLS}
 
-    # Ensure required columns exist
     if 'sender_account' not in combined_df.columns or 'receiver_account' not in combined_df.columns:
         return pd.DataFrame(graph_res, index=combined_df.index)
 
-    times = combined_df['timestamp']
-    t_min = times.min()
-    t_max = times.max()
-    rolling_delta = timedelta(days=rolling_days)
+    df_work = combined_df.copy()
+    if '_orig_pos' not in df_work.columns:
+        df_work['_orig_pos'] = np.arange(n_rows)
+    df_work['timestamp'] = pd.to_datetime(df_work['timestamp'], utc=True)
 
-    if pd.isna(t_min) or pd.isna(t_max) or (t_max - t_min) <= rolling_delta or n_rows <= 1000:
-        # Single rolling graph covers the whole batch or time span
-        records = combined_df.to_dict('records')
-        acc_feats = compute_account_graph_features(records)
+    sorted_df = df_work.sort_values(['timestamp', '_orig_pos'], ascending=[True, True])
+    sorted_indices = sorted_df.index.values
 
-        senders = combined_df['sender_account'].astype(str).values
-        receivers = combined_df['receiver_account'].astype(str).values
+    senders = sorted_df['sender_account'].astype(str).values
+    receivers = sorted_df['receiver_account'].astype(str).values
 
-        for i in range(n_rows):
-            s_f = acc_feats.get(senders[i], DEFAULT_GRAPH_FEAT_DICT)
-            r_f = acc_feats.get(receivers[i], DEFAULT_GRAPH_FEAT_DICT)
-
-            graph_res['in_degree'][i] = s_f['in_degree']
-            graph_res['out_degree'][i] = s_f['out_degree']
-            graph_res['distinct_counterparties'][i] = max(s_f['distinct_counterparties'], r_f['distinct_counterparties'])
-            graph_res['pass_through_ratio'][i] = max(s_f['pass_through_ratio'], r_f['pass_through_ratio'])
-            graph_res['in_cycle'][i] = max(s_f['in_cycle'], r_f['in_cycle'])
-            graph_res['cycle_count'][i] = max(s_f['cycle_count'], r_f['cycle_count'])
-            graph_res['pagerank'][i] = max(s_f['pagerank'], r_f['pagerank'])
-            graph_res['shared_device_degree'][i] = max(s_f['shared_device_degree'], r_f['shared_device_degree'])
-            graph_res['neighbor_max_risk'][i] = max(s_f['neighbor_max_risk'], r_f['neighbor_max_risk'])
-
+    if 'amount_inr' in sorted_df.columns:
+        amts = pd.to_numeric(sorted_df['amount_inr'], errors='coerce').fillna(0.0).clip(lower=0.0).values
     else:
-        # Sliding temporal windows (step of 3 days across timeline)
-        step_delta = timedelta(days=3)
-        curr = t_min + step_delta
-        prev_bound = t_min - timedelta(seconds=1)
+        amts = pd.to_numeric(sorted_df.get('amount', 0), errors='coerce').fillna(0.0).clip(lower=0.0).values
 
-        senders = combined_df['sender_account'].astype(str).values
-        receivers = combined_df['receiver_account'].astype(str).values
+    times = sorted_df['timestamp'].values.astype('datetime64[ns]').astype('int64')
+    devs = sorted_df.get('device_id', pd.Series(None, index=sorted_df.index)).fillna('').astype(str).values
+    ips = sorted_df.get('ip_address', pd.Series(None, index=sorted_df.index)).fillna('').astype(str).values
 
-        while curr <= t_max + step_delta:
-            # Active graph formed by transactions in [curr - rolling_delta, curr]
-            graph_mask = (times >= curr - rolling_delta) & (times <= curr)
-            assign_mask = (times > prev_bound) & (times <= curr)
+    rolling_ns = np.int64(rolling_days * 86400 * 1e9)
+    cycle_ns = np.int64(72 * 3600 * 1e9)
 
-            if assign_mask.any():
-                sub_records = combined_df.loc[graph_mask].to_dict('records')
-                acc_feats = compute_account_graph_features(sub_records)
+    out_neighbors = {}
+    in_neighbors = {}
+    edge_count = {}
+    edge_weight = {}
+    latest_edge_ts = {}
+    out_vol = {}
+    in_vol = {}
 
-                target_indices = np.where(assign_mask.values)[0]
-                for idx in target_indices:
-                    s_f = acc_feats.get(senders[idx], DEFAULT_GRAPH_FEAT_DICT)
-                    r_f = acc_feats.get(receivers[idx], DEFAULT_GRAPH_FEAT_DICT)
+    active_cycles = deque()  # (expiry_ns, set of nodes)
+    node_cycle_count = {}
 
-                    graph_res['in_degree'][idx] = s_f['in_degree']
-                    graph_res['out_degree'][idx] = s_f['out_degree']
-                    graph_res['distinct_counterparties'][idx] = max(s_f['distinct_counterparties'], r_f['distinct_counterparties'])
-                    graph_res['pass_through_ratio'][idx] = max(s_f['pass_through_ratio'], r_f['pass_through_ratio'])
-                    graph_res['in_cycle'][idx] = max(s_f['in_cycle'], r_f['in_cycle'])
-                    graph_res['cycle_count'][idx] = max(s_f['cycle_count'], r_f['cycle_count'])
-                    graph_res['pagerank'][idx] = max(s_f['pagerank'], r_f['pagerank'])
-                    graph_res['shared_device_degree'][idx] = max(s_f['shared_device_degree'], r_f['shared_device_degree'])
-                    graph_res['neighbor_max_risk'][idx] = max(s_f['neighbor_max_risk'], r_f['neighbor_max_risk'])
+    dev_accounts = {}
+    acc_dev_count = {}
+    ip_accounts = {}
+    acc_ip_count = {}
 
-            prev_bound = curr
-            curr += step_delta
+    res_dict = {c: np.zeros(n_rows, dtype=float) for c in GRAPH_FEATURE_COLS}
 
-    return pd.DataFrame(graph_res, index=combined_df.index)
+    left = 0
+    pr = {}
+    d = 0.85
+
+    for k in range(n_rows):
+        t_k = times[k]
+        s = senders[k]
+        r = receivers[k]
+        amt = float(amts[k])
+        dev = devs[k]
+        ip = ips[k]
+
+        t_min_win = t_k - rolling_ns
+        t_min_cyc = t_k - cycle_ns
+
+        # 1. Evict transactions older than rolling lookback window
+        while left < k and times[left] < t_min_win:
+            s_l, r_l, amt_l = senders[left], receivers[left], amts[left]
+            dev_l, ip_l = devs[left], ips[left]
+
+            edge_count[(s_l, r_l)] -= 1
+            edge_weight[(s_l, r_l)] -= amt_l
+            if edge_count[(s_l, r_l)] == 0:
+                out_neighbors[s_l].discard(r_l)
+                in_neighbors[r_l].discard(s_l)
+
+            out_vol[s_l] = max(0.0, out_vol.get(s_l, 0.0) - amt_l)
+            in_vol[r_l] = max(0.0, in_vol.get(r_l, 0.0) - amt_l)
+
+            if dev_l and dev_l not in ('', 'None', 'nan', '0'):
+                acc_dev_count[(s_l, dev_l)] -= 1
+                if acc_dev_count[(s_l, dev_l)] == 0:
+                    dev_accounts[dev_l].discard(s_l)
+            if ip_l and ip_l not in ('', 'None', 'nan', '0'):
+                acc_ip_count[(s_l, ip_l)] -= 1
+                if acc_ip_count[(s_l, ip_l)] == 0:
+                    ip_accounts[ip_l].discard(s_l)
+            left += 1
+
+        # 2. Evict expired cycles
+        while active_cycles and active_cycles[0][0] < t_k:
+            exp_ns, cyc_nodes = active_cycles.popleft()
+            for node in cyc_nodes:
+                node_cycle_count[node] = max(0, node_cycle_count.get(node, 0) - 1)
+
+        # 3. Detect if current transaction closes a temporal cycle
+        # Cycle completes ONLY if there was already a directed path from r to s in past 72h
+        if s and r and s != r and r in out_neighbors:
+            has_cycle = False
+            queue = deque([(r, t_min_cyc, 0, [r])])
+            visited = {r}
+            found_cycle_nodes = set()
+            t_first_cycle = t_k
+
+            while queue:
+                curr, curr_t, depth, path = queue.popleft()
+                if depth >= 5:
+                    continue
+                for nxt in out_neighbors.get(curr, ()):
+                    edge_t = latest_edge_ts.get((curr, nxt), 0)
+                    if curr_t <= edge_t <= t_k:
+                        if nxt == s:
+                            has_cycle = True
+                            found_cycle_nodes = set(path + [s])
+                            t_first_cycle = curr_t if depth > 0 else edge_t
+                            break
+                        if nxt not in visited and depth < 4:
+                            visited.add(nxt)
+                            queue.append((nxt, edge_t, depth + 1, path + [nxt]))
+                if has_cycle:
+                    break
+
+            if has_cycle and found_cycle_nodes:
+                active_cycles.append((t_first_cycle + cycle_ns, found_cycle_nodes))
+                for node in found_cycle_nodes:
+                    node_cycle_count[node] = node_cycle_count.get(node, 0) + 1
+
+        # 4. Add current transaction to active point-in-time graph
+        edge_count[(s, r)] = edge_count.get((s, r), 0) + 1
+        edge_weight[(s, r)] = edge_weight.get((s, r), 0.0) + amt
+        latest_edge_ts[(s, r)] = t_k
+        out_neighbors.setdefault(s, set()).add(r)
+        in_neighbors.setdefault(r, set()).add(s)
+        out_vol[s] = out_vol.get(s, 0.0) + amt
+        in_vol[r] = in_vol.get(r, 0.0) + amt
+
+        if dev and dev not in ('', 'None', 'nan', '0'):
+            acc_dev_count[(s, dev)] = acc_dev_count.get((s, dev), 0) + 1
+            dev_accounts.setdefault(dev, set()).add(s)
+        if ip and ip not in ('', 'None', 'nan', '0'):
+            acc_ip_count[(s, ip)] = acc_ip_count.get((s, ip), 0) + 1
+            ip_accounts.setdefault(ip, set()).add(s)
+
+        # 5. Incremental PageRank centrality update
+        if s not in pr:
+            pr[s] = 1.0 / (len(pr) + 1)
+        if r not in pr:
+            pr[r] = 1.0 / (len(pr) + 1)
+        N = max(1, len(pr))
+        base = (1.0 - d) / N
+        in_flow_s = sum(
+            pr.get(u, 1.0 / N) * (edge_weight.get((u, s), 0.0) / max(1.0, out_vol.get(u, 1.0)))
+            for u in in_neighbors.get(s, ())
+        )
+        in_flow_r = sum(
+            pr.get(u, 1.0 / N) * (edge_weight.get((u, r), 0.0) / max(1.0, out_vol.get(u, 1.0)))
+            for u in in_neighbors.get(r, ())
+        )
+        pr[s] = base + d * in_flow_s
+        pr[r] = base + d * in_flow_r
+
+        # 6. Extract point-in-time graph features for transaction row k
+        res_dict['in_degree'][k] = float(len(in_neighbors.get(s, ())))
+        res_dict['out_degree'][k] = float(len(out_neighbors.get(s, ())))
+
+        cp_s = len(in_neighbors.get(s, set()) | out_neighbors.get(s, set()))
+        cp_r = len(in_neighbors.get(r, set()) | out_neighbors.get(r, set()))
+        res_dict['distinct_counterparties'][k] = float(max(cp_s, cp_r))
+
+        s_max = max(in_vol.get(s, 0.0), out_vol.get(s, 0.0))
+        s_min = min(in_vol.get(s, 0.0), out_vol.get(s, 0.0))
+        pt_s = s_min / s_max if s_max > 0 else 0.0
+        r_max = max(in_vol.get(r, 0.0), out_vol.get(r, 0.0))
+        r_min = min(in_vol.get(r, 0.0), out_vol.get(r, 0.0))
+        pt_r = r_min / r_max if r_max > 0 else 0.0
+        res_dict['pass_through_ratio'][k] = float(max(pt_s, pt_r))
+
+        c_s = 1.0 if node_cycle_count.get(s, 0) > 0 else 0.0
+        c_r = 1.0 if node_cycle_count.get(r, 0) > 0 else 0.0
+        res_dict['in_cycle'][k] = float(max(c_s, c_r))
+        res_dict['cycle_count'][k] = float(max(node_cycle_count.get(s, 0), node_cycle_count.get(r, 0)))
+
+        sh_s = set()
+        if dev and dev in dev_accounts:
+            sh_s |= dev_accounts[dev]
+        if ip and ip in ip_accounts:
+            sh_s |= ip_accounts[ip]
+        sh_s.discard(s)
+        res_dict['shared_device_degree'][k] = float(len(sh_s))
+
+        res_dict['pagerank'][k] = float(max(pr.get(s, 0.0), pr.get(r, 0.0)))
+
+    out_df = pd.DataFrame(res_dict, index=sorted_indices)
+    return out_df.reindex(combined_df.index)
 
 
 def compute_peer_key(cust_type: str, declared_inc: float) -> str:
@@ -623,68 +807,18 @@ def compute_features_batch(
     ).astype(int)
     combined['is_large_amount'] = (amount >= large_amount_thresh).astype(int)
 
-    # ── Behavioral Velocity & Time Diffs (Groupby + Rolling Time Windows) ─────
-    if 'sender_account' in combined.columns and combined['sender_account'].notna().any():
-        s_valid = combined[combined['sender_account'].notna()]
-        s_sorted = s_valid.sort_values(
-            ['sender_account', 'timestamp', '_is_history'],
-            ascending=[True, True, False]
-        )
-        s_diff = (
-            s_sorted.groupby('sender_account')['timestamp']
-            .diff()
-            .dt.total_seconds() / 60.0
-        )
-        s_vel = (
-            s_sorted.groupby('sender_account')
-            .rolling(VELOCITY_WINDOW, on='timestamp', closed='left')['timestamp']
-            .count()
-        )
-        combined['sender_time_diff'] = (
-            pd.Series(s_diff.values, index=s_sorted.index)
-            .reindex(combined.index)
-            .fillna(DEFAULT_TIME_DIFF)
-        )
-        combined['sender_velocity_2h'] = (
-            pd.Series(s_vel.values, index=s_sorted.index)
-            .reindex(combined.index)
-            .fillna(0)
-            .astype(int)
-        )
-    else:
-        combined['sender_time_diff'] = DEFAULT_TIME_DIFF
-        combined['sender_velocity_2h'] = 0
+    # ── Behavioral Velocity & Time Diffs (Point-in-Time with Stable Tiebreak) ──
+    s_diff, s_vel = compute_point_in_time_velocity_and_diff(
+        combined, 'sender_account', window_hours=2.0, default_diff=DEFAULT_TIME_DIFF
+    )
+    combined['sender_time_diff'] = s_diff
+    combined['sender_velocity_2h'] = s_vel
 
-    if 'receiver_account' in combined.columns and combined['receiver_account'].notna().any():
-        r_valid = combined[combined['receiver_account'].notna()]
-        r_sorted = r_valid.sort_values(
-            ['receiver_account', 'timestamp', '_is_history'],
-            ascending=[True, True, False]
-        )
-        r_diff = (
-            r_sorted.groupby('receiver_account')['timestamp']
-            .diff()
-            .dt.total_seconds() / 60.0
-        )
-        r_vel = (
-            r_sorted.groupby('receiver_account')
-            .rolling(VELOCITY_WINDOW, on='timestamp', closed='left')['timestamp']
-            .count()
-        )
-        combined['receiver_time_diff'] = (
-            pd.Series(r_diff.values, index=r_sorted.index)
-            .reindex(combined.index)
-            .fillna(DEFAULT_TIME_DIFF)
-        )
-        combined['receiver_velocity_2h'] = (
-            pd.Series(r_vel.values, index=r_sorted.index)
-            .reindex(combined.index)
-            .fillna(0)
-            .astype(int)
-        )
-    else:
-        combined['receiver_time_diff'] = DEFAULT_TIME_DIFF
-        combined['receiver_velocity_2h'] = 0
+    r_diff, r_vel = compute_point_in_time_velocity_and_diff(
+        combined, 'receiver_account', window_hours=2.0, default_diff=DEFAULT_TIME_DIFF
+    )
+    combined['receiver_time_diff'] = r_diff
+    combined['receiver_velocity_2h'] = r_vel
 
     # ── Rolling Graph Features ────────────────────────────────────────────────
     if include_graph:

@@ -45,8 +45,18 @@ SAMLD_CANDIDATE_PATHS = [
 
 
 def resolve_ibm_aml_path(custom_path: Optional[str] = None) -> str:
-    if custom_path and os.path.exists(custom_path):
-        return custom_path
+    if custom_path:
+        if os.path.exists(custom_path):
+            return custom_path
+        raise FileNotFoundError(
+            f"IBM AML benchmark file not found at '{custom_path}'.\n"
+            "To evaluate against IBM AML:\n"
+            "  1. Download HI-Small_Trans.csv or LI-Small_Trans.csv from:\n"
+            "     https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml\n"
+            "     or https://github.com/IBM/AMLWorld\n"
+            f"  2. Place it at: {os.path.join(repo_root, 'dataset', 'raw', 'ibm_aml', 'HI-Small_Trans.csv')}\n"
+            f"     or: {os.path.join(repo_root, 'dataset', 'ibm_aml.csv')}"
+        )
     for p in IBM_CANDIDATE_PATHS:
         if os.path.exists(p):
             return p
@@ -62,8 +72,17 @@ def resolve_ibm_aml_path(custom_path: Optional[str] = None) -> str:
 
 
 def resolve_saml_d_path(custom_path: Optional[str] = None) -> str:
-    if custom_path and os.path.exists(custom_path):
-        return custom_path
+    if custom_path:
+        if os.path.exists(custom_path):
+            return custom_path
+        raise FileNotFoundError(
+            f"SAML-D benchmark file not found at '{custom_path}'.\n"
+            "To evaluate against SAML-D:\n"
+            "  1. Download SAML-D.csv from Kaggle:\n"
+            "     https://www.kaggle.com/datasets/berkayalan/synthetic-anti-money-laundering-dataset-samld\n"
+            f"  2. Place it at: {os.path.join(repo_root, 'dataset', 'raw', 'saml_d', 'SAML-D.csv')}\n"
+            f"     or: {os.path.join(repo_root, 'dataset', 'saml_d.csv')}"
+        )
     for p in SAMLD_CANDIDATE_PATHS:
         if os.path.exists(p):
             return p

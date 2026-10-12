@@ -1,0 +1,29 @@
+{
+    "version_id": "v_20261010_172524",
+    "model_name": "XGBoost",
+    "created_at": "2026-10-10T17:25:24.563048",
+    "dataset_name": "synthetic",
+    "split_mode": "temporal",
+    "rows_trained": 10500,
+    "feature_count": 27,
+    "pr_auc": 0.8998784539045233,
+    "roc_auc": 0.9932098110002124,
+    "f1_score": 0.30340838443670437,
+    "precision_at_100": 0.328,
+    "brier_score": 0.003470742214123098,
+    "optimal_threshold": 0.01,
+    "training_data_hash": "743dbef9aa91fa184acca866834e907cae8a349ca1ff3b5a13d2f3f5a7d4e4a9",
+    "config_hash": "2b837f3832ec274578075269d107bfeffeef519ce53c82f65474ffd27e53bbc5",
+    "feedback_retraining": {
+        "analyst_labels_ingested": 0,
+        "analyst_label_weight": 3.0,
+        "test_period_labels_excluded": 0,
+        "temporal_split_strictly_preserved": true
+    },
+    "artifacts": {
+        "model": "versions/v_20261010_172524/model.pkl",
+        "scaler": "versions/v_20261010_172524/scaler.pkl",
+        "metrics": "versions/v_20261010_172524/metrics.json",
+        "feature_cols": "versions/v_20261010_172524/feature_cols.json"
+    }
+}

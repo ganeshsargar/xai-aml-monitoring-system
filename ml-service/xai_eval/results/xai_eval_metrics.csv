@@ -1,7 +1,7 @@
 Metric,Value,Target,Status
-Area Under Deletion Curve (AUDC),0.0,< 0.250,Passed
-Area Under Insertion Curve (AUIC),0.0001,> 0.700,Passed
-Faithfulness Ratio (AUIC / AUDC),83.913,> 3.00,Passed
-Attribution Stability (Spearman rho),0.9959,> 0.850,Passed
-Top-5 Feature Jaccard Overlap,0.9267,> 0.800,Passed
-TreeSHAP Mean Latency (ms),4.2,< 15.0 ms,Passed
+Area Under Deletion Curve (AUDC),0.0033,< 0.250,Passed
+Area Under Insertion Curve (AUIC),0.023,> 0.700,Failed
+Faithfulness Ratio (AUIC / AUDC),7.05,> 3.00,Passed
+Attribution Stability (Spearman rho),0.9932,> 0.850,Passed
+Top-5 Feature Jaccard Overlap,0.863,> 0.800,Passed
+TreeSHAP Mean Latency (ms),0.02,< 15.0 ms,Passed

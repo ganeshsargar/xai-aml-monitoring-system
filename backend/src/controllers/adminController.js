@@ -442,68 +442,17 @@ const getModelDrift = async (req, res) => {
     };
 
     const response = await axios.post(`${mlServiceUrl}/drift`, payload, { timeout: 15000 });
-    return res.json(response.data);
-  } catch (err) {
-    console.warn(`[Drift Analysis Proxy] Python ML service direct drift unavailable (${err.message}). Using benchmark drift statistics.`);
-    
-    // Benchmark drift fallback
+    const driftData = response.data.drift_data || response.data.data || response.data;
     return res.json({
       success: true,
-      drift_data: {
-        version_id: version_id || 'v_20261005_142158',
-        model_name: 'Random Forest Classifier',
-        evaluation_timestamp: new Date().toISOString(),
-        transactions_evaluated: 1200,
-        summary: {
-          overall_score_psi: 0.042,
-          score_drift_status: 'STABLE',
-          drifting_features_count: 0,
-          warning_features_count: 1,
-          total_features_tracked: 12,
-          recommended_action: 'MONITOR'
-        },
-        feature_drift: [
-          { feature: 'amount', psi: 0.112, status: 'WARNING', baseline_mean: 148500.20, live_mean: 182300.50 },
-          { feature: 'sender_velocity_2h', psi: 0.082, status: 'STABLE', baseline_mean: 1.25, live_mean: 1.34 },
-          { feature: 'is_high_risk_country', psi: 0.051, status: 'STABLE', baseline_mean: 0.14, live_mean: 0.16 },
-          { feature: 'is_wire_or_crypto', psi: 0.043, status: 'STABLE', baseline_mean: 0.22, live_mean: 0.24 },
-          { feature: 'amount_near_threshold', psi: 0.039, status: 'STABLE', baseline_mean: 0.08, live_mean: 0.09 },
-          { feature: 'is_night', psi: 0.021, status: 'STABLE', baseline_mean: 0.18, live_mean: 0.19 }
-        ],
-        score_distribution_drift: {
-          psi: 0.042,
-          bins: [
-            { bin_range: '[0.00, 0.10)', expected_pct: 78.5, actual_pct: 76.2, psi_contribution: 0.0006 },
-            { bin_range: '[0.10, 0.30)', expected_pct: 12.1, actual_pct: 13.4, psi_contribution: 0.0013 },
-            { bin_range: '[0.30, 0.50)', expected_pct: 4.2, actual_pct: 4.8, psi_contribution: 0.0008 },
-            { bin_range: '[0.50, 0.70)', expected_pct: 2.8, actual_pct: 3.1, psi_contribution: 0.0003 },
-            { bin_range: '[0.70, 1.00)', expected_pct: 2.4, actual_pct: 2.5, psi_contribution: 0.0001 }
-          ]
-        },
-        segments: {
-          by_country: [
-            { segment: 'IN', count: 820, volume: 145000000, mean_risk_score: 18.4, flagged_rate_pct: 4.2 },
-            { segment: 'UAE', count: 140, volume: 48000000, mean_risk_score: 42.1, flagged_rate_pct: 14.8 },
-            { segment: 'SG', count: 110, volume: 32000000, mean_risk_score: 22.5, flagged_rate_pct: 6.1 },
-            { segment: 'KY', count: 65, volume: 89000000, mean_risk_score: 68.9, flagged_rate_pct: 48.5 },
-            { segment: 'PA', count: 45, volume: 55000000, mean_risk_score: 72.3, flagged_rate_pct: 55.6 }
-          ],
-          by_payment_method: [
-            { segment: 'UPI', count: 620, volume: 18000000, mean_risk_score: 12.4, flagged_rate_pct: 2.1 },
-            { segment: 'RTGS', count: 280, volume: 195000000, mean_risk_score: 38.6, flagged_rate_pct: 12.5 },
-            { segment: 'NEFT', count: 180, volume: 42000000, mean_risk_score: 21.0, flagged_rate_pct: 5.0 },
-            { segment: 'Crypto Transfer', count: 70, volume: 84000000, mean_risk_score: 82.4, flagged_rate_pct: 68.2 },
-            { segment: 'Cash Deposit', count: 50, volume: 29000000, mean_risk_score: 54.1, flagged_rate_pct: 32.0 }
-          ],
-          by_amount_band: [
-            { segment: '< ₹50K', count: 520, volume: 12500000, mean_risk_score: 10.2, flagged_rate_pct: 1.5 },
-            { segment: '₹50K - ₹200K', count: 340, volume: 38000000, mean_risk_score: 24.8, flagged_rate_pct: 6.2 },
-            { segment: '₹200K - ₹500K', count: 180, volume: 58000000, mean_risk_score: 41.5, flagged_rate_pct: 15.0 },
-            { segment: '₹500K - ₹10L', count: 110, volume: 82000000, mean_risk_score: 61.2, flagged_rate_pct: 38.2 },
-            { segment: '> ₹10L (CTR)', count: 50, volume: 177500000, mean_risk_score: 74.6, flagged_rate_pct: 62.0 }
-          ]
-        }
-      }
+      drift_data: driftData
+    });
+  } catch (err) {
+    console.warn(`[Drift Analysis Proxy] Python ML service direct drift unavailable (${err.message}).`);
+    return res.status(503).json({
+      success: false,
+      error: 'Drift data unavailable',
+      message: 'Python ML service is unreachable or drift calculation failed.'
     });
   }
 };

@@ -37,7 +37,15 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Rate Limiting (prevent brute-forcing compliance operations)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP to 1000 requests per window
+  max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX) : 10000, // Generous ceiling for rich AML UI & batch testing
+  skip: (req) => {
+    // Never lock out developers or local browser sessions on localhost
+    if (process.env.NODE_ENV !== 'production') {
+      const ip = req.ip || req.connection?.remoteAddress || '';
+      return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('127.0.0.1');
+    }
+    return false;
+  },
   message: {
     success: false,
     error: 'Too many compliance requests from this IP. Please try again after 15 minutes.'

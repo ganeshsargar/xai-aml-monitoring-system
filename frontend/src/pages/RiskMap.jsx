@@ -10,44 +10,59 @@ const RiskMap = () => {
   const [loading, setLoading] = useState(true);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [selectedCountry, setSelectedCountry] = useState(null);
+  const [highRiskCodes, setHighRiskCodes] = useState(['KY', 'PA', 'AE', 'RU', 'BS', 'LU']);
+  const [highRiskJurisdictions, setHighRiskJurisdictions] = useState({});
 
-  // Hardcoded country coordinates for SVG pins
-  const countriesData = {
-    IN: { name: 'India', x: 550, y: 220, baseRisk: 12 },
-    US: { name: 'United States', x: 200, y: 150, baseRisk: 35 },
-    KY: { name: 'Cayman Islands', x: 230, y: 190, baseRisk: 95 },
-    PA: { name: 'Panama', x: 240, y: 220, baseRisk: 90 },
-    AE: { name: 'United Arab Emirates', x: 480, y: 195, baseRisk: 75 },
-    RU: { name: 'Russia', x: 520, y: 100, baseRisk: 82 },
-    BS: { name: 'Bahamas', x: 240, y: 180, baseRisk: 88 },
-    LU: { name: 'Luxembourg', x: 395, y: 140, baseRisk: 68 },
-    GB: { name: 'United Kingdom', x: 380, y: 125, baseRisk: 28 },
-    SG: { name: 'Singapore', x: 590, y: 260, baseRisk: 42 },
-    CH: { name: 'Switzerland', x: 395, y: 148, baseRisk: 55 }
+  // SVG coordinate anchors for geographic pin rendering
+  const countryCoordinates = {
+    IN: { x: 550, y: 220, defaultName: 'India', defaultRisk: 12 },
+    US: { x: 200, y: 150, defaultName: 'United States', defaultRisk: 35 },
+    KY: { x: 230, y: 190, defaultName: 'Cayman Islands', defaultRisk: 95 },
+    PA: { x: 240, y: 220, defaultName: 'Panama', defaultRisk: 90 },
+    AE: { x: 480, y: 195, defaultName: 'United Arab Emirates', defaultRisk: 75 },
+    RU: { x: 520, y: 100, defaultName: 'Russia', defaultRisk: 82 },
+    BS: { x: 240, y: 180, defaultName: 'Bahamas', defaultRisk: 88 },
+    LU: { x: 395, y: 140, defaultName: 'Luxembourg', defaultRisk: 68 },
+    GB: { x: 380, y: 125, defaultName: 'United Kingdom', defaultRisk: 28 },
+    SG: { x: 590, y: 260, defaultName: 'Singapore', defaultRisk: 42 },
+    CH: { x: 395, y: 148, defaultName: 'Switzerland', defaultRisk: 55 },
+    CY: { x: 440, y: 170, defaultName: 'Cyprus', defaultRisk: 75 },
+    VG: { x: 235, y: 185, defaultName: 'British Virgin Islands', defaultRisk: 88 }
   };
 
   useEffect(() => {
-    // Fetch transaction list from API and aggregate stats by country
     const token = localStorage.getItem('aml_token');
-    axios.get(`${API_URL}/api/transactions?limit=1000`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    })
-      .then(res => {
-        if (res.data.success) {
-          const txs = res.data.data;
-          const stats = {};
-          
-          // Initialize from baseline countriesData
-          Object.keys(countriesData).forEach(code => {
-            stats[code] = {
-              code,
-              name: countriesData[code].name,
-              txCount: 0,
-              avgRisk: countriesData[code].baseRisk,
-              suspiciousCount: 0,
-              totalAmount: 0.0
-            };
-          });
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    // Fetch shared risk config and transactions in parallel
+    Promise.all([
+      axios.get(`${API_URL}/api/risk-config`, { headers }).catch(() => ({ data: {} })),
+      axios.get(`${API_URL}/api/transactions?limit=1000`, { headers }).catch(() => ({ data: {} }))
+    ]).then(([configRes, txsRes]) => {
+      const cfg = configRes.data?.data || configRes.data?.config || {};
+      const hrJurisdictions = cfg.high_risk_jurisdictions || {};
+      const hrCodes = Object.keys(hrJurisdictions);
+      if (hrCodes.length > 0) {
+        setHighRiskCodes(hrCodes);
+        setHighRiskJurisdictions(hrJurisdictions);
+      }
+
+      const txs = txsRes.data?.data || [];
+      const stats = {};
+
+      // Initialize from coordinates and dynamic risk config
+      Object.keys(countryCoordinates).forEach(code => {
+        const isHR = (hrCodes.length > 0 ? hrCodes : ['KY', 'PA', 'AE', 'RU', 'BS', 'LU']).includes(code);
+        const hrMeta = hrJurisdictions[code];
+        stats[code] = {
+          code,
+          name: hrMeta?.name || countryCoordinates[code].defaultName,
+          txCount: 0,
+          avgRisk: isHR ? (countryCoordinates[code].defaultRisk || 80) : (countryCoordinates[code].defaultRisk || 20),
+          suspiciousCount: 0,
+          totalAmount: 0.0
+        };
+      });
 
           // Aggregate from actual transactions
           txs.forEach(t => {
@@ -79,7 +94,6 @@ const RiskMap = () => {
           });
 
           setCountryStats(Object.values(stats));
-        }
       })
       .catch(err => {
         console.error("Failed to load country risk metrics:", err);
@@ -260,7 +274,7 @@ const RiskMap = () => {
 
               {/* Render dynamic interactive country nodes */}
               {countryStats.map((c) => {
-                const coord = countriesData[c.code] || { x: 400, y: 200 };
+                const coord = countryCoordinates[c.code] || { x: 400, y: 200 };
                 const isHovered = hoveredCountry?.code === c.code;
                 const isSelected = selectedCountry?.code === c.code;
                 const isActive = isHovered || isSelected;
@@ -390,8 +404,8 @@ const RiskMap = () => {
                       >
                         <td className="py-3 font-semibold text-gray-800 dark:text-gray-250 pl-2">
                           {c.name} <span className="text-gray-400 font-mono text-[10px]">({c.code})</span>
-                          {['KY','PA','RU','BS'].includes(c.code) && (
-                            <span className="ml-1.5 text-[8px] font-bold text-red-500 bg-red-500/10 px-1 rounded">FATF</span>
+                          {highRiskCodes.includes(c.code) && (
+                            <span className="ml-1.5 text-[8px] font-bold text-red-500 bg-red-500/10 px-1 rounded">FATF / High-Risk</span>
                           )}
                         </td>
                         <td className="py-3 text-center font-mono">{c.txCount}</td>
@@ -432,17 +446,17 @@ const RiskMap = () => {
                   <span className="text-xs font-extrabold uppercase">FATF Blacklist (High Risk)</span>
                 </div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Transactions routed through Cayman Islands (KY), Panama (PA), or Russia (RU) are automatically penalized with geographic threat offsets in FundTrace AI scoring.
+                  Transactions routed through high-risk jurisdictions ({highRiskCodes.join(', ')}) are dynamically penalized with geographic threat offsets configured in the centralized risk configuration.
                 </p>
               </div>
 
               <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
                 <div className="flex items-center gap-1.5 text-amber-500">
                   <AlertTriangle className="w-4 h-4" />
-                  <span className="text-xs font-extrabold uppercase">FATF Grey List (Monitored)</span>
+                  <span className="text-xs font-extrabold uppercase">FATF Monitored Jurisdictions</span>
                 </div>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                  UAE (AE) and Bahamas (BS) are flagged under strict surveillance. Enhanced due diligence is automatically recommended for transfers exceeding ₹1,00,000.
+                  Enhanced due diligence is automatically mandated for cross-border wire transfers exceeding regulatory thresholds to designated monitored territories.
                 </p>
               </div>
 

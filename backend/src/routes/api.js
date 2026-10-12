@@ -126,6 +126,19 @@ router.post('/admin/train', authenticateToken, authorizeRoles('Admin', 'Investig
 router.get('/admin/risk-config', authenticateToken, authorizeRoles('Admin'), admin.getRiskConfig);
 router.put('/admin/risk-config', authenticateToken, authorizeRoles('Admin'), admin.updateRiskConfig);
 
+// Shared Regulatory Risk Configuration for Frontend Modules (Transactions, RiskMap, etc.)
+router.get('/risk-config', (req, res) => {
+  const { getRiskConfig } = require('../config/riskConfig');
+  const config = getRiskConfig();
+  res.json({ success: true, data: config, config });
+});
+
+router.get('/config/risk', (req, res) => {
+  const { getRiskConfig } = require('../config/riskConfig');
+  const config = getRiskConfig();
+  res.json({ success: true, data: config, config });
+});
+
 // Model Registry, Lifecycle, Drift Monitoring & Governance
 router.get('/admin/models/versions', authenticateToken, admin.listModelVersions);
 router.post('/admin/models/promote', authenticateToken, authorizeRoles('Admin'), admin.promoteModelVersion);

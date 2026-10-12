@@ -168,15 +168,71 @@ FundTrace AI supports flexible multi-source financial transaction datasets:
 
 | Dataset | Description | Transactions | Default Location |
 | :--- | :--- | :--- | :--- |
-| **Synthetic Banking Feed** | Realistic multi-channel banking feed with 7 AML typologies | 10,000+ records | `dataset/dataset.csv` |
-| **IBM AML / AMLSim** | Complex synthetic laundering networks with wash cycles | User-configurable | `dataset/adapters/ibm_aml_adapter.py` |
-| **SAML-D Benchmark** | Multi-jurisdiction financial crime evaluation dataset | User-configurable | `dataset/adapters/saml_d_adapter.py` |
+| **Synthetic Banking Feed** | Realistic multi-channel banking feed with 7 AML typologies, overlapping distributions, 5% label noise, and benign look-alikes | **15,000 rows (1.0% laundering rate)** | `dataset/dataset.csv` |
+| **IBM AML / AMLSim** | Real/synthetic laundering networks with multi-leg wash cycles | 5,000,000+ (HI-Small / LI-Small) | `dataset/raw/ibm_aml/` |
+| **SAML-D Benchmark** | Multi-jurisdiction financial crime evaluation dataset | 9,500,000+ | `dataset/raw/saml_d/` |
 | **Custom CSV Imports** | Any banking CSV with dynamic fuzzy column auto-mapping | Arbitrary | Uploaded via UI |
 
 To generate or regenerate the primary dataset:
 ```bash
-python dataset/generate_dataset.py --rows 10000 --output dataset/dataset.csv
+python dataset/generate_dataset.py --num-records 15000 --laundering-rate 0.01
 ```
+
+---
+
+## 🔬 Reproducing Results
+
+Every empirical table and figure reported in the research thesis and [Methodology](docs/METHODOLOGY.md) is generated dynamically via code execution without hard-coded numbers. Use the exact commands below to reproduce all experimental findings:
+
+### 1. Primary Dataset Generation (15,000 Rows, 1% Laundering Rate)
+Regenerates the hardened synthetic transaction ledger, accounts mapping, and customer behavioral profiles with overlapping distributions, benign look-alikes, and 5% label noise:
+```bash
+python dataset/generate_dataset.py --num-records 15000 --laundering-rate 0.01
+```
+*Artifacts Produced*: `dataset/dataset.csv`, `dataset/accounts.csv`, `dataset/customers.csv`.
+
+### 2. Multi-Seed Model Training & Graph Feature Ablation Study
+Trains 5 candidate model families (Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, XGBoost), performs probability calibration (Isotonic Regression), tunes decision thresholds under operational capacity constraints, and evaluates test performance and topological graph ablation across 5 random seeds (`[42, 123, 456, 789, 1011]`):
+```bash
+python ml-service/train.py
+```
+*Artifacts Produced*:
+- `ml-service/models/metrics.json` (5-seed mean & std for all models on out-of-time holdout)
+- `ml-service/models/ablation.json` (Graph ablation performance with vs without network features across 5 seeds)
+- `ml-service/models/best_model.pkl` & `ml-service/models/scaler.pkl` (Calibrated champion model)
+- `ml-service/models/reliability_diagram.json` (Brier score & calibration curve coordinates)
+- `ml-service/models/registry.json` & `ml-service/models/versions/` (Auditable model versioning)
+
+### 3. Regenerating Methodology Benchmark & Ablation Tables (Section 9)
+Extracts genuine metrics and ablation statistics from `metrics.json` and `ablation.json` and updates the scientific markdown tables in the documentation:
+```bash
+python docs/generate_results.py
+```
+*Artifacts Updated*:
+- `docs/METHODOLOGY.md` (Table 9.1: Model Performance Benchmark with `mean ± std`, and Table 9.2: Feature Ablation Study).
+
+### 4. XAI Scientific Fidelity, Stability & Method Comparison Figures
+Runs genuine TreeSHAP, perturbation stability analysis (Lipschitz continuity), insertion/deletion fidelity curves, and explanation complexity against the champion model:
+```bash
+python ml-service/xai_eval/run_eval.py
+```
+*Figures & Tables Generated* in `ml-service/xai_eval/results/`:
+- `fidelity_deletion_insertion_curves.png` (Deletion vs Insertion AUC decay curves)
+- `explanation_stability_correlation.png` (Lipschitz continuity perturbation histogram from per-sample Spearman values)
+- `xai_method_comparison_shap_lime_rules.png` (Attribution agreement between SHAP, LIME, and rule-based explanations)
+- `grouped_feature_attribution.png` (Attribution distribution across risk domains: Amount, Graph, Velocity, Jurisdiction, Profile)
+- `xai_benchmark_summary.json` & `xai_eval_metrics.csv`
+
+### 5. Evaluating Real IBM AML & SAML-D Benchmarks
+Validates strict column mappings against file headers and evaluates models on external datasets:
+```bash
+python ml-service/run_benchmark.py --dataset all
+# Or verify end-to-end execution on authentic mock headers:
+python ml-service/run_benchmark.py --dataset all --mock-test
+```
+*Artifacts Produced*:
+- `results/benchmark_ibm_aml.json`
+- `results/benchmark_saml_d.json`
 
 ---
 
@@ -187,12 +243,12 @@ python dataset/generate_dataset.py --rows 10000 --output dataset/dataset.csv
 cd backend
 npm test
 ```
-*Executes all 14 test suites covering Scenario Engine, Ingestion Queue, Fuzzy Screening, Regulatory STR Reporting, Immutability & Audit Hash Chain, Dashboard Analytics, and End-to-End Compliance Pipeline.*
+*Executes all test suites covering Scenario Engine, Ingestion Queue, Fuzzy Screening, Regulatory STR Reporting, Immutability & Audit Hash Chain, Dashboard Analytics, and End-to-End Compliance Pipeline.*
 
 ### Python ML & XAI Test Suite (Pytest)
 ```bash
-# Run all 40 pytest unit and integration tests
-.venv\Scripts\pytest ml-service/tests -v
+# Run all 51 pytest unit, feature parity, and real-computation audit tests
+pytest ml-service/tests/ -v
 ```
 
 ### End-to-End Compliance Integration Pipeline
@@ -200,12 +256,6 @@ npm test
 cd backend
 node --test test/e2eIntegration.test.js
 ```
-
-### XAI Scientific Fidelity & Stability Evaluations
-```bash
-python ml-service/xai_eval/evaluate_xai.py
-```
-*Computes explanation fidelity (deletion/insertion curves), perturbation stability, and explanation complexity across champion model architectures.*
 
 ---
 

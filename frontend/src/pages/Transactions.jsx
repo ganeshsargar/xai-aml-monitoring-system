@@ -56,6 +56,24 @@ const Transactions = () => {
   // Selected Transaction for Drawer/Modal
   const [selectedTx, setSelectedTx] = useState(null);
 
+  // Shared dynamic risk config
+  const [highRiskCountries, setHighRiskCountries] = useState(['KY', 'PA', 'AE', 'RU', 'BS', 'LU']);
+  const [highRiskJurisdictions, setHighRiskJurisdictions] = useState({});
+
+  useEffect(() => {
+    axios.get(`${API_URL}/api/risk-config`)
+      .then(res => {
+        const cfg = res.data?.data || res.data?.config;
+        if (cfg?.high_risk_jurisdictions) {
+          setHighRiskJurisdictions(cfg.high_risk_jurisdictions);
+          setHighRiskCountries(Object.keys(cfg.high_risk_jurisdictions));
+        }
+      })
+      .catch(err => {
+        console.warn('Could not load dynamic risk config, using fallback:', err.message);
+      });
+  }, [API_URL]);
+
   // Case creation fields
   const [isCaseModalOpen, setIsCaseModalOpen] = useState(false);
   const [caseTitle, setCaseTitle] = useState('');
@@ -196,11 +214,19 @@ const Transactions = () => {
               <option value="">All Jurisdictions</option>
               <option value="IN">India (IN)</option>
               <option value="US">United States (US)</option>
-              <option value="KY">Cayman Islands (KY)</option>
-              <option value="PA">Panama (PA)</option>
-              <option value="AE">UAE (AE)</option>
-              <option value="RU">Russia (RU)</option>
               <option value="GB">United Kingdom (GB)</option>
+              <option value="SG">Singapore (SG)</option>
+              {Object.entries(highRiskJurisdictions).length > 0 ? (
+                Object.entries(highRiskJurisdictions).map(([code, meta]) => (
+                  <option key={code} value={code}>
+                    {meta.name || code} ({code})
+                  </option>
+                ))
+              ) : (
+                highRiskCountries.map(code => (
+                  <option key={code} value={code}>{code}</option>
+                ))
+              )}
             </select>
 
             {/* Submit search */}
@@ -569,7 +595,7 @@ const Transactions = () => {
                     {[
                       { label: 'Transaction Risk', value: Math.min(95, Math.round((selectedTx.amount || 0) > 80000 ? 95 : ((selectedTx.amount || 0) / 1000) + 15)), color: 'bg-orange-500' },
                       { label: 'Behaviour Risk', value: ['IMPS', 'RTGS', 'NEFT', 'UPI', 'Crypto Transfer'].includes(selectedTx.payment_method) ? 85 : 30, color: 'bg-rose-500' },
-                      { label: 'Country Risk', value: ['KY', 'PA', 'AE', 'RU', 'BS', 'LU'].includes(selectedTx.country) ? 95 : 20, color: 'bg-amber-500' },
+                      { label: 'Country Risk', value: highRiskCountries.includes(selectedTx.country) ? 95 : 20, color: 'bg-amber-500' },
                       { label: 'Historical Risk', value: selectedTx.is_laundering === 1 ? 95 : (selectedTx.risk_score > 50 ? 70 : 25), color: 'bg-red-500' },
                       { label: 'Network Risk', value: selectedTx.risk_score >= 50 ? 85 : 35, color: 'bg-indigo-500' },
                       { label: 'Velocity Risk', value: (new Date(selectedTx.timestamp).getHours() >= 22 || new Date(selectedTx.timestamp).getHours() <= 5) ? 80 : 35, color: 'bg-blue-500' }

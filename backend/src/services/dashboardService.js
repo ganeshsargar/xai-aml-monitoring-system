@@ -1,4 +1,5 @@
 const { models } = require('../config/db');
+const { getHighRiskCountries } = require('../config/riskConfig');
 
 // In-memory TTL Cache (60 seconds default)
 const kpiCache = new Map();
@@ -320,6 +321,8 @@ async function getDashboardAnalytics(filters = {}, forceRefresh = false) {
     'Sanctions / PEP Watchlist': { count: 0, volume_inr: 0, high_risk_count: 0 }
   };
 
+  const highRiskCountries = getHighRiskCountries();
+
   txs.forEach(t => {
     const hits = (t.rule_hits || []).concat(t.reasons || []);
     const hitStr = JSON.stringify(hits).toLowerCase();
@@ -345,7 +348,7 @@ async function getDashboardAnalytics(filters = {}, forceRefresh = false) {
       if (isHigh) typologyCounts['Circular Flow / Network'].high_risk_count++;
       matched = true;
     }
-    if (hitStr.includes('jurisdiction') || hitStr.includes('geograph') || hitStr.includes('country') || ['CY', 'KY', 'PA', 'AE', 'VG'].includes(t.country)) {
+    if (hitStr.includes('jurisdiction') || hitStr.includes('geograph') || hitStr.includes('country') || highRiskCountries.includes(t.country)) {
       typologyCounts['High-Risk Geography'].count++;
       typologyCounts['High-Risk Geography'].volume_inr += amt;
       if (isHigh) typologyCounts['High-Risk Geography'].high_risk_count++;

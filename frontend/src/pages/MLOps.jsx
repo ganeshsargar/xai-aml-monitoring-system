@@ -230,12 +230,15 @@ const MLOps = () => {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
       .then(res => {
-        if (res.data.success) {
+        if (res.data && res.data.success && res.data.drift_data) {
           setDriftData(res.data.drift_data);
+        } else {
+          setDriftData(null);
         }
       })
       .catch(err => {
         console.warn('Failed to fetch drift:', err);
+        setDriftData(null);
       })
       .finally(() => {
         setDriftLoading(false);
@@ -904,199 +907,194 @@ const MLOps = () => {
         {/* TAB 3: CONTINUOUS DRIFT & SEGMENT MONITORING */}
         {activeTab === 'drift' && (
           <div className="space-y-6">
-            <div className="glass-panel p-6 space-y-5">
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-3 border-b border-gray-100 dark:border-darkBorder">
-                <div>
-                  <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-2">
-                    <Activity className="w-4 h-4" />
-                    Population Stability Index (PSI) Drift Sentinel
-                  </h4>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                    Monitors feature distributions and score calibration drift against training baseline.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <select
-                    value={driftDays}
-                    onChange={(e) => {
-                      setDriftDays(Number(e.target.value));
-                      fetchDrift();
-                    }}
-                    className="bg-slate-100 dark:bg-darkBorder/40 border border-gray-200 dark:border-darkBorder text-xs font-bold text-gray-700 dark:text-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"
-                  >
-                    <option value={7}>Last 7 Days</option>
-                    <option value={15}>Last 15 Days</option>
-                    <option value={30}>Last 30 Days</option>
-                    <option value={90}>Last 90 Days</option>
-                  </select>
-
-                  <button
-                    onClick={fetchDrift}
-                    disabled={driftLoading}
-                    className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all shadow"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${driftLoading ? 'animate-spin' : ''}`} />
-                  </button>
-                </div>
+            {!driftData ? (
+              <div className="glass-panel p-10 text-center space-y-4">
+                <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
+                <h4 className="text-base font-bold text-gray-800 dark:text-gray-200">Drift data unavailable</h4>
+                <p className="text-xs text-gray-400 max-w-md mx-auto">
+                  The ML service is unreachable or transaction drift telemetry has not been computed yet.
+                </p>
+                <button
+                  onClick={fetchDrift}
+                  disabled={driftLoading}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all shadow"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${driftLoading ? 'animate-spin' : ''}`} /> Retry Drift Analysis
+                </button>
               </div>
-
-              {/* Threshold Legend */}
-              <div className="flex flex-wrap items-center gap-4 p-3 bg-slate-50 dark:bg-darkBorder/20 rounded-xl text-xs">
-                <span className="font-bold text-gray-500">Statutory PSI Thresholds:</span>
-                <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> PSI &lt; 0.10 (Stable)
-                </span>
-                <span className="flex items-center gap-1.5 text-amber-600 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 0.10 &le; PSI &lt; 0.25 (Warning / Monitor)
-                </span>
-                <span className="flex items-center gap-1.5 text-red-600 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> PSI &ge; 0.25 (Significant Drift &bull; Retrain Required)
-                </span>
-              </div>
-
-              {/* Feature PSI Table */}
-              <div className="space-y-3">
-                <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Feature-Level PSI Diagnostics ({driftData?.feature_drift?.length || 6} Signals Tracked)
-                </h5>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead>
-                      <tr className="text-gray-400 border-b border-gray-100 dark:border-darkBorder">
-                        <th className="py-2 font-bold">Feature Signal</th>
-                        <th className="py-2 font-bold text-center">PSI Value</th>
-                        <th className="py-2 font-bold text-center">Drift Status</th>
-                        <th className="py-2 font-bold text-right">Baseline Mean</th>
-                        <th className="py-2 font-bold text-right">Live Window Mean</th>
-                        <th className="py-2 font-bold text-center">Stability Bar</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-darkBorder/40">
-                      {(driftData?.feature_drift || [
-                        { feature: 'amount', psi: 0.112, status: 'WARNING', baseline_mean: 148500.20, live_mean: 182300.50 },
-                        { feature: 'sender_velocity_2h', psi: 0.082, status: 'STABLE', baseline_mean: 1.25, live_mean: 1.34 },
-                        { feature: 'is_high_risk_country', psi: 0.051, status: 'STABLE', baseline_mean: 0.14, live_mean: 0.16 },
-                        { feature: 'is_wire_or_crypto', psi: 0.043, status: 'STABLE', baseline_mean: 0.22, live_mean: 0.24 },
-                        { feature: 'amount_near_threshold', psi: 0.039, status: 'STABLE', baseline_mean: 0.08, live_mean: 0.09 },
-                        { feature: 'is_night', psi: 0.021, status: 'STABLE', baseline_mean: 0.18, live_mean: 0.19 }
-                      ]).map((fd) => {
-                        const isWarning = fd.status === 'WARNING';
-                        const isDrift = fd.status === 'DRIFT_DETECTED';
-                        const barWidth = Math.min(100, Math.round((fd.psi / 0.3) * 100));
-
-                        return (
-                          <tr key={fd.feature} className="hover:bg-slate-50 dark:hover:bg-darkBorder/20">
-                            <td className="py-2.5 font-mono font-medium text-gray-800 dark:text-gray-200">
-                              {fd.feature}
-                            </td>
-                            <td className="py-2.5 text-center font-mono font-bold text-gray-700 dark:text-gray-300">
-                              {fd.psi.toFixed(3)}
-                            </td>
-                            <td className="py-2.5 text-center">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                                isDrift
-                                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                                  : isWarning
-                                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                  : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                              }`}>
-                                {fd.status}
-                              </span>
-                            </td>
-                            <td className="py-2.5 text-right font-mono text-gray-500">
-                              {typeof fd.baseline_mean === 'number' ? fd.baseline_mean.toLocaleString() : fd.baseline_mean}
-                            </td>
-                            <td className="py-2.5 text-right font-mono text-gray-700 dark:text-gray-300 font-bold">
-                              {typeof fd.live_mean === 'number' ? fd.live_mean.toLocaleString() : fd.live_mean}
-                            </td>
-                            <td className="py-2.5 text-center w-36">
-                              <div className="w-full bg-slate-200 dark:bg-darkBorder h-2 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full ${
-                                    isDrift ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
-                                  }`}
-                                  style={{ width: `${barWidth}%` }}
-                                ></div>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Performance by Segment Breakdown */}
-              <div className="pt-4 border-t border-gray-100 dark:border-darkBorder space-y-4">
-                <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Performance & Flagged Rate by Segment
-                </h5>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Segment: Country */}
-                  <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
-                    <h6 className="text-[11px] font-bold text-blue-500 uppercase flex items-center gap-1">
-                      <Globe className="w-3.5 h-3.5" /> By Jurisdiction
-                    </h6>
-                    <div className="space-y-1.5 text-[11px]">
-                      {(driftData?.segments?.by_country || [
-                        { segment: 'IN', count: 820, mean_risk_score: 18.4, flagged_rate_pct: 4.2 },
-                        { segment: 'UAE', count: 140, mean_risk_score: 42.1, flagged_rate_pct: 14.8 },
-                        { segment: 'KY', count: 65, mean_risk_score: 68.9, flagged_rate_pct: 48.5 },
-                        { segment: 'PA', count: 45, mean_risk_score: 72.3, flagged_rate_pct: 55.6 }
-                      ]).slice(0, 4).map(s => (
-                        <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
-                          <span className="font-bold">{s.segment} ({s.count} tx)</span>
-                          <span className="font-mono text-emerald-500 font-bold">{s.flagged_rate_pct}% flagged</span>
-                        </div>
-                      ))}
-                    </div>
+            ) : (
+              <div className="glass-panel p-6 space-y-5">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-3 border-b border-gray-100 dark:border-darkBorder">
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4" />
+                      Population Stability Index (PSI) Drift Sentinel
+                    </h4>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      Monitors feature distributions and score calibration drift against training baseline.
+                    </p>
                   </div>
 
-                  {/* Segment: Payment Method */}
-                  <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
-                    <h6 className="text-[11px] font-bold text-purple-500 uppercase flex items-center gap-1">
-                      <CreditCard className="w-3.5 h-3.5" /> By Payment Method
-                    </h6>
-                    <div className="space-y-1.5 text-[11px]">
-                      {(driftData?.segments?.by_payment_method || [
-                        { segment: 'UPI', count: 620, flagged_rate_pct: 2.1 },
-                        { segment: 'RTGS', count: 280, flagged_rate_pct: 12.5 },
-                        { segment: 'Crypto Transfer', count: 70, flagged_rate_pct: 68.2 },
-                        { segment: 'Cash Deposit', count: 50, flagged_rate_pct: 32.0 }
-                      ]).slice(0, 4).map(s => (
-                        <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
-                          <span className="font-bold">{s.segment}</span>
-                          <span className="font-mono text-purple-500 font-bold">{s.flagged_rate_pct}% flagged</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={driftDays}
+                      onChange={(e) => {
+                        setDriftDays(Number(e.target.value));
+                        fetchDrift();
+                      }}
+                      className="bg-slate-100 dark:bg-darkBorder/40 border border-gray-200 dark:border-darkBorder text-xs font-bold text-gray-700 dark:text-gray-300 rounded-lg px-2.5 py-1.5 focus:outline-none"
+                    >
+                      <option value={7}>Last 7 Days</option>
+                      <option value={15}>Last 15 Days</option>
+                      <option value={30}>Last 30 Days</option>
+                      <option value={90}>Last 90 Days</option>
+                    </select>
 
-                  {/* Segment: Amount Band */}
-                  <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
-                    <h6 className="text-[11px] font-bold text-emerald-500 uppercase flex items-center gap-1">
-                      <DollarSign className="w-3.5 h-3.5" /> By Amount Band
-                    </h6>
-                    <div className="space-y-1.5 text-[11px]">
-                      {(driftData?.segments?.by_amount_band || [
-                        { segment: '< ₹50K', count: 520, flagged_rate_pct: 1.5 },
-                        { segment: '₹50K - ₹200K', count: 340, flagged_rate_pct: 6.2 },
-                        { segment: '₹500K - ₹10L', count: 110, flagged_rate_pct: 38.2 },
-                        { segment: '> ₹10L (CTR)', count: 50, flagged_rate_pct: 62.0 }
-                      ]).slice(0, 4).map(s => (
-                        <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
-                          <span className="font-bold">{s.segment}</span>
-                          <span className="font-mono text-emerald-500 font-bold">{s.flagged_rate_pct}% flagged</span>
-                        </div>
-                      ))}
+                    <button
+                      onClick={fetchDrift}
+                      disabled={driftLoading}
+                      className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all shadow"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${driftLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Threshold Legend */}
+                <div className="flex flex-wrap items-center gap-4 p-3 bg-slate-50 dark:bg-darkBorder/20 rounded-xl text-xs">
+                  <span className="font-bold text-gray-500">Statutory PSI Thresholds:</span>
+                  <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> PSI &lt; 0.10 (Stable)
+                  </span>
+                  <span className="flex items-center gap-1.5 text-amber-600 font-bold">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 0.10 &le; PSI &lt; 0.25 (Warning / Monitor)
+                  </span>
+                  <span className="flex items-center gap-1.5 text-red-600 font-bold">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> PSI &ge; 0.25 (Significant Drift &bull; Retrain Required)
+                  </span>
+                </div>
+
+                {/* Feature PSI Table */}
+                <div className="space-y-3">
+                  <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    Feature-Level PSI Diagnostics ({driftData?.feature_drift?.length || 0} Signals Tracked)
+                  </h5>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead>
+                        <tr className="text-gray-400 border-b border-gray-100 dark:border-darkBorder">
+                          <th className="py-2 font-bold">Feature Signal</th>
+                          <th className="py-2 font-bold text-center">PSI Value</th>
+                          <th className="py-2 font-bold text-center">Drift Status</th>
+                          <th className="py-2 font-bold text-right">Baseline Mean</th>
+                          <th className="py-2 font-bold text-right">Live Window Mean</th>
+                          <th className="py-2 font-bold text-center">Stability Bar</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-darkBorder/40">
+                        {(driftData?.feature_drift || []).map((fd) => {
+                          const isWarning = fd.status === 'WARNING';
+                          const isDrift = fd.status === 'DRIFT_DETECTED';
+                          const barWidth = Math.min(100, Math.round((fd.psi / 0.3) * 100));
+
+                          return (
+                            <tr key={fd.feature} className="hover:bg-slate-50 dark:hover:bg-darkBorder/20">
+                              <td className="py-2.5 font-mono font-medium text-gray-800 dark:text-gray-200">
+                                {fd.feature}
+                              </td>
+                              <td className="py-2.5 text-center font-mono font-bold text-gray-700 dark:text-gray-300">
+                                {typeof fd.psi === 'number' ? fd.psi.toFixed(3) : fd.psi}
+                              </td>
+                              <td className="py-2.5 text-center">
+                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                  isDrift
+                                    ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                                    : isWarning
+                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                }`}>
+                                  {fd.status}
+                                </span>
+                              </td>
+                              <td className="py-2.5 text-right font-mono text-gray-500">
+                                {typeof fd.baseline_mean === 'number' ? fd.baseline_mean.toLocaleString() : fd.baseline_mean}
+                              </td>
+                              <td className="py-2.5 text-right font-mono text-gray-700 dark:text-gray-300 font-bold">
+                                {typeof fd.live_mean === 'number' ? fd.live_mean.toLocaleString() : fd.live_mean}
+                              </td>
+                              <td className="py-2.5 text-center w-36">
+                                <div className="w-full bg-slate-200 dark:bg-darkBorder h-2 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${
+                                      isDrift ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
+                                    }`}
+                                    style={{ width: `${barWidth}%` }}
+                                  ></div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Performance by Segment Breakdown */}
+                <div className="pt-4 border-t border-gray-100 dark:border-darkBorder space-y-4">
+                  <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    Performance & Flagged Rate by Segment
+                  </h5>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Segment: Country */}
+                    <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
+                      <h6 className="text-[11px] font-bold text-blue-500 uppercase flex items-center gap-1">
+                        <Globe className="w-3.5 h-3.5" /> By Jurisdiction
+                      </h6>
+                      <div className="space-y-1.5 text-[11px]">
+                        {(driftData?.segments?.by_country || []).map(s => (
+                          <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
+                            <span className="font-bold">{s.segment} ({s.count} tx)</span>
+                            <span className="font-mono text-emerald-500 font-bold">{s.flagged_rate_pct}% flagged</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Segment: Payment Method */}
+                    <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
+                      <h6 className="text-[11px] font-bold text-purple-500 uppercase flex items-center gap-1">
+                        <CreditCard className="w-3.5 h-3.5" /> By Payment Method
+                      </h6>
+                      <div className="space-y-1.5 text-[11px]">
+                        {(driftData?.segments?.by_payment_method || []).map(s => (
+                          <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
+                            <span className="font-bold">{s.segment}</span>
+                            <span className="font-mono text-purple-500 font-bold">{s.flagged_rate_pct}% flagged</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Segment: Amount Band */}
+                    <div className="p-4 bg-slate-50 dark:bg-darkBorder/20 rounded-xl space-y-2">
+                      <h6 className="text-[11px] font-bold text-emerald-500 uppercase flex items-center gap-1">
+                        <DollarSign className="w-3.5 h-3.5" /> By Amount Band
+                      </h6>
+                      <div className="space-y-1.5 text-[11px]">
+                        {(driftData?.segments?.by_amount_band || []).map(s => (
+                          <div key={s.segment} className="flex justify-between items-center py-1 border-b border-gray-200/40 dark:border-darkBorder/40">
+                            <span className="font-bold">{s.segment}</span>
+                            <span className="font-mono text-emerald-500 font-bold">{s.flagged_rate_pct}% flagged</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

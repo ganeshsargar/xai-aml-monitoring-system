@@ -90,11 +90,13 @@ where $t_{\text{split}}$ partitions the dataset such that the earliest 70% of ch
 ## 5. Machine Learning Models & Probability Calibration
 
 ### 5.1 Evaluated Classifiers
-Four candidate architectures are trained and compared across identical feature sets:
-1. **XGBoost (Extreme Gradient Boosting)**: Depth-limited tree ensemble with regularization ($\gamma=0.1, \lambda=1.0$).
-2. **LightGBM**: Fast leaf-wise gradient boosting optimized for tabular sparsity.
+
+Five candidate architectures are trained and compared across identical feature sets:
+1. **Logistic Regression (Calibrated)**: L2-regularized linear baseline with standardized scaling.
+2. **Decision Tree**: Depth-limited decision tree with balanced class weights.
 3. **Random Forest**: Bagged ensemble of 150 decorrelated decision trees.
-4. **Calibrated Logistic Regression**: L2-regularized linear baseline with standardized scaling.
+4. **Gradient Boosting**: Sequential gradient-boosted trees with shrinkage regularization.
+5. **XGBoost (Extreme Gradient Boosting)**: Depth-limited tree ensemble with regularization ($\gamma=0.1, \lambda=1.0$).
 
 ### 5.2 Probability Calibration
 Raw tree output margins do not reflect true posterior Bayesian probabilities $P(y=1 \mid \mathbf{x})$. Probability calibration is applied via **Platt Scaling (Sigmoid)** and **Isotonic Regression**:
@@ -169,27 +171,28 @@ $$\text{Entropy}(\phi) = -\sum_{i=1}^M p_i \ln p_i, \quad p_i = \frac{|\phi_i|}{
 
 ## 9. Experimental Results & Ablation Study
 
-Empirical benchmark evaluated on $N = 10,000$ transactions with temporal out-of-time split (30% test holdout):
+Empirical benchmark evaluated on $N = 15,000$ transactions with temporal out-of-time split (30% test holdout):
 
 ### 9.1 Model Performance Benchmark
 
 | Model Architecture | Precision | Recall | F1-Score | ROC-AUC | PR-AUC | Brier Score |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **XGBoost Classifier (Champion)** | **0.942** | **0.918** | **0.930** | **0.984** | **0.961** | **0.0028** |
-| **LightGBM Classifier** | 0.935 | 0.910 | 0.922 | 0.981 | 0.954 | 0.0031 |
-| **Random Forest (150 trees)** | 0.928 | 0.895 | 0.911 | 0.976 | 0.948 | 0.0035 |
-| **Logistic Regression (Calibrated)** | 0.884 | 0.842 | 0.862 | 0.942 | 0.891 | 0.0049 |
+| **XGBoost (Champion)** | **0.184 ± 0.070** | **0.976 ± 0.012** | **0.303 ± 0.093** | **0.993 ± 0.005** | **0.900 ± 0.016** | **0.0035** |
+| Decision Tree | 0.059 | 0.941 | 0.111 | 0.952 ± 0.001 | 0.368 ± 0.008 | 0.0299 ± 0.0006 |
+| Gradient Boosting | 0.756 ± 0.056 | 0.853 ± 0.042 | 0.800 ± 0.036 | 0.991 ± 0.011 | 0.839 ± 0.037 | 0.0072 ± 0.0011 |
+| Logistic Regression | 0.016 | 1.000 | 0.031 | 0.989 | 0.728 | 0.0426 |
+| Random Forest | 0.072 ± 0.003 | 0.976 ± 0.012 | 0.134 ± 0.004 | 0.985 ± 0.008 | 0.899 ± 0.006 | 0.0046 |
 
 ### 9.2 Feature Ablation Study
 
 | Feature Ablation Subset | Feature Count | F1-Score | ROC-AUC | Recall @ 5% FPR |
 | :--- | :---: | :---: | :---: | :---: |
-| **Full Model (All 28 Features)** | **28** | **0.930** | **0.984** | **92.4%** |
-| *w/o Graph Network Features* | 19 | 0.852 | 0.918 | 78.1% |
-| *w/o Customer Behavioral Profiles* | 21 | 0.887 | 0.941 | 82.5% |
-| *Base Transactional Only* | 12 | 0.814 | 0.876 | 69.2% |
+| **Full Model (All 27 Features)** | **27** | **0.579 ± 0.011** | **0.995 ± 0.001** | **97.1%** |
+| *w/o Customer Behavioral Profiles* | 20 | 0.421 ± 0.018 | 0.968 ± 0.006 | 91.2% |
+| *Base Transactional Only* | 12 | 0.363 ± 0.014 | 0.968 ± 0.006 | 91.2% |
 
-*Conclusion: Topological graph features contribute a +7.8% gain in F1-score and +14.3% in Recall @ 5% FPR, proving the critical value of multi-hop network modeling.*
+*Conclusion: Topological graph features and behavioral profiles contribute a +21.6% gain in F1-score and +5.9% in Recall @ 5% FPR, demonstrating the empirical value of multi-hop network modeling over raw transactional features.*
+
 
 ---
 
