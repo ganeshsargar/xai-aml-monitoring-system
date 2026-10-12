@@ -1818,5 +1818,14 @@
                 "brier_score": 0.6877
             }
         }
+    },
+    "sampling_metadata": {
+        "subsampled": true,
+        "sampling_method": "chronological_prefix_subsample",
+        "original_row_count": 9500000,
+        "original_fraud_rate": 0.00115,
+        "sample_row_count": 4000,
+        "sample_fraud_rate": 0.0835,
+        "seed": 42
     }
 }

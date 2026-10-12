@@ -156,13 +156,13 @@ const MLOps = () => {
       "is_night", "is_transfer", "amount_near_threshold", "is_large_amount", 
       "sender_time_diff", "receiver_time_diff", "sender_velocity_2h", "receiver_velocity_2h"
     ],
-    fraud_rate: 0.07925,
+    fraud_rate: 0.01,
     split_mode: "temporal",
     split_details: {
       mode: "temporal",
-      train_rows: 10360,
-      val_rows: 2220,
-      test_rows: 2221,
+      train_rows: 10500,
+      val_rows: 2250,
+      test_rows: 2250,
       train_date_range: ["2025-06-01 05:06:00", "2025-10-05 20:55:00"],
       val_date_range: ["2025-10-05 21:08:00", "2025-10-31 18:49:00"],
       test_date_range: ["2025-10-31 19:19:00", "2025-11-30 13:00:00"]
@@ -314,14 +314,11 @@ const MLOps = () => {
         }
       })
       .catch(err => {
-        console.warn("Direct train failed: ", err.message);
-        setRetrainStatus('Evaluating models locally...');
-        setTimeout(() => {
-          setRetraining(false);
-          setRetrainStatus('');
-          fetchStats();
-          fetchRegistry();
-        }, 1500);
+        const errorMsg = err.response?.data?.error || err.message || 'Training service unavailable';
+        console.warn("Direct train failed: ", errorMsg);
+        setRetraining(false);
+        setRetrainStatus('');
+        setActionMessage({ type: 'error', text: errorMsg });
       });
   };
 
@@ -532,10 +529,10 @@ const MLOps = () => {
               <Activity className="w-4 h-4 text-emerald-500" />
             </div>
             <h3 className="text-xl font-black text-emerald-500">
-              {driftData?.summary?.overall_score_psi ? `PSI ${driftData.summary.overall_score_psi.toFixed(3)}` : 'PSI 0.042'}
+              {driftData?.summary?.overall_score_psi != null ? `PSI ${driftData.summary.overall_score_psi.toFixed(3)}` : 'N/A'}
             </h3>
             <span className="text-[10px] text-gray-400">
-              Score Stability: <b className="text-emerald-500">STABLE (&lt;0.10)</b>
+              Score Stability: {driftData?.summary?.overall_score_psi != null ? <b className="text-emerald-500">STABLE (&lt;0.10)</b> : <span className="text-gray-400">N/A</span>}
             </span>
           </div>
 
@@ -545,7 +542,7 @@ const MLOps = () => {
               <GitCommit className="w-4 h-4 text-indigo-500" />
             </div>
             <h3 className="text-xl font-black text-gray-800 dark:text-white">
-              {registryData.versions?.length || 2} Total Runs
+              {registryData.versions?.length != null ? registryData.versions.length : 0} Total Runs
             </h3>
             <span className="text-[10px] text-gray-400">
               Immutable Artifacts & Validation Reports

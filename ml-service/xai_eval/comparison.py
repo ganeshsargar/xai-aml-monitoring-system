@@ -17,6 +17,32 @@ import shap
 from lime.lime_tabular import LimeTabularExplainer
 
 
+def patch_shap_tree_explainer():
+    """Patches shap.explainers._tree.decode_ubjson_buffer to handle XGBoost 3.x base_score list/array format."""
+    try:
+        import shap.explainers._tree as shap_tree
+        if hasattr(shap_tree, 'decode_ubjson_buffer'):
+            orig_decode = shap_tree.decode_ubjson_buffer
+            def patched_decode(fd):
+                jmodel = orig_decode(fd)
+                try:
+                    lmp = jmodel.get('learner', {}).get('learner_model_param', {})
+                    if 'base_score' in lmp:
+                        bs = lmp['base_score']
+                        if isinstance(bs, str) and bs.startswith('['):
+                            lmp['base_score'] = bs.strip('[]')
+                        elif isinstance(bs, list) and len(bs) > 0:
+                            lmp['base_score'] = str(bs[0])
+                except Exception:
+                    pass
+                return jmodel
+            shap_tree.decode_ubjson_buffer = patched_decode
+    except Exception:
+        pass
+
+patch_shap_tree_explainer()
+
+
 def gini(array: np.ndarray) -> float:
     """Computes Gini sparsity coefficient for feature attribution array."""
     array = np.sort(np.abs(array))
@@ -237,8 +263,8 @@ def evaluate_comparison(
             }
         ],
         'thesis_takeaway': (
-            f"TreeSHAP offers the optimal trade-off: {speedup:.1f}x faster execution than LIME "
-            f"({shap_latency_ms:.2f}ms vs {lime_latency_ms:.2f}ms), exact mathematical consistency "
-            f"(local accuracy + efficiency axioms), and 100% fidelity to the non-linear decision surface."
+            f"TreeSHAP executed at {shap_latency_ms:.2f}ms per instance ({'meeting' if shap_latency_ms < 15.0 else 'exceeding'} the <15.0ms target), "
+            f"achieving {speedup:.1f}x lower latency than LIME ({lime_latency_ms:.2f}ms). "
+            f"Empirical rank correlation against LIME was rho={mean_lime_shap_corr:.3f}, while deterministic rule alignment was rho={mean_rule_shap_corr:.3f}."
         )
     }

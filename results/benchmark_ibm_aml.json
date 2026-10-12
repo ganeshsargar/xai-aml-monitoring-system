@@ -1805,5 +1805,14 @@
     },
     "version_id": "v_20261010_170614",
     "training_data_hash": "e0703148cd9b0b2ad229f1a2b548af3f56c05504c09f5a025723ee03ba5820eb",
-    "config_hash": "2b837f3832ec274578075269d107bfeffeef519ce53c82f65474ffd27e53bbc5"
+    "config_hash": "2b837f3832ec274578075269d107bfeffeef519ce53c82f65474ffd27e53bbc5",
+    "sampling_metadata": {
+        "subsampled": true,
+        "sampling_method": "chronological_prefix_subsample",
+        "original_row_count": 5078345,
+        "original_fraud_rate": 0.00102,
+        "sample_row_count": 4000,
+        "sample_fraud_rate": 0.0835,
+        "seed": 42
+    }
 }

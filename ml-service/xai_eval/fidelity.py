@@ -90,13 +90,39 @@ def evaluate_fidelity(
         from scipy.integrate import trapezoid as trapz_fn
     audc = float(trapz_fn(mean_deletion, dx=1.0) / len(k_steps))
     auic = float(trapz_fn(mean_insertion, dx=1.0) / len(k_steps))
+    audc_val = round(audc, 4)
+    auic_val = round(auic, 4)
+    faithfulness_ratio = round(float(auic / (audc + 1e-6)), 3)
+
+    auic_pass = auic_val > 0.700
+    ratio_pass = faithfulness_ratio > 3.00
+    audc_pass = audc_val < 0.250
+
+    if auic_pass and ratio_pass and audc_pass:
+        interpretation = (
+            f"High explanation faithfulness verified: AUIC ({auic_val:.4f} > 0.700) and "
+            f"faithfulness ratio ({faithfulness_ratio:.2f} > 3.00) indicate that model confidence "
+            f"drops sharply when top SHAP features are masked (AUDC={audc_val:.4f} < 0.250) and recovers monotonically upon insertion."
+        )
+    else:
+        failed_criteria = []
+        if not auic_pass:
+            failed_criteria.append(f"AUIC={auic_val:.4f} (target > 0.700: Failed)")
+        if not ratio_pass:
+            failed_criteria.append(f"faithfulness ratio={faithfulness_ratio:.2f} (target > 3.00: Failed)")
+        if not audc_pass:
+            failed_criteria.append(f"AUDC={audc_val:.4f} (target < 0.250: Failed)")
+        interpretation = (
+            f"Explanation faithfulness targets partially unmet: {', '.join(failed_criteria)}. "
+            f"AUDC achieved {audc_val:.4f} and AUIC achieved {auic_val:.4f} across progressive feature perturbations on flagged instances."
+        )
 
     return {
         'k_steps': k_steps,
         'deletion_curve_mean': mean_deletion,
         'insertion_curve_mean': mean_insertion,
-        'audc': round(audc, 4),
-        'auic': round(auic, 4),
-        'faithfulness_ratio': round(float(auic / (audc + 1e-6)), 3),
-        'interpretation': 'High explanation faithfulness verified: model confidence drops sharply when top SHAP features are masked, and recovers monotonically upon insertion.'
+        'audc': audc_val,
+        'auic': auic_val,
+        'faithfulness_ratio': faithfulness_ratio,
+        'interpretation': interpretation
     }

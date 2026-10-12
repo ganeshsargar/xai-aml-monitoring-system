@@ -36,7 +36,7 @@ flowchart TB
 
     subgraph ML_TIER ["Machine Learning & Topological Engine (Python/Flask - Port 5000)"]
         REGISTRY["Model Registry & Shadow Mode Governance"]
-        CHAMPION["Champion Classifier (XGBoost / LightGBM / RF / LogReg)"]
+        CHAMPION["Champion Classifier (XGBoost / RF / GB / DT / LogReg)"]
         CALIBRATION["Probability Calibration (Platt / Isotonic)"]
         SHAP_CORE["Real TreeSHAP Explainer & Group Attribution"]
         CF_ENGINE["Actionable Counterfactual Generator"]

@@ -43,16 +43,47 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
 
+def patch_shap_tree_explainer():
+    """Patches shap.explainers._tree.decode_ubjson_buffer to handle XGBoost 3.x base_score list/array format."""
+    try:
+        import shap.explainers._tree as shap_tree
+        if hasattr(shap_tree, 'decode_ubjson_buffer'):
+            orig_decode = shap_tree.decode_ubjson_buffer
+            def patched_decode(fd):
+                jmodel = orig_decode(fd)
+                try:
+                    lmp = jmodel.get('learner', {}).get('learner_model_param', {})
+                    if 'base_score' in lmp:
+                        bs = lmp['base_score']
+                        if isinstance(bs, str) and bs.startswith('['):
+                            lmp['base_score'] = bs.strip('[]')
+                        elif isinstance(bs, list) and len(bs) > 0:
+                            lmp['base_score'] = str(bs[0])
+                except Exception:
+                    pass
+                return jmodel
+            shap_tree.decode_ubjson_buffer = patched_decode
+    except Exception:
+        pass
+
+patch_shap_tree_explainer()
+
+
 def evaluate_status(value: float, target_str: str) -> str:
     """Computes Pass/Fail by comparing numerical value to statutory target threshold."""
+    if value is None or not isinstance(target_str, str):
+        return 'Unknown'
     clean = target_str.replace('ms', '').strip()
-    if clean.startswith('<'):
-        thresh = float(clean[1:].strip())
-        return 'Passed' if value < thresh else 'Failed'
-    elif clean.startswith('>'):
-        thresh = float(clean[1:].strip())
-        return 'Passed' if value > thresh else 'Failed'
-    return 'Passed'
+    try:
+        if clean.startswith('<'):
+            thresh = float(clean[1:].strip())
+            return 'Passed' if value < thresh else 'Failed'
+        elif clean.startswith('>'):
+            thresh = float(clean[1:].strip())
+            return 'Passed' if value > thresh else 'Failed'
+        return 'Unknown'
+    except Exception:
+        return 'Unknown'
 
 
 def run_full_xai_evaluation():
@@ -129,9 +160,26 @@ def run_full_xai_evaluation():
     # 4. Run Benchmark Evaluations
     print("[4/5] Running Fidelity, Stability & Comparison benchmarks...")
     
-    # 4A. Fidelity (Deletion & Insertion) on test sample
-    fidelity_sample = eval_sample.head(min(150, len(eval_sample)))
-    fidelity_shap = shap_values[:len(fidelity_sample)]
+    # 4A. Fidelity (Deletion & Insertion) on rows the model flags (score >= optimal_threshold) or true positives
+    opt_thresh = champ_bundle.get('metadata', {}).get('optimal_threshold', 0.01)
+    if model_name == 'Logistic Regression' and scaler is not None:
+        eval_preds = model.predict_proba(scaler.transform(eval_sample))[:, 1]
+    else:
+        eval_preds = model.predict_proba(eval_sample.values if hasattr(eval_sample, 'values') else eval_sample)[:, 1]
+
+    is_laundering_series = df_test_sample.get('is_laundering', pd.Series(np.zeros(len(df_test_sample))))
+    flagged_mask = (eval_preds >= opt_thresh) | (is_laundering_series.values == 1)
+    flagged_indices = np.where(flagged_mask)[0]
+
+    if len(flagged_indices) >= 10:
+        fidelity_indices = flagged_indices[:150]
+    else:
+        fidelity_indices = np.argsort(-eval_preds)[:min(150, len(eval_sample))]
+
+    fidelity_sample = eval_sample.iloc[fidelity_indices].copy()
+    fidelity_shap = shap_values[fidelity_indices]
+    print(f"Fidelity evaluated on {len(fidelity_sample)} flagged/suspicious transactions (mean score: {np.mean(eval_preds[fidelity_indices]):.4f}).")
+
     fidelity_res = evaluate_fidelity(
         model=model,
         scaler=scaler,

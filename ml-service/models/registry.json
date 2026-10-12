@@ -1,38 +1,8 @@
 {
     "champion": "v_20261010_172524",
-    "challenger": "v_20261010_174820",
+    "challenger": null,
     "shadow_mode_enabled": false,
     "versions": [
-        {
-            "version_id": "v_20261012_171050",
-            "model_name": "XGBoost",
-            "created_at": "2026-10-12T17:10:50.938289",
-            "status": "candidate",
-            "pr_auc": 0.8998784539045233,
-            "roc_auc": 0.9932098110002124,
-            "f1_score": 0.30340838443670437,
-            "optimal_threshold": 0.01,
-            "training_data_hash": "f37ee16d2d90...",
-            "config_hash": "2b837f3832ec...",
-            "rows_trained": 10500,
-            "feature_count": 27,
-            "path": "versions/v_20261012_171050"
-        },
-        {
-            "version_id": "v_20261010_174820",
-            "model_name": "XGBoost",
-            "created_at": "2026-10-10T17:48:20.946249",
-            "status": "challenger",
-            "pr_auc": 0.8998784539045233,
-            "roc_auc": 0.9932098110002124,
-            "f1_score": 0.30340838443670437,
-            "optimal_threshold": 0.01,
-            "training_data_hash": "743dbef9aa91...",
-            "config_hash": "2b837f3832ec...",
-            "rows_trained": 10500,
-            "feature_count": 27,
-            "path": "versions/v_20261010_174820"
-        },
         {
             "version_id": "v_20261010_172524",
             "model_name": "XGBoost",
@@ -49,5 +19,5 @@
             "path": "versions/v_20261010_172524"
         }
     ],
-    "last_updated": "2026-10-12T17:10:50.944259"
+    "last_updated": "2026-10-10T17:25:24.563048"
 }

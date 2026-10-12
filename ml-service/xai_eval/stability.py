@@ -66,23 +66,30 @@ def evaluate_stability(
         if sample_corrs:
             per_sample_spearman.append(float(np.mean(sample_corrs)))
 
-    mean_spearman = float(np.mean(all_spearman_corrs)) if all_spearman_corrs else 0.92
-    mean_jaccard = float(np.mean(top_k_jaccards)) if top_k_jaccards else 0.88
-    mean_delta = float(np.mean(attribution_deltas)) if attribution_deltas else 0.015
-    spearman_std = float(np.std(all_spearman_corrs)) if all_spearman_corrs else 0.03
+    mean_spearman = float(np.mean(all_spearman_corrs)) if all_spearman_corrs else None
+    mean_jaccard = float(np.mean(top_k_jaccards)) if top_k_jaccards else None
+    mean_delta = float(np.mean(attribution_deltas)) if attribution_deltas else None
+    spearman_std = float(np.std(all_spearman_corrs)) if all_spearman_corrs else None
 
-    stability_rating = 'ROBUST' if mean_spearman >= 0.85 else 'MODERATE'
-    interpretation = (
-        f"Attribution stability rating is {stability_rating}: neighboring transaction instances achieve "
-        f"a mean Spearman rank correlation of {mean_spearman:.4f} (std={spearman_std:.4f}) and "
-        f"{mean_jaccard * 100:.1f}% top-{top_k} feature overlap with mean L1 delta of {mean_delta:.5f}."
-    )
+    if mean_spearman is not None:
+        stability_rating = 'ROBUST' if mean_spearman >= 0.85 else 'MODERATE'
+        jaccard_str = f"{mean_jaccard * 100:.1f}%" if mean_jaccard is not None else "not computed"
+        delta_str = f"{mean_delta:.5f}" if mean_delta is not None else "not computed"
+        std_str = f"{spearman_std:.4f}" if spearman_std is not None else "not computed"
+        interpretation = (
+            f"Attribution stability rating is {stability_rating}: neighboring transaction instances achieve "
+            f"a mean Spearman rank correlation of {mean_spearman:.4f} (std={std_str}) and "
+            f"{jaccard_str} top-{top_k} feature overlap with mean L1 delta of {delta_str}."
+        )
+    else:
+        stability_rating = 'not computed'
+        interpretation = "Attribution stability not computed: no valid perturbations generated."
 
     return {
-        'mean_spearman_rank_correlation': round(mean_spearman, 4),
-        'spearman_std': round(spearman_std, 4),
-        'mean_top_k_jaccard_similarity': round(mean_jaccard, 4),
-        'mean_l1_attribution_delta': round(mean_delta, 5),
+        'mean_spearman_rank_correlation': round(mean_spearman, 4) if mean_spearman is not None else None,
+        'spearman_std': round(spearman_std, 4) if spearman_std is not None else None,
+        'mean_top_k_jaccard_similarity': round(mean_jaccard, 4) if mean_jaccard is not None else None,
+        'mean_l1_attribution_delta': round(mean_delta, 5) if mean_delta is not None else None,
         'per_sample_spearman': per_sample_spearman,
         'spearman_correlations': all_spearman_corrs,
         'sample_size_evaluated': len(X_sample),

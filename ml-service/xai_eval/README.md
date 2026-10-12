@@ -75,9 +75,9 @@ Running `run_eval.py` outputs high-resolution (300 DPI) publication-ready plots 
 
 | Metric | Target | Measured Value | Validation Status |
 |---|---|---|---|
-| **Area Under Deletion Curve (AUDC)** | $< 0.250$ | **0.184** | **PASSED** |
-| **Area Under Insertion Curve (AUIC)** | $> 0.700$ | **0.842** | **PASSED** |
-| **Faithfulness Ratio (AUIC / AUDC)** | $> 3.00$ | **4.576** | **PASSED** |
-| **Attribution Stability (Spearman $\rho_s$)** | $> 0.850$ | **0.934** | **PASSED** |
-| **Top-5 Feature Jaccard Overlap** | $> 0.800$ | **0.880** | **PASSED** |
-| **TreeSHAP Inference Latency** | $< 15.0$ ms | **4.20 ms** | **PASSED** |
+| **Area Under Deletion Curve (AUDC)** | $< 0.250$ | **0.178** | **PASSED** |
+| **Area Under Insertion Curve (AUIC)** | $> 0.700$ | **0.148** | **FAILED** |
+| **Faithfulness Ratio (AUIC / AUDC)** | $> 3.00$ | **0.829** | **FAILED** |
+| **Attribution Stability (Spearman $\rho_s$)** | $> 0.850$ | **0.966** | **PASSED** |
+| **Top-5 Feature Jaccard Overlap** | $> 0.800$ | **0.852** | **PASSED** |
+| **TreeSHAP Inference Latency** | $< 15.0$ ms | **1.04 ms** | **PASSED** |

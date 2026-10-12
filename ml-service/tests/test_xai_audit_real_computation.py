@@ -78,6 +78,10 @@ def test_run_eval_computes_pass_fail_dynamically():
     assert evaluate_status(5.0, '< 15.0 ms') == 'Passed'
     assert evaluate_status(20.0, '< 15.0 ms') == 'Failed'
 
+    # Unparsable target returns Unknown, never Passed
+    assert evaluate_status(0.5, 'N/A') == 'Unknown'
+    assert evaluate_status(0.5, 'invalid') == 'Unknown'
+
 
 def test_methodology_has_no_lightgbm_and_generated_from_json():
     methodology_path = os.path.join(os.path.dirname(__file__), '..', '..', 'docs', 'METHODOLOGY.md')
@@ -108,3 +112,70 @@ def test_run_eval_script_checks():
     assert 'test_start_idx' in content or 'test_period' in content, "run_eval.py must select test holdout partition"
     # Asserts real per-sample Spearman histogram plotting
     assert 'stability_res.get(\'spearman_correlations\')' in content or 'stability_res.get(\'per_sample_spearman\')' in content
+
+
+def test_xai_summary_matches_registry_champion():
+    registry_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'registry.json')
+    summary_path = os.path.join(os.path.dirname(__file__), '..', 'xai_eval', 'results', 'xai_benchmark_summary.json')
+
+    assert os.path.exists(registry_path), "models/registry.json must exist"
+    assert os.path.exists(summary_path), "xai_benchmark_summary.json must exist"
+
+    with open(registry_path, 'r', encoding='utf-8') as f:
+        registry = json.load(f)
+    with open(summary_path, 'r', encoding='utf-8') as f:
+        summary = json.load(f)
+
+    champion_id = registry.get('champion')
+    assert champion_id is not None, "Champion model must be registered"
+    champion_version = next((v for v in registry.get('versions', []) if v.get('version_id') == champion_id), None)
+    assert champion_version is not None, f"Champion version {champion_id} must exist in registry versions"
+
+    assert summary.get('model_version') == champion_id, (
+        f"Summary model_version ({summary.get('model_version')}) must match registry champion ({champion_id})"
+    )
+    assert summary.get('model_architecture') == champion_version.get('model_name'), (
+        f"Summary model_architecture ({summary.get('model_architecture')}) must match registry champion ({champion_version.get('model_name')})"
+    )
+
+
+def test_forbidden_artifacts_and_claims_eliminated():
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+    forbidden_literals = ['0.07925', 'PSI 0.042', '76%']
+
+    # 1. 0.07925, PSI 0.042, and 76% claim must not exist outside tests
+    for root, dirs, files in os.walk(repo_root):
+        if any(ignored in root for ignored in ['.git', '.venv', 'node_modules', 'tests', '.tempmediaStorage', '__pycache__', '.pytest_cache']):
+            continue
+        for file in files:
+            if file.endswith(('.js', '.jsx', '.py', '.json', '.md', '.html', '.ts', '.tsx')):
+                fpath = os.path.join(root, file)
+                try:
+                    with open(fpath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    for literal in forbidden_literals:
+                        assert literal not in content, f"Forbidden literal '{literal}' found in {fpath}"
+                except UnicodeDecodeError:
+                    pass
+
+    # 2. 0.88 fallback must not exist in stability.py
+    stability_path = os.path.join(repo_root, 'ml-service', 'xai_eval', 'stability.py')
+    with open(stability_path, 'r', encoding='utf-8') as f:
+        stab_content = f.read()
+    assert '0.88' not in stab_content, "stability.py must not contain 0.88 fallback"
+
+    # 3. LightGBM must not exist outside tests
+    for root, dirs, files in os.walk(repo_root):
+        if any(ignored in root for ignored in ['.git', '.venv', 'node_modules', 'tests', '__pycache__', '.pytest_cache', '.tempmediaStorage']):
+            continue
+        for file in files:
+            if file.endswith(('.js', '.jsx', '.py', '.json', '.md', '.html')):
+                fpath = os.path.join(root, file)
+                try:
+                    with open(fpath, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    assert 'lightgbm' not in content.lower(), f"LightGBM found outside tests in {fpath}"
+                except UnicodeDecodeError:
+                    pass
+

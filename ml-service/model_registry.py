@@ -29,14 +29,33 @@ def _ensure_dirs():
     os.makedirs(VERSIONS_DIR, exist_ok=True)
 
 
-def compute_data_hash(df: pd.DataFrame) -> str:
-    """Computes deterministic SHA-256 hash for dataset snapshot."""
-    try:
-        sample_df = df.head(500) if len(df) > 500 else df
-        content = f"{df.shape}_{list(df.columns)}_{sample_df.to_csv(index=False)}"
-        return hashlib.sha256(content.encode('utf-8')).hexdigest()
-    except Exception:
-        return hashlib.sha256(f"dataset_{len(df)}_{datetime.utcnow().isoformat()}".encode('utf-8')).hexdigest()
+def compute_data_hash(df: Optional[pd.DataFrame] = None, dataset_path: Optional[str] = None) -> str:
+    """Computes deterministic SHA-256 hash for dataset file contents or snapshot without timestamp."""
+    target_path = dataset_path
+    if not target_path or not os.path.exists(target_path):
+        default_csv = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dataset', 'dataset.csv'))
+        if os.path.exists(default_csv):
+            target_path = default_csv
+
+    if target_path and os.path.exists(target_path):
+        try:
+            hasher = hashlib.sha256()
+            with open(target_path, 'rb') as f:
+                while chunk := f.read(65536):
+                    hasher.update(chunk)
+            return hasher.hexdigest()
+        except Exception:
+            pass
+
+    if df is not None:
+        try:
+            sample_df = df.head(500) if len(df) > 500 else df
+            content = f"{df.shape}_{list(df.columns)}_{sample_df.to_csv(index=False)}"
+            return hashlib.sha256(content.encode('utf-8')).hexdigest()
+        except Exception:
+            return hashlib.sha256(f"dataset_shape_{df.shape}_{list(df.columns)}".encode('utf-8')).hexdigest()
+
+    return hashlib.sha256(b"empty_dataset").hexdigest()
 
 
 def compute_config_hash(config_dict: Optional[Dict] = None) -> str:
@@ -100,18 +119,46 @@ def save_model_version(
     """
     Saves a complete training run as an immutable version directory in models/versions/<version_id>/
     Updates registry.json with champion / challenger pointers.
+    Skips creating a new version if data hash, config hash, and test metrics match champion.
     """
     _ensure_dirs()
-    
+
+    data_hash = compute_data_hash(train_df)
+    cfg_hash = compute_config_hash(config_dict)
+
+    # Check if identical to current champion
+    registry = load_registry()
+    champ_id = registry.get('champion')
+    if champ_id:
+        champ_meta_path = os.path.join(VERSIONS_DIR, champ_id, 'metadata.json')
+        if os.path.exists(champ_meta_path):
+            try:
+                with open(champ_meta_path, 'r', encoding='utf-8') as f:
+                    champ_meta = json.load(f)
+
+                champ_dh = champ_meta.get('training_data_hash', '')
+                same_data = champ_dh == data_hash or champ_dh.startswith(data_hash[:12]) or data_hash.startswith(champ_dh[:12])
+                champ_ch = champ_meta.get('config_hash', '')
+                same_cfg = champ_ch == cfg_hash or champ_ch.startswith(cfg_hash[:12]) or cfg_hash.startswith(champ_ch[:12])
+
+                champ_test_metrics = metrics_dict.get('test_metrics', {})
+                metrics_match = (
+                    abs(float(champ_meta.get('pr_auc', 0.0)) - float(champ_test_metrics.get('pr_auc', 0.0))) < 1e-4 and
+                    abs(float(champ_meta.get('roc_auc', 0.0)) - float(champ_test_metrics.get('roc_auc', 0.0))) < 1e-4 and
+                    abs(float(champ_meta.get('f1_score', 0.0)) - float(champ_test_metrics.get('f1_score', 0.0))) < 1e-4
+                )
+                if same_data and same_cfg and metrics_match:
+                    print(f"\n[Model Registry] Training dataset hash, config hash, and test metrics match champion '{champ_id}'. Skipping duplicate version registration.")
+                    return champ_meta
+            except Exception as e:
+                print(f"[Model Registry Warning] Champion comparison check: {e}")
+
     if not version_id:
         timestamp_slug = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
         version_id = f"v_{timestamp_slug}"
 
     version_dir = os.path.join(VERSIONS_DIR, version_id)
     os.makedirs(version_dir, exist_ok=True)
-
-    data_hash = compute_data_hash(train_df) if train_df is not None else "unknown_data_hash"
-    cfg_hash = compute_config_hash(config_dict)
 
     # 1. Compute baseline feature and score statistics for future PSI drift detection
     baseline_stats = {}
@@ -774,7 +821,7 @@ Uncalibrated tree ensemble scores often exhibit distorted sigmoid shapes. The mo
 The model uses **{len(feature_cols)}** engineered feature signals across three distinct domain layers:
 
 1. **Transactional & Velocity Signals (12 features):** `amount`, `log_amount`, `is_high_risk_country`, `is_wire_or_crypto`, `is_night`, `is_transfer`, `amount_near_threshold`, `is_large_amount`, `sender_time_diff`, `receiver_time_diff`, `sender_velocity_2h`, `receiver_velocity_2h`.
-2. **Graph & Network Typology Signals (9 features):** `in_degree`, `out_degree`, `distinct_counterparties`, `pass_through_ratio`, `in_cycle`, `cycle_count`, `pagerank`, `shared_device_degree`, `neighbor_max_risk`.
+2. **Graph & Network Typology Signals (8 features):** `in_degree`, `out_degree`, `distinct_counterparties`, `pass_through_ratio`, `in_cycle`, `cycle_count`, `pagerank`, `shared_device_degree`.
 3. **Customer Behavioral Profile Signals (7 features):** `amount_zscore_vs_own_history`, `volume_vs_declared_income`, `new_counterparty_flag`, `new_country_flag`, `account_age_days`, `dormant_reactivation`, `peer_percentile`.
 
 ---

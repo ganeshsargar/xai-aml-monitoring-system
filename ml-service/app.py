@@ -80,6 +80,32 @@ def load_resources():
         print(f"[Model Loader Error]: {e}")
 
 
+def patch_shap_tree_explainer():
+    """Patches shap.explainers._tree.decode_ubjson_buffer to handle XGBoost 3.x base_score list/array format."""
+    try:
+        import shap.explainers._tree as shap_tree
+        if hasattr(shap_tree, 'decode_ubjson_buffer'):
+            orig_decode = shap_tree.decode_ubjson_buffer
+            def patched_decode(fd):
+                jmodel = orig_decode(fd)
+                try:
+                    lmp = jmodel.get('learner', {}).get('learner_model_param', {})
+                    if 'base_score' in lmp:
+                        bs = lmp['base_score']
+                        if isinstance(bs, str) and bs.startswith('['):
+                            lmp['base_score'] = bs.strip('[]')
+                        elif isinstance(bs, list) and len(bs) > 0:
+                            lmp['base_score'] = str(bs[0])
+                except Exception:
+                    pass
+                return jmodel
+            shap_tree.decode_ubjson_buffer = patched_decode
+    except Exception:
+        pass
+
+patch_shap_tree_explainer()
+
+
 load_resources()
 
 
@@ -438,7 +464,7 @@ FEATURE_GROUPS = {
     ],
     'Graph Network & Typologies': [
         'in_degree', 'out_degree', 'distinct_counterparties', 'pass_through_ratio',
-        'in_cycle', 'cycle_count', 'pagerank', 'shared_device_degree', 'neighbor_max_risk'
+        'in_cycle', 'cycle_count', 'pagerank', 'shared_device_degree'
     ],
     'Jurisdiction & Payment Channel': [
         'is_high_risk_country', 'is_wire_or_crypto', 'new_country_flag', 'is_transfer'

@@ -176,35 +176,21 @@ const trainModel = async (req, res) => {
       }
 
       if (!newMetrics) {
-        newMetrics = {
-          best_model: "Random Forest",
-          primary_metric: "f1_score",
-          fraud_rate: 0.07925,
-          comparison: {
-            "Random Forest": { accuracy: 0.9855, precision: 0.9286, recall: 0.8851, f1_score: 0.9063, roc_auc: 0.9811 },
-            "XGBoost": { accuracy: 0.9801, precision: 0.8411, recall: 0.9234, f1_score: 0.8803, roc_auc: 0.9781 },
-            "Gradient Boosting": { accuracy: 0.9791, precision: 0.8681, recall: 0.8681, f1_score: 0.8681, roc_auc: 0.9804 },
-            "Decision Tree": { accuracy: 0.9743, precision: 0.7891, recall: 0.9234, f1_score: 0.8510, roc_auc: 0.9595 },
-            "Logistic Regression": { accuracy: 0.9683, precision: 0.7374, recall: 0.9319, f1_score: 0.8233, roc_auc: 0.9803 }
-          },
-          feedback_retraining: {
-            analyst_labels_ingested: retrainingPayload.labels.length,
-            analyst_label_weight: retrainingPayload.analyst_label_weight,
-            temporal_split_strictly_preserved: true
-          },
-          trained_at: new Date().toISOString()
-        };
-      } else {
-        newMetrics = {
-          ...newMetrics,
-          feedback_retraining: {
-            analyst_labels_ingested: retrainingPayload.labels.length,
-            analyst_label_weight: retrainingPayload.analyst_label_weight,
-            temporal_split_strictly_preserved: true
-          },
-          trained_at: new Date().toISOString()
-        };
+        return res.status(503).json({
+          success: false,
+          error: "Training service unavailable"
+        });
       }
+
+      newMetrics = {
+        ...newMetrics,
+        feedback_retraining: {
+          analyst_labels_ingested: retrainingPayload.labels.length,
+          analyst_label_weight: retrainingPayload.analyst_label_weight,
+          temporal_split_strictly_preserved: true
+        },
+        trained_at: new Date().toISOString()
+      };
     }
 
     // 4. Mark unused labels as used in training

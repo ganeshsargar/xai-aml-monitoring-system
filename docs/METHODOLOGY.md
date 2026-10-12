@@ -59,14 +59,17 @@ The feature extraction pipeline computes **28 quantitative features** across fou
   $$v_{\text{acc}}^{2h}(t) = \sum_{t' \in [t - 120\text{m}, t)} \mathbb{I}(\text{sender} = \text{acc} \lor \text{receiver} = \text{acc})$$
 
 ### 3.3 Topological Graph Features (NetworkX)
-Constructing directed multigraph $G = (V, E)$ over rolling 30-day time horizons:
+Constructing directed multigraph $G = (V, E)$ over rolling 30-day time horizons (8 active model features):
 - **$\text{in\_degree}(u), \text{out\_degree}(u)$**: Inbound and outbound edge counts for transacting nodes.
 - **$\text{pass\_through\_ratio}(u)$**: Volume forwarded within short window relative to total volume received:
   $$\text{PTR}(u) = \frac{\min(\text{Volume}_{\text{in}}, \text{Volume}_{\text{out}})}{\max(\text{Volume}_{\text{in}}, \text{Volume}_{\text{out}}) + \epsilon}$$
 - **$\text{in\_cycle}(u)$**: $\mathbb{I}(u \in \text{SimpleDirectedCycles}(G, \text{max\_depth}=4))$.
+- **$\text{cycle\_count}(u)$**: Total number of simple directed temporal loops involving node $u$.
 - **$\text{PageRank}(u)$**: Random-walk stationary distribution score over money flow paths.
+- **$\text{distinct\_counterparties}(u)$**: Cardinality of unique sending and receiving accounts.
 - **$\text{shared\_device\_degree}(u)$**: Number of co-occurring accounts sharing device ID or IP address (syndicate detection).
-- **$\text{neighbor\_max\_risk}(u)$**: $\max_{v \in \mathcal{N}(u)} \text{RiskScore}(v)$.
+
+*(Note: `neighbor_max_risk` was evaluated during prototyping but strictly removed from model features because training data does not contain point-in-time risk scores for unflagged counterparties, which would introduce look-ahead label leakage. The model strictly employs 8 graph signals and 27 total features.)*
 
 ### 3.4 Customer Profile & Baseline Z-Scores
 - **$\text{Z}_{\text{amount}}$**: Standard score of current amount versus customer's 90-day personal transaction history:
@@ -79,11 +82,16 @@ Constructing directed multigraph $G = (V, E)$ over rolling 30-day time horizons:
 
 ## 4. Temporal Out-of-Time Validation Split Protocol
 
-Standard random K-fold cross-validation suffers from severe **look-ahead bias** and data leakage in financial time-series. FundTrace AI enforces a strict **Temporal Out-of-Time Split**:
+Standard random K-fold cross-validation suffers from severe **look-ahead bias** and data leakage in financial time-series. FundTrace AI enforces a strict **Temporal Out-of-Time Split (70 / 15 / 15)**:
 
-$$\mathcal{D}_{\text{train}} = \{ \mathcal{T}_i \mid t_i < t_{\text{split}} \}, \quad \mathcal{D}_{\text{test}} = \{ \mathcal{T}_i \mid t_i \ge t_{\text{split}} \}$$
+$$\mathcal{D}_{\text{train}} = \{ \mathcal{T}_i \mid t_i < t_{\text{val}} \}, \quad \mathcal{D}_{\text{val}} = \{ \mathcal{T}_i \mid t_{\text{val}} \le t_i < t_{\text{test}} \}, \quad \mathcal{D}_{\text{test}} = \{ \mathcal{T}_i \mid t_i \ge t_{\text{test}} \}$$
 
-where $t_{\text{split}}$ partitions the dataset such that the earliest 70% of chronological transactions form $\mathcal{D}_{\text{train}}$ and the subsequent 30% form $\mathcal{D}_{\text{test}}$. Rolling customer baselines and graph features on $\mathcal{D}_{\text{test}}$ are computed exclusively using historical data available up to timestamp $t_i$.
+where the dataset of $N = 15,000$ chronological transactions is partitioned into:
+- **Training Set (70%)**: $\mathcal{D}_{\text{train}}$ ($10,500$ transactions) used strictly for model parameter estimation.
+- **Validation Set (15%)**: $\mathcal{D}_{\text{val}}$ ($2,250$ transactions) used strictly for isotonic probability calibration and operational threshold selection.
+- **Holdout Test Set (15%)**: $\mathcal{D}_{\text{test}}$ ($2,250$ transactions, containing 34 true laundering cases) preserved strictly for unbiased evaluation.
+
+Rolling customer baselines and graph features on $\mathcal{D}_{\text{test}}$ are computed point-in-time using historical transactions strictly preceding each event timestamp $t_i$.
 
 ---
 
@@ -136,7 +144,7 @@ $$\Phi_{\text{group}} = \sum_{j \in \text{Group}} \phi_j(\mathbf{x}), \quad \tex
 
 1. **Amount & Structuring**: `amount`, `log_amount`, `is_large_amount`, `amount_near_threshold`
 2. **Velocity & Execution Timing**: `sender_velocity_2h`, `receiver_velocity_2h`, `sender_time_diff`, `receiver_time_diff`, `is_night`
-3. **Graph Network & Typologies**: `in_degree`, `out_degree`, `distinct_counterparties`, `pass_through_ratio`, `in_cycle`, `cycle_count`, `pagerank`, `shared_device_degree`, `neighbor_max_risk`
+3. **Graph Network & Typologies (8 features)**: `in_degree`, `out_degree`, `distinct_counterparties`, `pass_through_ratio`, `in_cycle`, `cycle_count`, `pagerank`, `shared_device_degree`
 4. **Jurisdiction & Rails**: `is_high_risk_country`, `is_wire_or_crypto`, `new_country_flag`, `is_transfer`
 5. **Behavioral Profile**: `amount_zscore_vs_own_history`, `volume_vs_declared_income`, `new_counterparty_flag`, `dormant_reactivation`, `peer_percentile`, `account_age_days`
 
@@ -171,7 +179,7 @@ $$\text{Entropy}(\phi) = -\sum_{i=1}^M p_i \ln p_i, \quad p_i = \frac{|\phi_i|}{
 
 ## 9. Experimental Results & Ablation Study
 
-Empirical benchmark evaluated on $N = 15,000$ transactions with temporal out-of-time split (30% test holdout):
+Empirical benchmark evaluated on $N = 15,000$ transactions with temporal out-of-time split (70% train: 10,500 / 15% validation: 2,250 / 15% holdout test: 2,250 transactions with 34 positive cases):
 
 ### 9.1 Model Performance Benchmark
 
@@ -183,6 +191,8 @@ Empirical benchmark evaluated on $N = 15,000$ transactions with temporal out-of-
 | Logistic Regression | 0.016 | 1.000 | 0.031 | 0.989 | 0.728 | 0.0426 |
 | Random Forest | 0.072 ± 0.003 | 0.976 ± 0.012 | 0.134 ± 0.004 | 0.985 ± 0.008 | 0.899 ± 0.006 | 0.0046 |
 
+> **Note on Calibration & Operating Threshold:** In Section 9.1, models undergo Isotonic Probability Calibration on the validation split and are evaluated at the capacity-tuned decision threshold ($\tau = 0.01$). This threshold is chosen to ensure high supervisory recall ($97.6\%$) under severe 1% class imbalance, producing a calibrated operational F1-score of $0.303$.
+
 ### 9.2 Feature Ablation Study
 
 | Feature Ablation Subset | Feature Count | F1-Score | ROC-AUC | Recall @ 5% FPR |
@@ -192,6 +202,16 @@ Empirical benchmark evaluated on $N = 15,000$ transactions with temporal out-of-
 | *Base Transactional Only* | 12 | 0.363 ± 0.014 | 0.968 ± 0.006 | 91.2% |
 
 *Conclusion: Topological graph features and behavioral profiles contribute a +21.6% gain in F1-score and +5.9% in Recall @ 5% FPR, demonstrating the empirical value of multi-hop network modeling over raw transactional features.*
+
+> **Note on Ablation Methodology vs. Section 9.1:** The feature ablation study trains standalone, uncalibrated base estimators directly across 5 random seeds to isolate the pure marginal predictive contribution of each feature layer. Uncalibrated raw tree probabilities evaluated at nominal default thresholds yield an absolute F1-score of $0.579$. Both evaluations consistently demonstrate that topological graph (+8) and behavioral profile (+7) features deliver substantial relative improvements (+21.6% relative F1 gain, +5.9% Recall @ 5% FPR) compared to raw transactional features alone.
+
+### 9.3 Study Limitations & Methodological Constraints
+
+1. **Synthetic Data Substrate**: The primary evaluation was conducted on a synthetically generated transaction graph ($N = 15,000$ transactions, $1.0\%$ base laundering rate). While the synthetic generator incorporates realistic empirical constraints (log-normal amount overlap, smurfing cycles, shared devices, and 5% label noise), synthetic topologies cannot fully capture the adversarial complexity of live commercial banking networks.
+2. **Positive Support in Holdout Test Partition**: Under the strict 70/15/15 chronological partition, the holdout test set contains exactly $N_{\text{test}} = 2,250$ transactions with only $P_{\text{test}} = 34$ positive money laundering events. Consequently:
+   - Fixed-depth triage metrics are mathematically capped by the ground-truth positive support: $\text{Precision@200} \le 34/200 = 17.0\%$ and $\text{Precision@500} \le 34/500 = 6.8\%$.
+   - Any metric evaluated at wide investigation capacity budgets will appear numerically low despite high true-positive recall ($97.6\%$).
+3. **Benchmark Dataset Subsampling**: Secondary cross-dataset benchmarks on IBM AML (HI-Small) and SAML-D were evaluated on representative subsamples drawn chronologically from raw source partitions to maintain memory and feature parity with live runtime environments. They serve to validate cross-dataset schema ingestion rather than exhaustive production deployment.
 
 
 ---
@@ -209,7 +229,8 @@ To comply with **PMLA 2002 Section 12**, **RBI Master Directions**, and **FATF R
 
 ## 11. Summary & Citation
 
-FundTrace AI demonstrates that explainable gradient-boosted ensembles fused with topological network analytics dramatically outperform legacy rule engines, reducing false positives by up to 76% while preserving legal transparency through SHAP attribution, counterfactuals, and immutable cryptographic audit logging.
+FundTrace AI demonstrates that integrating topological graph analytics (8 network features) and customer behavioral profiling (7 profile features) alongside transactional features improves gradient-boosted detection performance (+21.6% relative F1 gain in feature ablation) over raw transaction signals alone, while preserving regulatory auditability through exact TreeSHAP attribution, counterfactual explanations, and immutable SHA-256 cryptographic audit logging.
+
 
 ```bibtex
 @article{fundtraceai2026,

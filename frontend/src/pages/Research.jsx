@@ -92,9 +92,9 @@ const Research = () => {
                     <td className="py-2.5 text-rose-500 font-bold">Multi-hop money flow loops</td>
                   </tr>
                   <tr>
-                    <td className="py-2.5 font-semibold">False Positive Ratio</td>
-                    <td className="py-2.5">95% - 98% (Extremely high)</td>
-                    <td className="py-2.5 text-rose-500 font-bold">&lt; 3.5% (Optimized)</td>
+                    <td className="py-2.5 font-semibold">Tuning & Thresholds</td>
+                    <td className="py-2.5">Fixed statutory limits</td>
+                    <td className="py-2.5 text-rose-500 font-bold">Capacity-calibrated decision thresholds</td>
                   </tr>
                   <tr>
                     <td className="py-2.5 font-semibold">Explainability</td>
@@ -179,7 +179,7 @@ const Research = () => {
               <h4 className="text-xs font-bold uppercase tracking-wider">Academic Contribution</h4>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-              FundTrace AI advances financial fraud literature by proving that combining behavioral tabular classifiers with structural graph analytics yields a 12% improvement in recall compared to rule engines alone, while preserving the transparency required for legal compliance and auditing.
+              FundTrace AI advances financial fraud literature by demonstrating that combining behavioral tabular classifiers with topological graph analytics enhances detection of complex laundering patterns while preserving the transparency required for legal compliance and auditing through local SHAP attribution.
             </p>
           </div>
 

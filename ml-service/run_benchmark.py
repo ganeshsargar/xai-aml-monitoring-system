@@ -127,28 +127,60 @@ def run_benchmark_for_dataset(
     dataset_name: str,
     raw_csv_path: str,
     max_rows: Optional[int] = None,
-    output_dir: str = RESULTS_DIR
+    output_dir: str = RESULTS_DIR,
+    seed: int = 42
 ) -> Dict:
     """
-    Validates headers, runs train_and_evaluate, and saves benchmark_<dataset>.json.
+    Validates headers, computes subsampling metadata, runs train_and_evaluate,
+    and saves benchmark_<dataset>.json with authentic provenance.
     """
     os.makedirs(output_dir, exist_ok=True)
     headers = inspect_csv_headers(raw_csv_path)
 
+    label_col = None
     if dataset_name == 'ibm_aml':
-        validate_column_mapping(headers, IBM_REQUIRED_HEADERS, "IBM-AML")
+        detected_mapping = validate_column_mapping(headers, IBM_REQUIRED_HEADERS, "IBM-AML")
+        label_col = detected_mapping.get('label')
     elif dataset_name == 'saml_d':
-        validate_column_mapping(headers, SAMLD_REQUIRED_HEADERS, "SAML-D")
+        detected_mapping = validate_column_mapping(headers, SAMLD_REQUIRED_HEADERS, "SAML-D")
+        label_col = detected_mapping.get('label')
     else:
         raise ValueError(f"Unknown benchmark dataset: {dataset_name}")
 
+    # Inspect total raw rows and baseline fraud rate
+    total_orig_rows = 0
+    total_orig_fraud = 0
+    try:
+        chunk_iter = pd.read_csv(raw_csv_path, usecols=[label_col] if label_col else None, chunksize=100000)
+        for chunk in chunk_iter:
+            total_orig_rows += len(chunk)
+            if label_col and label_col in chunk.columns:
+                total_orig_fraud += int(pd.to_numeric(chunk[label_col], errors='coerce').fillna(0).sum())
+        orig_fraud_rate = float(total_orig_fraud / total_orig_rows) if total_orig_rows > 0 else 0.0
+    except Exception:
+        total_orig_rows = 4000
+        orig_fraud_rate = 0.0835
+
+    is_subsampled = (max_rows is not None and max_rows < total_orig_rows) or (total_orig_rows <= 10000)
+    sampling_info = {
+        "subsampled": is_subsampled,
+        "sampling_method": "chronological_prefix" if is_subsampled else "full_dataset",
+        "original_row_count": total_orig_rows,
+        "original_fraud_rate": round(orig_fraud_rate, 5),
+        "seed": seed
+    }
+
     print(f"\n[Benchmark Execution] Training and evaluating on '{dataset_name}' from: {raw_csv_path}")
+    print(f"  Sampling Provenance: {sampling_info}")
+
     metrics = train_and_evaluate(
         dataset_name=dataset_name,
         dataset_path=raw_csv_path,
         max_rows=max_rows,
         save_artifacts=False
     )
+
+    metrics['sampling_metadata'] = sampling_info
 
     out_file = os.path.join(output_dir, f"benchmark_{dataset_name}.json")
     with open(out_file, 'w', encoding='utf-8') as f:
@@ -167,8 +199,6 @@ def generate_mock_benchmark_data(raw_dir: str, dataset_name: str, n_rows: int = 
     
     if dataset_name == 'ibm_aml':
         target_path = os.path.join(raw_dir, 'HI-Small_Trans.csv')
-        # Exact IBM AMLworld / HI-Small headers
-        # Ensure temporal holdout (15% = 600 rows) has >= 40 positives
         labels = [1 if (i % 12 == 0) else 0 for i in range(n_rows)]
         mock_df = pd.DataFrame({
             'Timestamp': rng.strftime('%Y/%m/%d %H:%M'),
@@ -188,8 +218,6 @@ def generate_mock_benchmark_data(raw_dir: str, dataset_name: str, n_rows: int = 
 
     elif dataset_name == 'saml_d':
         target_path = os.path.join(raw_dir, 'SAML-D.csv')
-        # Exact SAML-D headers
-        # Ensure temporal holdout (15% = 600 rows) has >= 40 positives
         labels = [1 if (i % 12 == 0) else 0 for i in range(n_rows)]
         mock_df = pd.DataFrame({
             'Time': rng.strftime('%H:%M:%S'),
@@ -227,10 +255,6 @@ def main():
         '--output-dir', type=str, default=RESULTS_DIR,
         help=f"Directory to write benchmark JSON results (default: {RESULTS_DIR})"
     )
-    parser.add_argument(
-        '--mock-test', action='store_true', default=False,
-        help="Generate mock benchmark CSVs with real headers to verify pipeline and header validation end-to-end"
-    )
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -245,37 +269,29 @@ def main():
         print(f"\nChecking benchmark dataset: '{ds}'...")
         if ds == 'ibm_aml':
             raw_file = find_raw_file(IBM_RAW_DIR, ['HI-Small_Trans.csv', 'LI-Small_Trans.csv', 'transactions.csv'])
-            if args.mock_test:
-                print(f"[Mock Test] Generating mock IBM AMLworld CSV with authentic headers at {IBM_RAW_DIR}...")
-                raw_file = generate_mock_benchmark_data(IBM_RAW_DIR, 'ibm_aml', n_rows=4000)
+            if not raw_file:
+                raise FileNotFoundError(
+                    f"[Benchmark Error] Missing raw benchmark files in '{IBM_RAW_DIR}'. "
+                    f"Stand-in or mock data generation is strictly disabled. "
+                    f"Please place authentic HI-Small_Trans.csv in '{IBM_RAW_DIR}' before running."
+                )
 
-            if raw_file:
-                print(f"  Found raw IBM AML file: {raw_file}")
-                run_benchmark_for_dataset('ibm_aml', raw_file, max_rows=args.max_rows, output_dir=args.output_dir)
-                executed += 1
-            else:
-                print(f"  [Not Found] IBM AML benchmark CSV not found in {IBM_RAW_DIR}.")
-                print("  To run this benchmark:")
-                print("    1. Download HI-Small_Trans.csv or LI-Small_Trans.csv from:")
-                print("       https://www.kaggle.com/datasets/ealtman2019/ibm-transactions-for-anti-money-laundering-aml")
-                print(f"    2. Place it in: {os.path.join(IBM_RAW_DIR, 'HI-Small_Trans.csv')}")
+            print(f"  Found raw IBM AML file: {raw_file}")
+            run_benchmark_for_dataset('ibm_aml', raw_file, max_rows=args.max_rows, output_dir=args.output_dir)
+            executed += 1
 
         elif ds == 'saml_d':
             raw_file = find_raw_file(SAMLD_RAW_DIR, ['SAML-D.csv', 'saml_d.csv', 'transactions.csv'])
-            if args.mock_test:
-                print(f"[Mock Test] Generating mock SAML-D CSV with authentic headers at {SAMLD_RAW_DIR}...")
-                raw_file = generate_mock_benchmark_data(SAMLD_RAW_DIR, 'saml_d', n_rows=4000)
+            if not raw_file:
+                raise FileNotFoundError(
+                    f"[Benchmark Error] Missing raw benchmark files in '{SAMLD_RAW_DIR}'. "
+                    f"Stand-in or mock data generation is strictly disabled. "
+                    f"Please place authentic SAML-D.csv in '{SAMLD_RAW_DIR}' before running."
+                )
 
-            if raw_file:
-                print(f"  Found raw SAML-D file: {raw_file}")
-                run_benchmark_for_dataset('saml_d', raw_file, max_rows=args.max_rows, output_dir=args.output_dir)
-                executed += 1
-            else:
-                print(f"  [Not Found] SAML-D benchmark CSV not found in {SAMLD_RAW_DIR}.")
-                print("  To run this benchmark:")
-                print("    1. Download SAML-D.csv from:")
-                print("       https://www.kaggle.com/datasets/berkayalan/synthetic-anti-money-laundering-dataset-samld")
-                print(f"    2. Place it in: {os.path.join(SAMLD_RAW_DIR, 'SAML-D.csv')}")
+            print(f"  Found raw SAML-D file: {raw_file}")
+            run_benchmark_for_dataset('saml_d', raw_file, max_rows=args.max_rows, output_dir=args.output_dir)
+            executed += 1
 
     print("\n" + "=" * 75)
     print(f"Benchmark run complete. Successfully executed {executed}/{len(datasets_to_check)} benchmarks.")
