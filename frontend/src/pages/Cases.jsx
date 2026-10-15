@@ -241,7 +241,7 @@ const Cases = () => {
 
   useEffect(() => {
     if (selectedCase) {
-      fetchCaseSTR(selectedCase.case_id);
+      fetchCaseSTR(selectedCase.case_id || selectedCase._id);
     } else {
       setCaseSTR(null);
     }
@@ -251,7 +251,8 @@ const Cases = () => {
     if (!selectedCase) return;
     try {
       setStrLoading(true);
-      const res = await axios.post(`${API_URL}/api/reports/str/generate`, { case_id: selectedCase.case_id });
+      const caseIdToUse = selectedCase.case_id || selectedCase._id;
+      const res = await axios.post(`${API_URL}/api/reports/str/generate`, { case_id: caseIdToUse });
       if (res.data.str) {
         setCaseSTR(res.data.str);
         setNarrativeEdit(res.data.str.narrative || '');
@@ -260,7 +261,8 @@ const Cases = () => {
         fetchCases();
       }
     } catch (err) {
-      alert("Failed to generate STR: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Failed to generate STR: " + errorMsg);
     } finally {
       setStrLoading(false);
     }
@@ -279,7 +281,8 @@ const Cases = () => {
         alert("STR draft changes saved successfully.");
       }
     } catch (err) {
-      alert("Failed to save STR: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Failed to save STR: " + errorMsg);
     } finally {
       setStrLoading(false);
     }
@@ -295,7 +298,8 @@ const Cases = () => {
         fetchCases();
       }
     } catch (err) {
-      alert("Approval Failed: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Approval Failed: " + errorMsg);
     }
   };
 
@@ -314,7 +318,8 @@ const Cases = () => {
         fetchCases();
       }
     } catch (err) {
-      alert("Filing Failed: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Filing Failed: " + errorMsg);
     }
   };
 
@@ -333,16 +338,45 @@ const Cases = () => {
         fetchCases();
       }
     } catch (err) {
-      alert("Rejection Failed: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Rejection Failed: " + errorMsg);
     }
   };
 
-  const handleExportSTR = (format) => {
+  const handleExportSTR = async (format) => {
     if (!caseSTR) return;
-    if (format === 'pdf') {
-      window.open(`${API_URL}/api/reports/str/${caseSTR.str_id}/pdf`, '_blank');
-    } else {
-      window.open(`${API_URL}/api/reports/str/${caseSTR.str_id}/export?format=${format}`, '_blank');
+    try {
+      const url = format === 'pdf'
+        ? `${API_URL}/api/reports/str/${caseSTR.str_id}/pdf`
+        : `${API_URL}/api/reports/str/${caseSTR.str_id}/export?format=${format}`;
+      
+      const res = await axios.get(url, { responseType: 'blob' });
+      const mimeType = format === 'pdf' 
+        ? 'application/pdf' 
+        : format === 'json' 
+          ? 'application/json' 
+          : 'application/xml';
+      const file = new Blob([res.data], { type: mimeType });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.setAttribute('download', `${caseSTR.str_id}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } catch (err) {
+      let errorMsg = err.message;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const errorText = await err.response.data.text();
+          const parsed = JSON.parse(errorText);
+          errorMsg = parsed.error || parsed.message || errorText;
+        } catch (_) {}
+      } else if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      }
+      alert(`Failed to download ${format.toUpperCase()} report: ` + errorMsg);
     }
   };
 

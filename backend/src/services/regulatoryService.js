@@ -150,7 +150,12 @@ Based on the absence of discernible lawful commercial purpose, significant turno
  * Generate an STR Draft from a Case
  */
 async function generateSTRFromCase(caseId, user) {
-  const caseObj = await models.Case.findOne({ case_id: caseId });
+  let caseObj = await models.Case.findOne({ case_id: caseId });
+  if (!caseObj && caseId) {
+    try {
+      caseObj = await models.Case.findById(caseId);
+    } catch (_) {}
+  }
   if (!caseObj) {
     throw new Error(`Case ${caseId} not found.`);
   }
@@ -259,7 +264,7 @@ async function generateSTRFromCase(caseId, user) {
 
   const strDoc = {
     str_id: strId,
-    case_id: caseId,
+    case_id: caseObj.case_id || caseId,
     case_title: caseObj.title,
     subject: subjectInfo,
     subject_info: subjectInfo,
@@ -300,12 +305,17 @@ async function generateSTRFromCase(caseId, user) {
 
   // Update Case status to 'Pending STR'
   if (typeof models.Case.findOneAndUpdate === 'function') {
-    await models.Case.findOneAndUpdate(
-      { case_id: caseId },
-      { status: 'Pending STR', updatedAt: now }
+    let updatedCase = await models.Case.findOneAndUpdate(
+      { case_id: caseObj.case_id || caseId },
+      { status: 'Pending STR', updatedAt: now },
+      { new: true }
     );
+    if (!updatedCase && caseObj._id) {
+      await models.Case.findByIdAndUpdate(caseObj._id, { status: 'Pending STR', updatedAt: now });
+    }
   } else {
-    await models.Case.findByIdAndUpdate(caseId, { status: 'Pending STR', updatedAt: now });
+    const targetId = caseObj._id || caseObj.case_id || caseId;
+    await models.Case.findByIdAndUpdate(targetId, { status: 'Pending STR', updatedAt: now });
   }
 
   await logAction(
@@ -325,20 +335,45 @@ async function generateSTRFromCase(caseId, user) {
  */
 async function generateCTRReport(options = {}) {
   const period = options.period || new Date().toISOString().substring(0, 7); // e.g. "2026-10"
-  const threshold = options.threshold_inr || options.threshold || getCtrThreshold(); // 1,000,000 INR
+  const threshold = options.threshold_inr !== undefined && options.threshold_inr !== null
+    ? Number(options.threshold_inr)
+    : (options.threshold !== undefined ? Number(options.threshold) : getCtrThreshold()); // 1,000,000 INR
   const currentUser = options.user?.username || 'System';
 
-  // 1. Fetch cash transactions
-  const allTxs = await models.Transaction.find({});
+  // 1. Fetch cash transactions efficiently
   const cashMethods = ['Cash Deposit', 'Cash', 'ATM', 'Cash Withdrawal'];
+  const cashFilter = {
+    $or: [
+      { payment_method: { $in: cashMethods } },
+      { category: 'Cash' }
+    ]
+  };
 
-  const filteredCashTxs = allTxs.filter(t => {
-    const isCash = cashMethods.includes(t.payment_method) || (t.category && t.category.toLowerCase().includes('cash'));
-    if (!isCash) return false;
+  let queryBuilder = models.Transaction.find(cashFilter);
+  if (typeof queryBuilder.lean === 'function') {
+    queryBuilder = queryBuilder.lean();
+  }
+  const cashTxs = await queryBuilder;
+
+  // Accurately filter cash transactions by the designated period
+  const filteredCashTxs = cashTxs.filter(t => {
+    const rawDate = t.timestamp || t.createdAt;
+    if (!rawDate) return false;
     
-    // Check period if specified
-    if (period && t.timestamp) {
-      return String(t.timestamp).startsWith(period);
+    let txPeriod = '';
+    if (rawDate instanceof Date) {
+      txPeriod = rawDate.toISOString().substring(0, 7);
+    } else {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        txPeriod = d.toISOString().substring(0, 7);
+      } else {
+        txPeriod = String(rawDate).substring(0, 7);
+      }
+    }
+
+    if (period) {
+      return txPeriod === period;
     }
     return true;
   });

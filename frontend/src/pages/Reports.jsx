@@ -52,6 +52,7 @@ const Reports = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   });
   const [ctrThresholdInput, setCtrThresholdInput] = useState(1000000);
+  const [ctrGenerating, setCtrGenerating] = useState(false);
   const [isAckModalOpen, setIsAckModalOpen] = useState(false);
   const [targetSTRForFiling, setTargetSTRForFiling] = useState(null);
   const [ackRefInput, setAckRefInput] = useState('');
@@ -139,24 +140,63 @@ const Reports = () => {
   const handleGenerateCTR = async (e) => {
     e.preventDefault();
     try {
+      setCtrGenerating(true);
       const res = await axios.post(`${API_URL}/api/reports/ctr/generate`, {
         period: ctrPeriodInput,
         threshold_inr: Number(ctrThresholdInput)
       });
-      alert(`CTR aggregation generated: ${res.data.count} report(s) compiled.`);
+      const count = res.data.count || 0;
+      if (count > 0) {
+        alert(`CTR Aggregation Success: Generated ${count} CTR report(s) for period ${ctrPeriodInput} exceeding ₹${Number(ctrThresholdInput).toLocaleString('en-IN')}.`);
+      } else {
+        alert(`CTR Aggregation completed for ${ctrPeriodInput}: 0 accounts exceeded the statutory cash threshold of ₹${Number(ctrThresholdInput).toLocaleString('en-IN')}.\n\nTip: For period ${ctrPeriodInput}, the highest cash volume transacted by any single account was below ₹${Number(ctrThresholdInput).toLocaleString('en-IN')}. To aggregate records with lower volume, you can adjust the threshold, or select high-volume historical periods such as 2025-07, 2025-10, or 2025-12.`);
+      }
       setIsGenerateCtrOpen(false);
+      setCtrPeriodFilter(ctrPeriodInput);
       fetchCTRs();
     } catch (err) {
-      alert("Failed to generate CTR batch: " + (err.response?.data?.error || err.message));
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      alert("Failed to generate CTR batch: " + errorMsg);
+    } finally {
+      setCtrGenerating(false);
     }
   };
 
   // Export handlers
-  const handleExport = (type, id, format) => {
-    const url = format === 'pdf'
-      ? `${API_URL}/api/reports/${type}/${id}/pdf`
-      : `${API_URL}/api/reports/${type}/${id}/export?format=${format}`;
-    window.open(url, '_blank');
+  const handleExport = async (type, id, format) => {
+    try {
+      const url = format === 'pdf'
+        ? `${API_URL}/api/reports/${type}/${id}/pdf`
+        : `${API_URL}/api/reports/${type}/${id}/export?format=${format}`;
+      
+      const res = await axios.get(url, { responseType: 'blob' });
+      const mimeType = format === 'pdf' 
+        ? 'application/pdf' 
+        : format === 'json' 
+          ? 'application/json' 
+          : 'application/xml';
+      const file = new Blob([res.data], { type: mimeType });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.setAttribute('download', `${id}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } catch (err) {
+      let errorMsg = err.message;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const errorText = await err.response.data.text();
+          const parsed = JSON.parse(errorText);
+          errorMsg = parsed.error || parsed.message || errorText;
+        } catch (_) {}
+      } else if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      }
+      alert(`Failed to export ${format.toUpperCase()}: ` + errorMsg);
+    }
   };
 
   // Filtered STR list
@@ -846,21 +886,26 @@ const Reports = () => {
                   className="w-full px-3 py-2 bg-gray-50 dark:bg-darkBg border border-gray-200 dark:border-darkBorder rounded-lg outline-none font-semibold text-gray-700 dark:text-gray-200"
                 />
                 <p className="text-[10px] text-gray-400">Default: ₹10,00,000 (10 Lakhs) per PMLA Maintenance of Records Rules.</p>
+                <div className="p-2.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40 rounded-lg text-[10px] text-blue-700 dark:text-blue-300">
+                  <b>Guidance Note:</b> CTR aggregates all cash transactions for each account during the target calendar month. If testing with sample datasets, periods with accounts exceeding ₹10L include <b>2025-07</b>, <b>2025-10</b>, and <b>2025-12</b>. For <b>2026-02</b>, maximum cash per account is approx. ₹3.2 Lakhs.
+                </div>
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsGenerateCtrOpen(false)}
+                  disabled={ctrGenerating}
                   className="flex-1 py-2 border border-gray-200 dark:border-darkBorder text-gray-600 dark:text-gray-300 rounded-lg font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-md shadow-emerald-900/10"
+                  disabled={ctrGenerating}
+                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-md shadow-emerald-900/10 disabled:opacity-50"
                 >
-                  Execute CTR Aggregation
+                  {ctrGenerating ? 'Scanning & Aggregating...' : 'Execute CTR Aggregation'}
                 </button>
               </div>
             </form>

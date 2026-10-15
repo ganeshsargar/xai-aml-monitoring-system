@@ -415,6 +415,27 @@ const MLOps = () => {
       });
   };
 
+  const handleDownloadReportPDF = async (versionId) => {
+    try {
+      const token = localStorage.getItem('aml_token') || localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/admin/models/versions/${versionId}/report/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        responseType: 'blob'
+      });
+      const file = new Blob([res.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.setAttribute('download', `Model_Validation_Report_${versionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(fileURL);
+    } catch (err) {
+      alert("Failed to download PDF report: " + (err.response?.data?.error || err.message));
+    }
+  };
+
   const mlData = stats?.ml_model || defaultMetrics;
   const activeModelKey = selectedModel || mlData.best_model || 'Random Forest';
   const currentModelMetrics = mlData.comparison?.[activeModelKey] || mlData.comparison?.[mlData.best_model] || defaultMetrics.comparison[activeModelKey];
@@ -729,15 +750,13 @@ const MLOps = () => {
                               </button>
 
                               {/* PDF Download Direct */}
-                              <a
-                                href={`${API_URL}/api/admin/models/versions/${v.version_id}/report/pdf`}
-                                target="_blank"
-                                rel="noreferrer"
+                              <button
+                                onClick={() => handleDownloadReportPDF(v.version_id)}
                                 title="Download PDF Validation Report"
                                 className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded transition-all"
                               >
                                 <Download className="w-3.5 h-3.5" />
-                              </a>
+                              </button>
 
                               {/* Promote / Rollback buttons */}
                               {!isChampion ? (
@@ -1385,14 +1404,12 @@ const MLOps = () => {
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <a
-                    href={`${API_URL}/api/admin/models/versions/${reportVersionId}/report/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => handleDownloadReportPDF(reportVersionId)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all shadow"
                   >
                     <Download className="w-3.5 h-3.5" /> Download PDF Report
-                  </a>
+                  </button>
                   <button
                     onClick={() => setReportModalOpen(false)}
                     className="p-1.5 hover:bg-slate-200 dark:hover:bg-darkBorder rounded-lg text-gray-500"
